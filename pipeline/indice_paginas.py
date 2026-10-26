@@ -6,13 +6,13 @@ Por cada página guarda las palabras reconocidas con su caja en milésimas del
 ancho y alto de la imagen, para poder marcarlas sobre el escaneo.
 """
 import csv, glob, json, os, sys
-from PIL import Image
 
 carpeta = sys.argv[1]
+tamanos = json.load(open(f"{carpeta}/numero.json"))["tamano_ocr"]
 paginas = []
 for tsv in sorted(glob.glob(f"{carpeta}/p*.tsv")):
     n = os.path.basename(tsv)[1:3]
-    iw, ih = Image.open(f"{carpeta}/p{n}.png").size
+    iw, ih = tamanos[int(n) - 1]
     palabras, lineas, actual = [], 0, None
     for r in csv.DictReader(open(tsv, encoding="utf-8"), delimiter="\t", quoting=csv.QUOTE_NONE):
         if r["level"] != "5" or not r["text"].strip() or float(r["conf"]) < 0:
