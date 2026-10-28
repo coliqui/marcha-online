@@ -22,8 +22,8 @@ from anthropic.types.message_create_params import MessageCreateParamsNonStreamin
 from anthropic.types.messages.batch_create_params import Request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, Pagina, cliente, contenido_pagina, dudas, enderezar,
-                     finalizar, imagen_b64, insertar_bloque, palabras, paginas_de)
+from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, Pagina, cliente, confirmar_bloques, contenido_pagina,
+                     dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de)
 from ocr_numero import metadatos
 
 ESQUEMA = anthropic.transform_schema(Pagina)
@@ -91,7 +91,7 @@ def pedido(numero, n, modelo):
     """El pedido de una página entera para el lote (Haiku o Sonnet)."""
     contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n])
     return Request(custom_id=f"{numero.id}__{n}__{modelo}", params=MessageCreateParamsNonStreaming(
-        model=MODELOS[modelo][0], max_tokens=16000, messages=[{"role": "user", "content": contenido}],
+        model=MODELOS[modelo][0], max_tokens=32000, messages=[{"role": "user", "content": contenido}],
         output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}}))
 
 
@@ -100,7 +100,7 @@ def pedidos_bloques(numero, n):
     leida = numero.lectura(n, "sonnet")
     texto = "\n\n".join(a["texto"] for a in leida["articulos"])
     pedidos = []
-    for k, bloque in enumerate(numero.lectura(n, "haiku")["bloques_girados"], 1):
+    for k, bloque in enumerate(numero.lectura(n, "haiku")["bloques_confirmados"], 1):
         recorte, _ = enderezar(numero.imagenes()[n - 1], bloque)
         recorte.save(f"{numero.destino}/p{n:02d}-enderezado-{k}.jpg", quality=85)
         contenido = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(recorte)}},
@@ -197,6 +197,15 @@ def seguir(rollos, ocr, lectura, tope):
                 for l in lotes if l["estado"] != "recogido" for r in l["pedidos"]}
 
     # 2. Qué falta leer: primero Haiku en todas las páginas; después Sonnet en las dudosas
+    # Bloques girados que informó Haiku: se mide su ángulo real una sola vez y se guardan los confirmados
+    for num in numeros.values():
+        pendientes = [n for n in range(1, num.total + 1) if (h := num.lectura(n, "haiku"))
+                      and h.get("bloques_girados") and "bloques_confirmados" not in h]
+        for n in pendientes:
+            h = num.lectura(n, "haiku")
+            confirmar_bloques(h, num.imagenes()[n - 1])
+            guardar(f"{num.destino}/p{n:02d}.haiku.json", h)
+        num._imagenes = None
     # (una página que falló dos veces con Haiku pasa a Sonnet; dos veces con Sonnet, queda lo que haya)
     falla = lambda num, n, m: fallas.get(f"{num.id}__{n}__{m}", 0) >= 2
     faltan = {"haiku": [], "sonnet": [], "bloque": []}
@@ -214,7 +223,7 @@ def seguir(rollos, ocr, lectura, tope):
     for num in numeros.values():
         for n in range(1, num.total + 1):
             h, son = num.lectura(n, "haiku"), num.lectura(n, "sonnet")
-            if (h and son and not son.get("bloqueada") and h.get("bloques_girados") and "bloques" not in son
+            if (h and son and not son.get("bloqueada") and h.get("bloques_confirmados") and "bloques" not in son
                     and not any(i == num.id and p == n and m.startswith("bloque") for i, p, m in en_curso)
                     and not falla(num, n, "bloque1")):
                 faltan["bloque"].append((num, n))
@@ -237,6 +246,10 @@ def seguir(rollos, ocr, lectura, tope):
                 pedidos = [p for num, n in parte for p in pedidos_bloques(num, n)]
             else:
                 pedidos = [pedido(num, n, modelo) for num, n in parte]
+            # liberar las imágenes de los números ya preparados (el último puede seguir en el próximo lote)
+            usados = list({num.id: num for num, _ in parte}.values())
+            for num in usados[:-1] if i + PAGINAS_POR_LOTE < len(cola) else usados:
+                num._imagenes = None
             try:
                 b = cli.messages.batches.create(requests=pedidos)
             except (anthropic.BadRequestError, anthropic.PermissionDeniedError) as e:

@@ -120,7 +120,7 @@ Para la página:
   2. el humor gráfico (caricaturas, chistes, historietas), aunque no tenga firma.
   No incluyas fotos, mapas, avisos publicitarios ilustrados, ni dibujos sin firma que solo acompañan un artículo, ni filetes o adornos.
   Para cada una: descripción en una frase; firma: el nombre o seudónimo del dibujante tal como está escrito dentro o al pie del dibujo (por ejemplo "PELODURO", "J. E. Suárez", "Seoane"), o null si no tiene. Cuidado: el nombre de la persona dibujada o el epígrafe NO es la firma; eso va en retratado (a quién muestra el dibujo, si se sabe; si no, null). Decí en qué imagen está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas del ancho y alto de esa imagen. Si aparece en las dos imágenes, ponela una sola vez, en la que se vea entera.
-- bloques_girados: cada bloque de texto en diagonal o girado (no los dibujos ni los títulos sueltos), con la imagen en que está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas de esa imagen. Si no hay, una lista vacía.
+- bloques_girados: solo los bloques de texto corrido (varios renglones de un artículo) impresos inclinados en diagonal, con la imagen en que está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas de esa imagen. No cuentan los recuadros, los avisos, los títulos, las firmas, los epígrafes ni el texto dentro de dibujos o caricaturas, aunque estén torcidos. Casi todas las páginas no tienen ninguno: en ese caso, una lista vacía.
 - legibilidad: "buena", "regular" o "mala". partes_sin_leer: true si dejaste algún bloque de texto sin transcribir completo, incluidos los textos en diagonal, girados o en recuadros que no pudiste leer enteros.
 - notas: problemas de lectura, o null. Mencioná siempre si hubo texto en diagonal, girado o en recuadros que te costó leer o que no leíste completo.
 
@@ -311,6 +311,21 @@ def enderezar(im, bloque, margen=0.25):
     return recorte.rotate(mejor, resample=Image.BICUBIC, expand=True, fillcolor=255), mejor
 
 
+DIAGONAL = (15, 75)  # grados: fuera de este rango el bloque no está de verdad inclinado
+
+
+def confirmar_bloques(pag, im):
+    """Mide el ángulo real de cada bloque girado que informó la IA y guarda en la página solo los que
+    están de verdad en diagonal ("bloques_confirmados"); la IA suele marcar recuadros y avisos derechos."""
+    confirmados = []
+    for bloque in pag.get("bloques_girados") or []:
+        _, angulo = enderezar(im, bloque)
+        if DIAGONAL[0] <= abs(angulo) <= DIAGONAL[1]:
+            confirmados.append({**bloque, "angulo": angulo})
+    pag["bloques_confirmados"] = confirmados
+    return confirmados
+
+
 def palabras(texto):
     return len(PALABRA.findall(texto))
 
@@ -333,8 +348,8 @@ def dudas(pag, ocr):
     frases = FRASES.findall(notas)
     if any(RESUMIDO.search(f) and "aviso" not in f.lower() for f in frases):
         return 4, "Haiku resumió en vez de transcribir"
-    if pag.get("bloques_girados"):
-        return 3, f"{len(pag['bloques_girados'])} bloque(s) de texto girado para enderezar"
+    if pag.get("bloques_confirmados"):
+        return 3, f"{len(pag['bloques_confirmados'])} bloque(s) de texto en diagonal para enderezar"
     if any(TEXTO_GIRADO.search(f) and not NO_CUENTA.search(f) and (pag["partes_sin_leer"] or LECTURA_PARCIAL.search(f))
            for f in frases):
         return 3, "texto en diagonal o girado leído a medias"
@@ -490,7 +505,7 @@ def procesar(cli, pdf, salida, carpeta_ocr, caja):
         try:
             enderezados = []
             if modelo == "sonnet" and haiku_previo(n):
-                for bloque in haiku_previo(n).get("bloques_girados", []):
+                for bloque in confirmar_bloques(haiku_previo(n), imagenes[n - 1]):
                     recorte, angulo = enderezar(imagenes[n - 1], bloque)
                     recorte.save(f"{destino}/p{n:02d}-enderezado-{len(enderezados) + 1}.jpg", quality=85)
                     enderezados.append(recorte)
