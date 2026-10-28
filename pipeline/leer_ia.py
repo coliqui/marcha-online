@@ -74,7 +74,10 @@ INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. 
 Transcribí todos los textos de la página en orden de lectura, siguiendo las columnas como lo haría una persona:
 - Uní las palabras cortadas con guion al final del renglón ("re-\\nnuncia" -> "renuncia") y los renglones de un mismo párrafo. Separá los párrafos con una línea en blanco.
 - Respetá la ortografía de época tal como está impresa ("fué", "dió", "Constantín"). No corrijas, no resumas, no modernices.
-- Incluí también los bloques en diagonal, en recuadros o en tipografía rara.
+- Incluí también los bloques en diagonal, en recuadros o en tipografía rara. Un bloque en diagonal o girado casi nunca es un texto aparte: suele ser el comienzo o un tramo de un artículo de la misma página y se lee en el lugar que le corresponde dentro de ese artículo.
+- Decidí el orden de lectura por la continuidad del texto, no por la posición en la página: una palabra cortada con guion al final de un bloque ("mayor par-") sigue al comienzo de otro ("te de los…"), y una frase o un diálogo que queda abierto sigue donde tiene sentido. Antes de terminar, revisá cada paso de un bloque a otro.
+- Si un mismo artículo ocupa varios bloques de la página, devolvelo como un solo artículo, con los bloques ya en orden de lectura. Nunca lo partas en varios artículos con el mismo título.
+- Un artículo puede ocupar dos páginas enfrentadas, con el título repartido entre las dos (por ejemplo "EL BAR" en una y "DE SAN MIGUEL" en la otra). En ese caso usá el título completo en las dos partes.
 - Si una palabra no se puede leer, escribí [ilegible]. No inventes texto.
 - No transcribas dos veces lo que aparece en la zona donde se superponen las dos imágenes.
 
@@ -221,6 +224,30 @@ def compatibles(a, b):
     return a.get("tipo") == b.get("tipo") or not ({a.get("tipo"), b.get("tipo")} & PROPIOS)
 
 
+def juntar_partes(articulos):
+    """Une las partes de un mismo artículo que la IA devolvió por separado en una página (mismo título).
+
+    La parte que sigue en otra página (cortada al final o con "pasa a") va última; la que viene de otra
+    página va primera; el resto conserva el orden en que las devolvió la IA.
+    """
+    grupos = {}
+    for a in articulos:
+        grupos.setdefault(" ".join(a["titulo"].lower().split()), []).append(a)
+    juntos = []
+    for partes in grupos.values():
+        partes.sort(key=lambda a: (not (a.get("viene_de_pagina")),
+                                   bool(a.get("termina_cortado") or a.get("continua_en_pagina")
+                                        or a["texto"].rstrip().endswith("-"))))
+        a = partes[0]
+        for b in partes[1:]:
+            a["texto"] = a["texto"].rstrip() + "\n\n" + b["texto"].lstrip()
+            for clave in ("autor", "seccion"):
+                a[clave] = a.get(clave) or b.get(clave)
+            a["termina_cortado"], a["continua_en_pagina"] = b.get("termina_cortado"), b.get("continua_en_pagina")
+        juntos.append(a)
+    return juntos
+
+
 def unir_continuaciones(paginas):
     """Une los artículos que siguen en otra página del número.
 
@@ -231,7 +258,9 @@ def unir_continuaciones(paginas):
     siguiente que es del mismo tipo (cuento con cuento, crítica con crítica…).
     """
     impresa = {n: p.get("pagina_impresa") or n for n, p in paginas}
-    lista = [dict(a, paginas=[n]) for n, p in paginas for a in p["articulos"]]
+    lista = []
+    for n, p in paginas:
+        lista += juntar_partes(dict(a, paginas=[n]) for a in p["articulos"])
     for a in lista:
         if a["texto"].rstrip().endswith(("-", "—")):
             a["termina_cortado"] = True
@@ -267,8 +296,11 @@ def unir_continuaciones(paginas):
             continue
         sig = a["paginas"][-1] + 1
         libres = [b for b in lista if id(b) not in usados and b is not a and b["paginas"][0] == sig
-                  and not b.get("viene_de_pagina")]
-        candidatos = [b for b in libres if b.get("empieza_cortado") and compatibles(a, b)]
+                  and b.get("viene_de_pagina") in (None, impresa[a["paginas"][-1]])]
+        # primero el que dice venir justo de esta página, después el que empieza cortado
+        candidatos = [b for b in libres if b.get("viene_de_pagina") and compatibles(a, b)]
+        if not candidatos:
+            candidatos = [b for b in libres if b.get("empieza_cortado") and compatibles(a, b)]
         if not candidatos and a.get("tipo") in PROPIOS - {"aviso", "pie de foto"}:
             candidatos = [b for b in libres if b.get("tipo") == a.get("tipo")]
         if len(candidatos) == 1:
@@ -383,8 +415,10 @@ def main():
     resumen = {"tope_usd": a.tope, "gasto_haiku_usd": round(gasto_haiku, 4), "numeros": []}
     for i, (meta, destino, total, ocr, haiku, _) in enumerate(numeros):
         lecturas = dict(haiku)
-        for j, n, d, s in escaladas:
-            if j == i and not s.get("bloqueada"):
+        for n in lecturas:
+            # la lectura de Sonnet, si la hay (de esta corrida o de una anterior), reemplaza a la de Haiku
+            archivo = f"{destino}/p{n:02d}.sonnet.json"
+            if os.path.exists(archivo) and not (s := json.load(open(archivo))).get("bloqueada"):
                 lecturas[n] = s
         paginas, articulos = finalizar(meta, destino, total, ocr, lecturas)
         resumen["numeros"].append({
