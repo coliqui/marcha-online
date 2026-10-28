@@ -103,6 +103,12 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .lb p { color: #eee; margin: 0; text-align: center; font-size: 14px }
 .lb p a { color: #9db5f5 }
 .lb .x { position: absolute; top: 12px; right: 16px; z-index: 11; font: 700 14px var(--display); background: #fff; color: #111; border: 0; padding: 6px 12px; cursor: pointer }
+.zbox { outline: 3px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,.18); pointer-events: none }
+.grupo { margin: 22px 0 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap }
+.grupo h3 { margin: 0; font: 800 17px var(--display) }
+.caso { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); max-width: 960px }
+.caso.hecho { opacity: .5 }
+.caso a { font: 700 13px var(--display); text-transform: uppercase; letter-spacing: .06em }
 footer .wrap { padding-block: 0 32px; font-size: 13px; color: var(--muted) }
 footer p { max-width: 80ch }
 </style>
@@ -115,10 +121,11 @@ footer p { max-width: 80ch }
     <a href="#/numeros" data-tab="numeros">Números</a>
     <a href="#/autores" data-tab="autores">Autores y dibujantes</a>
     <a href="#/grafico" data-tab="grafico">Archivo gráfico</a>
+    <a href="#/revisar" data-tab="revisar">Revisión</a>
   </nav>
 </div></header>
 <main><div class="wrap" id="app"><p class="muted">Cargando…</p></div></main>
-<footer><div class="wrap"><p>Prueba con 3 números leídos con IA (nº 30 de 1940, nº 748 de 1955 y nº 1477 de 1970). La galería de tapas muestra la colección entera. Texto de los artículos: lectura con Claude Haiku y, en las páginas difíciles, Claude Sonnet; puede tener errores. Las páginas que no pudieron leerse con IA muestran el texto del OCR automático (Tesseract), sin revisar. Las palabras marcadas sobre el escaneo salen de ese OCR.</p></div></footer>
+<footer><div class="wrap"><p>Prueba con los números ya leídos con IA (en "Números", los de borde azul). La galería de tapas muestra la colección entera. Texto de los artículos: lectura con Claude Haiku y, en las páginas difíciles, Claude Sonnet; puede tener errores. Las páginas que no pudieron leerse con IA muestran el texto del OCR automático (Tesseract), sin revisar. Las palabras marcadas sobre el escaneo salen de ese OCR.</p></div></footer>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -131,7 +138,7 @@ const fecha = f => { const [a, m, d] = f.split("-"); return `${+d} de ${MESES[m 
 const EJEMPLOS = ["Peloduro", "Mussolini", "Clemenceau", "teatro", "Cortázar", "caricatura", "Cuba"];
 const OSD_IMG = "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/";
 
-let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map();
+let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [];
 let visor = null;
 
 // Una firma ("J.E.SUAREZ", "Peloduro", "Constantín") -> clave de la persona, usando la tabla de seudónimos.
@@ -150,6 +157,7 @@ function persona(firma) {
 async function cargar() {
   const [numeros, alias] = await Promise.all(["datos/numeros.json", "datos/alias.json"].map(u => fetch(u).then(r => r.json())));
   NUMEROS = numeros;
+  REVISAR = await fetch("datos/revisar.json").then(r => r.ok ? r.json() : []).catch(() => []);
   for (const [canon, variantes] of Object.entries(alias)) {
     if (canon.startsWith("_")) continue;
     ALIAS.set(claveFirma(canon), canon);
@@ -157,7 +165,6 @@ async function cargar() {
   }
   for (const m of NUMEROS.filter(m => m.ia)) {
     const d = await (await fetch(`datos/${m.id}.json`)).json();
-    d.paginas.forEach(p => p.nw = p.w.map(w => norm(w[0]).replace(/[^a-z0-9ñ]/g, "")));
     N[d.id] = d;
     d.articulos.forEach((a, i) => {
       Object.assign(a, { nid: d.id, fecha: d.fecha, i });
@@ -242,7 +249,7 @@ function vistaBuscar(q = "", tipo = "") {
   conLightbox(ilus);
 }
 
-function vistaNumero(nid, n, q = "", artSel = null) {
+function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   const d = N[nid];
   if (!d) { app.innerHTML = `<p>Este número todavía no tiene lectura con IA en la prueba. <a href="#/tapa/${esc(nid)}">Ver su tapa</a></p>`; return; }
   n = Math.max(1, Math.min(d.paginas.length, +n || 1));
@@ -285,10 +292,14 @@ function vistaNumero(nid, n, q = "", artSel = null) {
   visor.addHandler("open", () => {
     const marcas = hits.map(i => { const [, x, y, w, h] = p.w[i]; return { r: new OpenSeadragon.Rect((x - 3) / 1000, (y - 2.5) / 1000 * ar, (w + 6) / 1000, (h + 5) / 1000 * ar), el: caja(x - 3, y - 2.5, w + 6, h + 5, "box") }; });
     if (verIlus) p.ilustraciones.forEach(il => { const [x0, y0, x1, y1] = il.pagina_caja; caja(x0, y0, x1 - x0, y1 - y0, "ibox", il.descripcion); });
-    if (marcas.length) { const r = marcas[0].r; visor.viewport.fitBoundsWithConstraints(new OpenSeadragon.Rect(r.x - .25, r.y - .18, .5 + r.width, .36 + r.height), true); }
+    if (zona) {
+      const [x0, y0, x1, y1] = zona.split(",").map(Number);
+      caja(x0, y0, x1 - x0, y1 - y0, "zbox");
+      visor.viewport.fitBoundsWithConstraints(new OpenSeadragon.Rect((x0 - 30) / 1000, (y0 - 30) / 1000 * ar, (x1 - x0 + 60) / 1000, (y1 - y0 + 60) / 1000 * ar), true);
+    } else if (marcas.length) { const r = marcas[0].r; visor.viewport.fitBoundsWithConstraints(new OpenSeadragon.Rect(r.x - .25, r.y - .18, .5 + r.width, .36 + r.height), true); }
   });
   $("#vi").onchange = e => { try { localStorage.setItem("verIlus", e.target.checked ? "1" : "0"); } catch {} vistaNumero(nid, n, q, artSel); };
-  if (artSel != null && document.getElementById("a" + artSel)) document.getElementById("a" + artSel).scrollIntoView({ block: "start" });
+  if (artSel !== null && artSel !== "" && document.getElementById("a" + artSel)) document.getElementById("a" + artSel).scrollIntoView({ block: "start" });
   else window.scrollTo(0, 0);
 }
 
@@ -296,7 +307,7 @@ function vistaNumeros() {
   const porAnio = {};
   NUMEROS.forEach(m => (porAnio[m.fecha.slice(0, 4)] ??= []).push(m));
   app.innerHTML = `<h2>Los ${NUMEROS.length} números</h2>
-    <p class="muted small">Las tapas de toda la colección, tomadas del escaneo original. Tocá una para verla grande. Los tres con borde azul ya tienen lectura con IA y se pueden recorrer página por página.</p>
+    <p class="muted small">Las tapas de toda la colección, tomadas del escaneo original. Tocá una para verla grande. Los de borde azul ya tienen lectura con IA y se pueden recorrer página por página.</p>
     <div class="chips">${Object.keys(porAnio).map(a => `<button type="button" data-a="${a}">${a}</button>`).join("")}</div>
     ${Object.entries(porAnio).map(([a, ms]) => `<div class="year" id="y${a}">${a} <span class="muted small">${ms.length} números</span></div>
       <div class="grid">${ms.map(m => `<a class="cov ${m.ia ? "ia" : ""}" href="#/tapa/${m.id}"><img src="tapas/${m.id}.jpg" alt="Tapa del nº ${esc(m.id)}" loading="lazy"><span>Nº ${esc(m.id)}</span><span class="muted">${fecha(m.fecha)}</span></a>`).join("")}</div>`).join("")}`;
@@ -346,12 +357,52 @@ function vistaGrafico(filtro = "") {
   conLightbox(lista);
 }
 
+// Las posiciones de las palabras de un número se cargan recién al abrirlo (son pesadas)
+async function conPalabras(nid) {
+  const d = N[nid];
+  if (!d || d.palabras) return;
+  const w = await (await fetch(`datos/${nid}-palabras.json`)).json();
+  d.paginas.forEach(p => { p.w = w[p.n] || []; p.nw = p.w.map(x => norm(x[0]).replace(/[^a-z0-9ñ]/g, "")); });
+  d.palabras = true;
+}
+
+const GRUPOS = [
+  ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
+  ["bloques_sin_ubicar", "Bloques en diagonal sin ubicar", "El bloque se leyó enderezado pero no se supo dónde va; quedó al comienzo del artículo."],
+  ["diagonales", "Bloques en diagonal leídos enderezados", "Verificar que el texto inclinado esté completo y en su lugar (el recuadro azul marca el bloque)."],
+  ["uniones_sin_marca", "Artículos unidos entre páginas sin marca", "Se unieron porque uno termina cortado y el otro sigue; verificar que sean el mismo texto."],
+  ["relecturas_descartadas", "Relecturas de Sonnet descartadas", "Sonnet abrevió y quedó la lectura de Haiku; verificar que esté entera."],
+  ["bloqueadas", "Páginas bloqueadas por derechos de autor", "Sin transcripción de la IA: escaneo y texto de Tesseract (buscable, sin corregir)."],
+  ["firmas", "Firmas y dibujantes fuera de la tabla de seudónimos", "Unificar variantes y seudónimos (p. ej. «J. E. Suárez» = Peloduro)."],
+  ["falsas_diagonales", "Falsas diagonales descartadas", "La IA marcó texto girado que en realidad está derecho; verificar que no haya quedado texto inclinado sin leer."],
+  ["corregidos", "Correcciones hechas a mano", "Cambios ya aplicados desde el archivo de correcciones."],
+];
+const revisado = clave => { try { return localStorage.getItem("rev:" + clave) === "1"; } catch { return false; } };
+
+function vistaRevisar(grupo = "") {
+  const firmas = [...PERSONAS.values()].filter(p => !ALIAS.has(p.clave)).sort((a, b) => a.nombre.localeCompare(b.nombre))
+    .map(p => ({ grupo: "firmas", clave: "firma:" + p.clave, desc: `«${p.nombre}» · ${p.arts.length} textos, ${p.ilus.length} dibujos`, link: `#/autor/${encodeURIComponent(p.clave)}` }));
+  const casos = REVISAR.map(c => ({ ...c, clave: `${c.grupo}:${c.id}:${c.n}:${c.art ?? ""}`,
+    link: `#/numero/${c.id}/${c.n}//${c.art ?? ""}/${c.zona ? c.zona.join(",") : ""}` })).concat(firmas);
+  const lista = grupo ? GRUPOS.filter(g => g[0] === grupo) : GRUPOS;
+  app.innerHTML = `<h2>Revisión</h2>
+    <p class="muted small">Casos que el proceso marcó como dudosos. Cada uno lleva a la página y, cuando se sabe, al lugar exacto. Marcá los que ya revisaste (queda guardado en este navegador).</p>
+    <div class="chips"><button type="button" data-g="" aria-pressed="${!grupo}">Todos</button>${GRUPOS.map(([g, t]) => { const cs = casos.filter(c => c.grupo === g); return cs.length ? `<button type="button" data-g="${g}" aria-pressed="${grupo === g}">${t} (${cs.filter(c => !revisado(c.clave)).length}/${cs.length})</button>` : ""; }).join("")}</div>
+    ${lista.map(([g, t, ayuda]) => { const cs = casos.filter(c => c.grupo === g); if (!cs.length) return "";
+      return `<div class="grupo"><h3>${t}</h3><span class="muted small">${cs.filter(c => !revisado(c.clave)).length} sin revisar de ${cs.length}</span></div><p class="muted small" style="margin:0 0 6px">${ayuda}</p>` +
+        cs.map(c => `<div class="caso ${revisado(c.clave) ? "hecho" : ""}"><input type="checkbox" data-c="${esc(c.clave)}" ${revisado(c.clave) ? "checked" : ""} aria-label="Revisado">
+          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}</div></div>`).join(""); }).join("")}`;
+  app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => location.hash = `#/revisar/${b.dataset.g}`);
+  app.querySelectorAll("[data-c]").forEach(cb => cb.onchange = () => { try { localStorage.setItem("rev:" + cb.dataset.c, cb.checked ? "1" : "0"); } catch {} vistaRevisar(grupo); });
+}
+
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }
   const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
-  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico" }[vista ?? ""] ?? "buscar";
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar" }[vista ?? ""] ?? "buscar";
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
-  if (vista === "numero") return vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null);
+  if (vista === "numero") return conPalabras(r[0]).then(() => vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null, r[4] ?? ""));
+  if (vista === "revisar") return vistaRevisar(r[0] ?? "");
   if (vista === "numeros") return vistaNumeros();
   if (vista === "tapa") return vistaTapa(r[0]);
   if (vista === "autores") return vistaAutores();

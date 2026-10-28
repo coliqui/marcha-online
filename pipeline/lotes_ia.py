@@ -115,9 +115,11 @@ def pedidos_bloques(numero, n):
 ABREVIADA = re.compile(r"abreviad|resumid|transcripci[oó]n (?:parcial|incompleta|no completa)|no (?:est[aá] )?complet[ao]", re.I)
 
 
-def incompleta(lectura):
-    """La lectura declara (en su campo o en sus notas) que dejó texto afuera."""
-    return lectura.get("transcripcion_completa") is False or bool(ABREVIADA.search(lectura.get("notas") or ""))
+def incompleta(lectura, ocr):
+    """La lectura declara (en su campo o en sus notas) que dejó texto afuera, y además le falta texto frente
+    al OCR (menos del 75 % de sus palabras): omitir un aviso o un adorno no la hace incompleta."""
+    declara = lectura.get("transcripcion_completa") is False or bool(ABREVIADA.search(lectura.get("notas") or ""))
+    return declara and sum(palabras(a["texto"]) for a in lectura["articulos"]) < 0.75 * palabras(ocr)
 
 
 def elegir_lectura(num, n):
@@ -128,7 +130,7 @@ def elegir_lectura(num, n):
     if lecturas and not validas:
         return {"bloqueada": True}  # derechos de autor: finalizar() deja el texto de Tesseract
     for x in validas:
-        if not incompleta(x):
+        if not incompleta(x, num.ocr[n]):
             return x
     if not validas:
         return None

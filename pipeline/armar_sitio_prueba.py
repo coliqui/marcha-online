@@ -5,7 +5,8 @@ Uso: python3 armar_sitio_prueba.py CARPETA_ROLLOS CARPETA_OCR CARPETA_IA CARPETA
 - tapas/: tapa de cada número (si tapas_grandes.py no las dejó antes, se usa la imagen web).
 - paginas/<id>/: imagen web (pNN.jpg) y en alta resolución (pNN-hd.jpg) de cada página.
 - ilustraciones/: dibujos firmados y humor gráfico, recortados del escaneo original.
-- datos/: numeros.json (toda la colección), <id>.json (páginas, palabras, artículos)
+- datos/: numeros.json (toda la colección), <id>.json (páginas y artículos), <id>-palabras.json
+  (posición de cada palabra del OCR, que el sitio carga solo al abrir ese número)
   y alias.json (seudónimos y variantes de firma de autores y dibujantes).
 """
 import glob, json, os, shutil, subprocess, sys, tempfile
@@ -49,6 +50,22 @@ numeros.sort(key=lambda m: (m["fecha"], m["id"]))
 json.dump(numeros, open(os.path.join(sitio, "datos", "numeros.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"{len(numeros)} tapas")
 
+def caja_en_pagina(bloque, margen=0.0):
+    """Caja [x0, y0, x1, y1] en milésimas de una de las dos franjas -> en milésimas de la página entera."""
+    a, b = ARRIBA if bloque["imagen"] == "arriba" else ABAJO
+    x0, y0, x1, y1 = (max(0, min(1000, v)) / 1000 for v in bloque["caja"])
+    return [round(max(0, x0 - margen) * 1000), round(max(0, a + y0 * (b - a) - margen) * 1000),
+            round(min(1, x1 + margen) * 1000), round(min(1, a + y1 * (b - a) + margen) * 1000)]
+
+
+revisar = []  # casos para revisar a mano, con el lugar de la página donde mirar
+
+
+def caso(grupo, meta, n, descripcion, articulo=None, zona=None):
+    revisar.append({"grupo": grupo, "id": meta["id"], "fecha": meta["fecha"], "n": n,
+                    "desc": descripcion, "art": articulo, "zona": zona})
+
+
 # Números leídos con IA
 for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     carpeta_ia = os.path.dirname(art)
@@ -63,7 +80,7 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
         shutil.copy(os.path.join(ocr, nid, f"p{n:02d}.jpg"), destino)
         p = lecturas[n] = json.load(open(os.path.join(carpeta_ia, f"p{n:02d}.json")))
         paginas.append({"n": n, "img": f"paginas/{nid}/p{n:02d}.jpg", "hd": f"paginas/{nid}/p{n:02d}-hd.jpg",
-                        "ar": palabras[n]["ar"], "w": palabras[n]["w"], "impresa": p.get("pagina_impresa"),
+                        "ar": palabras[n]["ar"], "impresa": p.get("pagina_impresa"),
                         "modelo": p["modelo"], "legibilidad": p["legibilidad"], "notas": p.get("notas"),
                         "bloqueada": p.get("bloqueada", False), "ilustraciones": []})
 
@@ -103,8 +120,45 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
                               "seccion": None, "tipo": "ocr", "temas": [], "texto": p.get("texto_tesseract", ""),
                               "viene_de_pagina": None, "continua_en_pagina": None, "paginas": [n],
                               "bloqueada": p.get("bloqueada", False)})
+    # Casos para revisar
+    for n, p in lecturas.items():
+        if p.get("bloqueada"):
+            caso("bloqueadas", meta, n, "La IA no la transcribió por derechos de autor: queda el escaneo y el texto de Tesseract.")
+        elif p.get("incompleta"):
+            caso("incompletas", meta, n, "Ninguna lectura quedó completa. " + (p.get("omisiones") or p.get("notas") or "")[:200])
+        for b in p.get("bloques", []):
+            if b.get("ubicacion") == "sin_ubicar":
+                caso("bloques_sin_ubicar", meta, n, "Bloque en diagonal enderezado que no se pudo ubicar; quedó al comienzo del "
+                     "artículo. Empieza: «" + b["texto"][:90].replace("\n", " ") + "…»")
+        h = json.load(open(os.path.join(carpeta_ia, f"p{n:02d}.haiku.json"))) \
+            if os.path.exists(os.path.join(carpeta_ia, f"p{n:02d}.haiku.json")) else {}
+        for b in h.get("bloques_confirmados", []):
+            caso("diagonales", meta, n, f"Bloque en diagonal ({abs(b['angulo']):.0f}°) que se leyó enderezado: verificar que "
+                 "el texto esté completo y en su lugar.", zona=caja_en_pagina(b, 0.03))
+        confirmadas = [c["caja"] for c in h.get("bloques_confirmados", [])]
+        falsos = [b for b in h.get("bloques_girados", []) if b["caja"] not in confirmadas]
+        if falsos and "bloques_confirmados" in h:
+            caso("falsas_diagonales", meta, n, f"La IA marcó {len(falsos)} bloque(s) como girados, pero el ángulo medido "
+                 "dice que están derechos: se ignoraron. Verificar que no haya texto inclinado sin leer.",
+                 zona=caja_en_pagina(falsos[0], 0.03))
+        if os.path.exists(os.path.join(carpeta_ia, f"p{n:02d}.sonnet-trunca.json")) and not p.get("incompleta"):
+            caso("relecturas_descartadas", meta, n, "Sonnet abrevió esta página y se descartó su relectura; quedó la de "
+                 "Haiku. Verificar que el texto esté entero.")
+    for i, a in enumerate(articulos):
+        if a.get("union_sin_marca"):
+            caso("uniones_sin_marca", meta, a["paginas"][0], f"«{a['titulo'][:70]}» se unió entre las págs. "
+                 f"{', '.join(map(str, a['paginas']))} sin marca «pasa a pág.»: verificar que sea el mismo texto.", articulo=i)
+        if a.get("corregido_a_mano"):
+            caso("corregidos", meta, a["paginas"][0], f"«{a['titulo'][:70]}» tiene correcciones hechas a mano.", articulo=i)
+
+    # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
+    json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(sitio, "datos", f"{nid}-palabras.json"), "w"),
+              ensure_ascii=False, separators=(",", ":"))
     json.dump({"id": nid, "numero": meta["numero"], "fecha": meta["fecha"], "rollo": meta.get("rollo"),
                "paginas": paginas, "articulos": articulos},
               open(os.path.join(sitio, "datos", f"{nid}.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     print(f"{nid}: {len(paginas)} páginas, {len(articulos)} artículos, ilustraciones {total_ilus} detectadas -> "
           f"{sum(len(p['ilustraciones']) for p in paginas)} en el archivo gráfico")
+
+json.dump(revisar, open(os.path.join(sitio, "datos", "revisar.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+print(f"{len(revisar)} casos para revisar")

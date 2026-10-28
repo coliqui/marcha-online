@@ -103,7 +103,7 @@ CONTEXTO = """Contexto: esta transcripción es parte de la digitalización del a
 
 """
 COMPLETITUD = """
-- transcripcion_completa: true solo si transcribiste todo el texto legible de la página, sin abreviar, resumir ni omitir nada. Si por cualquier motivo dejaste algo afuera, false, y en omisiones explicá qué dejaste afuera y por qué. Nunca pongas [ilegible] en un texto que se puede leer: [ilegible] es solo para lo que no se ve.
+- transcripcion_completa: true si transcribiste entero el texto legible de todos los artículos de la página (notas, editoriales, críticas, cartas, cuentos, poemas, columnas). No cuentan como omisión: los avisos publicitarios, los encabezados y adornos, los crucigramas o tableros, ni la zona repetida donde se superponen las dos imágenes. false solo si abreviaste, resumiste o dejaste afuera texto de algún artículo; en ese caso, en omisiones explicá qué y por qué. Nunca pongas [ilegible] en un texto que se puede leer: [ilegible] es solo para lo que no se ve.
 """
 
 
@@ -380,7 +380,7 @@ def dudas(pag, ocr):
     frases = FRASES.findall(notas)
     if any(RESUMIDO.search(f) and "aviso" not in f.lower() for f in frases):
         return 4, "Haiku resumió en vez de transcribir"
-    if pag.get("transcripcion_completa") is False:
+    if pag.get("transcripcion_completa") is False and p_ia < 0.75 * p_ocr:
         return 4, f"Haiku declaró la transcripción incompleta: {(pag.get('omisiones') or '')[:80]}"
     if pag.get("bloques_confirmados"):
         return 3, f"{len(pag['bloques_confirmados'])} bloque(s) de texto en diagonal para enderezar"
