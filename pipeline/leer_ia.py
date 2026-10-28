@@ -60,6 +60,29 @@ class Ilustracion(BaseModel):
     caja: List[int]  # x0, y0, x1, y1 en milésimas de esa imagen
 
 
+class BloqueGirado(BaseModel):
+    imagen: Literal["arriba", "abajo"]
+    caja: List[int]  # x0, y0, x1, y1 en milésimas de esa imagen
+
+
+class Bloque(BaseModel):
+    texto: str
+    va_despues_de: Optional[str]  # últimas palabras del texto de la página tras las que va el bloque
+
+
+INSTRUCCIONES_BLOQUE = """Esta imagen es un bloque de texto de una página del semanario Marcha (Montevideo, {fecha}) que estaba impreso en diagonal; lo recortamos del escaneo y lo giramos para que se lea derecho. Puede incluir pedazos de otras cosas de la página alrededor: ignoralos y transcribí solo el bloque de texto que quedó derecho.
+
+- Transcribí palabra por palabra, en orden. Uní las palabras cortadas con guion al final del renglón y los renglones de un mismo párrafo; separá los párrafos con una línea en blanco.
+- Respetá la ortografía de época tal como está impresa.
+- Si una palabra o un tramo no se puede leer, escribí [ilegible] en su lugar. Nunca resumas, completes, unas frases ni inventes texto.
+- Si el bloque empieza o termina con una palabra cortada, dejala tal cual (por ejemplo "tra el casco" o "mayor par-").
+
+Este es el texto ya leído del resto de la página. En va_despues_de copiá, exactamente como aparecen ahí, las últimas cinco a ocho palabras tras las cuales va el bloque, según la continuidad del texto; si el bloque va al comienzo de un artículo o no lo podés saber, null.
+<pagina>
+{texto}
+</pagina>"""
+
+
 class Pagina(BaseModel):
     pagina_impresa: Optional[int]
     legibilidad: Literal["buena", "regular", "mala"]
@@ -67,6 +90,7 @@ class Pagina(BaseModel):
     notas: Optional[str]
     articulos: List[Articulo]
     ilustraciones: List[Ilustracion]
+    bloques_girados: List[BloqueGirado]
 
 
 INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. Te paso una página del semanario Marcha (Montevideo), número {numero}, del {fecha}; es la imagen {pagina} de {total} del escaneo. La página viene en dos imágenes: "arriba" (el 55 % superior) y "abajo" (el 55 % inferior); se superponen un poco.
@@ -78,7 +102,7 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - Decidí el orden de lectura por la continuidad del texto, no por la posición en la página: una palabra cortada con guion al final de un bloque ("mayor par-") sigue al comienzo de otro ("te de los…"), y una frase o un diálogo que queda abierto sigue donde tiene sentido. Antes de terminar, revisá cada paso de un bloque a otro.
 - Si un mismo artículo ocupa varios bloques de la página, devolvelo como un solo artículo, con los bloques ya en orden de lectura. Nunca lo partas en varios artículos con el mismo título.
 - Un artículo puede ocupar dos páginas enfrentadas, a veces con el título repartido entre las dos (una parte en cada página). En ese caso usá el título completo en las dos partes.
-- Si una palabra no se puede leer, escribí [ilegible]. No inventes texto.
+- Si una palabra o un tramo no se puede leer, escribí [ilegible] en su lugar. Nunca resumas, completes, unas frases ni inventes texto: un hueco marcado es mejor que un texto que parece verdadero.
 - No transcribas dos veces lo que aparece en la zona donde se superponen las dos imágenes.
 
 Para cada artículo:
@@ -96,10 +120,11 @@ Para la página:
   2. el humor gráfico (caricaturas, chistes, historietas), aunque no tenga firma.
   No incluyas fotos, mapas, avisos publicitarios ilustrados, ni dibujos sin firma que solo acompañan un artículo, ni filetes o adornos.
   Para cada una: descripción en una frase; firma: el nombre o seudónimo del dibujante tal como está escrito dentro o al pie del dibujo (por ejemplo "PELODURO", "J. E. Suárez", "Seoane"), o null si no tiene. Cuidado: el nombre de la persona dibujada o el epígrafe NO es la firma; eso va en retratado (a quién muestra el dibujo, si se sabe; si no, null). Decí en qué imagen está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas del ancho y alto de esa imagen. Si aparece en las dos imágenes, ponela una sola vez, en la que se vea entera.
+- bloques_girados: cada bloque de texto en diagonal o girado (no los dibujos ni los títulos sueltos), con la imagen en que está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas de esa imagen. Si no hay, una lista vacía.
 - legibilidad: "buena", "regular" o "mala". partes_sin_leer: true si dejaste algún bloque de texto sin transcribir completo, incluidos los textos en diagonal, girados o en recuadros que no pudiste leer enteros.
 - notas: problemas de lectura, o null. Mencioná siempre si hubo texto en diagonal, girado o en recuadros que te costó leer o que no leíste completo.
 
-Como ayuda, este es el texto que sacó un OCR automático de la misma página. Tiene muchos errores y mezcla columnas; usalo solo para confirmar palabras dudosas:
+{enderezados}Como ayuda, este es el texto que sacó un OCR automático de la misma página. Tiene muchos errores y mezcla columnas; usalo solo para confirmar palabras dudosas:
 <ocr>
 {ocr}
 </ocr>"""
@@ -161,7 +186,8 @@ def paginas_de(pdf, tmp):
             yield im.crop((w // 2, 0, w, h))
 
 
-def leer(cli, modelo, im, meta, n, total, ocr):
+def contenido_pagina(im, meta, n, total, ocr, enderezados=()):
+    """El mensaje que se manda por cada página: sus dos mitades, los bloques enderezados y las instrucciones."""
     w, h = im.size
     franjas = [im.crop((0, int(h * a), w, int(h * b))) for a, b in (ARRIBA, ABAJO)]
     contenido = [
@@ -169,9 +195,21 @@ def leer(cli, modelo, im, meta, n, total, ocr):
         {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(franjas[0])}},
         {"type": "text", "text": "Imagen \"abajo\":"},
         {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(franjas[1])}},
-        {"type": "text", "text": INSTRUCCIONES.format(numero=meta["id"], fecha=meta["fecha"], pagina=n,
-                                                      total=total, ocr=ocr or "(no hay)")},
     ]
+    for k, b in enumerate(enderezados, 1):
+        contenido += [{"type": "text", "text": f"Bloque enderezado {k}:"},
+                      {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(b)}}]
+    aviso = ("Las imágenes \"Bloque enderezado\" son los bloques de texto en diagonal o girados de esta misma página, "
+             "recortados del escaneo original y girados para que se lean derechos. Transcribí esos bloques a partir "
+             "de ellas, palabra por palabra, y ubicá su texto en el lugar que le corresponde dentro del artículo, "
+             "según la continuidad con los bloques de antes y de después.\n\n") if enderezados else ""
+    contenido.append({"type": "text", "text": INSTRUCCIONES.format(numero=meta["id"], fecha=meta["fecha"], pagina=n,
+                                                                  total=total, ocr=ocr or "(no hay)", enderezados=aviso)})
+    return contenido
+
+
+def leer(cli, modelo, im, meta, n, total, ocr, enderezados=()):
+    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados)
     t0 = time.time()
     r = cli.messages.parse(
         model=MODELOS[modelo][0],
@@ -184,6 +222,93 @@ def leer(cli, modelo, im, meta, n, total, ocr):
         raise RuntimeError(f"stop_reason={r.stop_reason}")
     return {**r.parsed_output.model_dump(), "modelo": modelo, "tokens_entrada": r.usage.input_tokens,
             "tokens_salida": r.usage.output_tokens, "segundos": round(time.time() - t0)}
+
+
+def leer_bloque(cli, modelo, recorte, meta, texto_pagina):
+    contenido = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(recorte)}},
+                 {"type": "text", "text": INSTRUCCIONES_BLOQUE.format(fecha=meta["fecha"], texto=texto_pagina)}]
+    r = cli.messages.parse(model=MODELOS[modelo][0], max_tokens=8000, output_config={"effort": "low"},
+                           messages=[{"role": "user", "content": contenido}], output_format=Bloque)
+    if r.stop_reason in ("refusal", "max_tokens") or r.parsed_output is None:
+        raise RuntimeError(f"stop_reason={r.stop_reason}")
+    return r.parsed_output.model_dump(), r.usage.input_tokens, r.usage.output_tokens
+
+
+def insertar_bloque(articulos, bloque):
+    """Pone el texto del bloque enderezado en su lugar dentro del artículo; si no encuentra dónde, lo agrega
+    al comienzo del artículo más largo de la página y lo marca para revisar."""
+    normal = lambda t: " ".join(t.split())
+    ancla = normal(bloque.get("va_despues_de") or "")
+    if ancla:
+        for a in articulos:
+            plano = normal(a["texto"])
+            if ancla in plano:
+                # se ubica el final del ancla en el texto original (con sus saltos de línea)
+                palabras_ancla, i, visto = ancla.split(), 0, 0
+                for m in re.finditer(r"\S+", a["texto"]):
+                    if m.group(0) == palabras_ancla[visto]:
+                        visto += 1
+                        if visto == len(palabras_ancla):
+                            i = m.end()
+                            break
+                    else:
+                        visto = 1 if m.group(0) == palabras_ancla[0] else 0
+                if i:
+                    a["texto"] = a["texto"][:i] + "\n\n" + bloque["texto"].strip() + "\n\n" + a["texto"][i:].lstrip()
+                    return True
+    if articulos:
+        a = max(articulos, key=lambda x: len(x["texto"]))
+        a["texto"] = bloque["texto"].strip() + "\n\n" + a["texto"]
+        a["bloque_sin_ubicar"] = True
+    return False
+
+
+def enderezar(im, bloque, margen=0.25):
+    """Recorta un bloque girado de la página entera (resolución original) y lo gira hasta que los
+    renglones queden horizontales.
+
+    El margen es amplio porque las cajas que da el modelo son aproximadas. Como el bloque ya fue señalado
+    como girado, no se prueban los ángulos cercanos a 0° ni a 90°: así no gana el texto derecho que suele
+    quedar dentro del recorte (columnas vecinas, títulos), ni esas columnas puestas de costado.
+    """
+    import cv2, numpy as np
+    a, b = ARRIBA if bloque["imagen"] == "arriba" else ABAJO
+    x0, y0, x1, y1 = (max(0, min(1000, v)) / 1000 for v in bloque["caja"])
+    w, h = im.size
+    caja = (max(0, x0 - margen) * w, max(0, a + y0 * (b - a) - margen) * h,
+            min(1, x1 + margen) * w, min(1, a + y1 * (b - a) + margen) * h)
+    recorte = im.crop(tuple(int(v) for v in caja))
+    chico = recorte.copy()
+    chico.thumbnail((900, 900))
+    _, tinta = cv2.threshold(np.array(chico), 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    cw, ch = tinta.shape[1], tinta.shape[0]
+
+    # 1. Las letras de cada palabra se juntan en una mancha alargada en el sentido del renglón; cada
+    #    mancha vota por su ángulo con su largo. Gana el ángulo inclinado con más largo total.
+    manchas = cv2.dilate(tinta, np.ones((3, 3), np.uint8), iterations=1)
+    votos = np.zeros(181)
+    for c in cv2.findContours(manchas, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]:
+        puntos = cv2.boxPoints(cv2.minAreaRect(c))
+        lados = [puntos[1] - puntos[0], puntos[2] - puntos[1]]
+        largo, corto = sorted(lados, key=lambda v: -np.hypot(*v))
+        if np.hypot(*largo) < 25 or np.hypot(*largo) < 2.5 * max(np.hypot(*corto), 1):
+            continue
+        angulo = np.degrees(np.arctan2(largo[1], largo[0]))  # y hacia abajo: renglón que baja = positivo
+        angulo = (angulo + 90) % 180 - 90
+        if 6 <= abs(angulo) <= 84:
+            votos[int(round(angulo)) + 90] += np.hypot(*largo)
+    if not votos.any():
+        return recorte, 0.0
+    votos = np.convolve(votos, np.ones(5), mode="same")
+    candidato = int(np.argmax(votos)) - 90
+
+    # 2. Ajuste fino cerca de ese ángulo: donde las sumas por fila de la tinta varían más.
+    def nitidez(angulo):
+        m = cv2.getRotationMatrix2D((cw / 2, ch / 2), angulo, 1)
+        return float(np.var(cv2.warpAffine(tinta, m, (cw, ch)).sum(axis=1)))
+
+    mejor = max((candidato + d / 4 for d in range(-12, 13)), key=nitidez)
+    return recorte.rotate(mejor, resample=Image.BICUBIC, expand=True, fillcolor=255), mejor
 
 
 def palabras(texto):
@@ -208,6 +333,8 @@ def dudas(pag, ocr):
     frases = FRASES.findall(notas)
     if any(RESUMIDO.search(f) and "aviso" not in f.lower() for f in frases):
         return 4, "Haiku resumió en vez de transcribir"
+    if pag.get("bloques_girados"):
+        return 3, f"{len(pag['bloques_girados'])} bloque(s) de texto girado para enderezar"
     if any(TEXTO_GIRADO.search(f) and not NO_CUENTA.search(f) and (pag["partes_sin_leer"] or LECTURA_PARCIAL.search(f))
            for f in frases):
         return 3, "texto en diagonal o girado leído a medias"
@@ -347,6 +474,10 @@ def procesar(cli, pdf, salida, carpeta_ocr, caja):
         f = os.path.join(carpeta_ocr, meta["id"], f"p{n:02d}.txt")
         ocr[n] = open(f, encoding="utf-8").read() if os.path.exists(f) else ""
 
+    def haiku_previo(n):
+        archivo = f"{destino}/p{n:02d}.haiku.json"
+        return json.load(open(archivo)) if os.path.exists(archivo) else None
+
     def pasada(modelo, n, estimado):
         archivo = f"{destino}/p{n:02d}.{modelo}.json"
         if os.path.exists(archivo):
@@ -357,8 +488,37 @@ def procesar(cli, pdf, salida, carpeta_ocr, caja):
         if not caja.alcanza(estimado):
             return None
         try:
+            enderezados = []
+            if modelo == "sonnet" and haiku_previo(n):
+                for bloque in haiku_previo(n).get("bloques_girados", []):
+                    recorte, angulo = enderezar(imagenes[n - 1], bloque)
+                    recorte.save(f"{destino}/p{n:02d}-enderezado-{len(enderezados) + 1}.jpg", quality=85)
+                    enderezados.append(recorte)
             datos = leer(cli, modelo, imagenes[n - 1], meta, n, total, ocr[n])
             caja.sumar(modelo, datos["tokens_entrada"], datos["tokens_salida"])
+            previa = haiku_previo(n) if modelo == "sonnet" else None
+            if previa and not previa.get("bloqueada"):
+                # una relectura con mucho menos texto que la de Haiku quedó trunca: se reintenta una vez
+                minimo = 0.5 * sum(palabras(a["texto"]) for a in previa["articulos"])
+                if sum(palabras(a["texto"]) for a in datos["articulos"]) < minimo and caja.alcanza(estimado):
+                    print(f"  {meta['id']} sonnet pág. {n}: lectura trunca, reintento", flush=True)
+                    datos = leer(cli, modelo, imagenes[n - 1], meta, n, total, ocr[n])
+                    caja.sumar(modelo, datos["tokens_entrada"], datos["tokens_salida"])
+                if sum(palabras(a["texto"]) for a in datos["articulos"]) < minimo:
+                    print(f"  {meta['id']} sonnet pág. {n}: otra vez trunca, queda la lectura de Haiku", flush=True)
+                    json.dump({**datos, "trunca": True}, open(f"{destino}/p{n:02d}.sonnet-trunca.json", "w"),
+                              ensure_ascii=False, indent=1)
+                    return None
+            # después, cada bloque girado se lee aparte, ya enderezado, y se ubica en su artículo
+            for recorte in enderezados:
+                texto_pagina = "\n\n".join(a["texto"] for a in datos["articulos"])
+                bloque, ent, sal = leer_bloque(cli, modelo, recorte, meta, texto_pagina)
+                caja.sumar(modelo, ent, sal)
+                datos["tokens_entrada"] += ent
+                datos["tokens_salida"] += sal
+                bloque["ubicado"] = insertar_bloque(datos["articulos"], bloque)
+                datos.setdefault("bloques", []).append(bloque)
+            datos["bloques_enderezados"] = len(enderezados)
         except anthropic.BadRequestError as e:
             if "content filtering" not in str(e.message):
                 print(f"  {meta['id']} {modelo} pág. {n}: error {e.message}", flush=True)
