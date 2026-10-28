@@ -14,7 +14,7 @@ Todo el estado queda en CARPETA_LECTURA: etapa.json (números elegidos), lotes.j
 mandados y su estado), gasto.json (gasto acumulado, que no puede pasar el tope) y, por número,
 las mismas lecturas que deja leer_ia.py (pNN.haiku.json, pNN.sonnet.json, pNN.json, articulos.json).
 """
-import argparse, glob, json, os, sys, tempfile, time
+import argparse, glob, json, os, re, sys, tempfile, time
 from datetime import datetime
 
 import anthropic
@@ -22,11 +22,11 @@ from anthropic.types.message_create_params import MessageCreateParamsNonStreamin
 from anthropic.types.messages.batch_create_params import Request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, Pagina, cliente, confirmar_bloques, contenido_pagina,
-                     dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de)
+from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, PaginaCompleta, cliente, confirmar_bloques,
+                     contenido_pagina, dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de)
 from ocr_numero import metadatos
 
-ESQUEMA = anthropic.transform_schema(Pagina)
+ESQUEMA = anthropic.transform_schema(PaginaCompleta)  # desde la etapa 2: declara si la transcripción está completa
 ESQUEMA_BLOQUE = anthropic.transform_schema(Bloque)
 PAGINAS_POR_LOTE = 80   # cada página pesa ~2 MB en el pedido (imágenes en base64); un lote admite hasta 256 MB
 COSTO_ESTIMADO = {"haiku": 0.0020, "sonnet": 0.040, "bloque": 0.025}  # por pedido, con descuento de lotes y margen
@@ -89,7 +89,7 @@ class Numero:
 
 def pedido(numero, n, modelo):
     """El pedido de una página entera para el lote (Haiku o Sonnet)."""
-    contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n])
+    contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n], completa=True)
     return Request(custom_id=f"{numero.id}__{n}__{modelo}", params=MessageCreateParamsNonStreaming(
         model=MODELOS[modelo][0], max_tokens=32000, messages=[{"role": "user", "content": contenido}],
         output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}}))
@@ -109,6 +109,35 @@ def pedidos_bloques(numero, n):
             model=MODELOS["sonnet"][0], max_tokens=8000, messages=[{"role": "user", "content": contenido}],
             output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA_BLOQUE}})))
     return pedidos
+
+
+# Solo cuenta lo que la lectura misma declara abreviado o parcial; omitir un aviso o un crucigrama no.
+ABREVIADA = re.compile(r"abreviad|resumid|transcripci[oó]n (?:parcial|incompleta|no completa)|no (?:est[aá] )?complet[ao]", re.I)
+
+
+def incompleta(lectura):
+    """La lectura declara (en su campo o en sus notas) que dejó texto afuera."""
+    return lectura.get("transcripcion_completa") is False or bool(ABREVIADA.search(lectura.get("notas") or ""))
+
+
+def elegir_lectura(num, n):
+    """La mejor lectura de una página: Sonnet completo; si no, Haiku completo; si ninguna está completa,
+    la más larga, marcada "incompleta" y con el texto de Tesseract al lado para que siga siendo buscable."""
+    lecturas = [x for x in (num.lectura(n, "sonnet"), num.lectura(n, "haiku")) if x]
+    validas = [x for x in lecturas if not x.get("bloqueada")]
+    if lecturas and not validas:
+        return {"bloqueada": True}  # derechos de autor: finalizar() deja el texto de Tesseract
+    for x in validas:
+        if not incompleta(x):
+            return x
+    if not validas:
+        return None
+    x = max(validas, key=lambda v: sum(palabras(a["texto"]) for a in v["articulos"]))
+    return {**x, "incompleta": True, "texto_tesseract": num.ocr[n]}
+
+
+def finalizar_numero(num):
+    finalizar(num.meta, num.destino, num.total, num.ocr, {n: elegir_lectura(num, n) for n in range(1, num.total + 1)})
 
 
 def costo(modelo, entrada, salida):
@@ -159,16 +188,16 @@ def seguir(rollos, ocr, lectura, tope):
                     problemas.append(f"{nid} pág. {n} {modelo}: respuesta inválida {str(e)[:80]}")
                     continue
                 leida = num.lectura(n, "sonnet")
-                bloque["ubicado"] = insertar_bloque(leida["articulos"], bloque)
+                bloque["ubicacion"] = insertar_bloque(leida["articulos"], bloque)
                 leida.setdefault("bloques", []).append(bloque)
                 leida["tokens_entrada"] += msg.usage.input_tokens
                 leida["tokens_salida"] += msg.usage.output_tokens
-                if not bloque["ubicado"]:
+                if bloque["ubicacion"] == "sin_ubicar":
                     problemas.append(f"{nid} pág. {n}: bloque enderezado sin ubicar, se puso al comienzo (revisar)")
                 guardar(f"{num.destino}/p{n:02d}.sonnet.json", leida)
                 continue
             try:
-                datos = Pagina.model_validate_json(texto).model_dump()
+                datos = PaginaCompleta.model_validate_json(texto).model_dump()
             except Exception as e:
                 fallas[r.custom_id] = fallas.get(r.custom_id, 0) + 1
                 problemas.append(f"{nid} pág. {n} {modelo}: respuesta inválida ({msg.stop_reason}) {str(e)[:80]}")
@@ -272,13 +301,23 @@ def seguir(rollos, ocr, lectura, tope):
         if os.path.exists(f"{num.destino}/articulos.json"):
             listos += 1
             continue
-        lecturas = {}
-        for n in range(1, num.total + 1):
-            s, h = num.lectura(n, "sonnet"), num.lectura(n, "haiku")
-            lecturas[n] = s if s and not s.get("bloqueada") else h
-        finalizar(num.meta, num.destino, num.total, num.ocr, lecturas)
+        finalizar_numero(num)
         listos += 1
     print(f"{listos} de {len(numeros)} números terminados; gastado US$ {gasto['usd']:.2f} de US$ {tope:.2f}")
+
+
+def refinalizar(rollos, ocr, lectura):
+    """Vuelve a armar la versión final de los números ya terminados (por ejemplo, tras cambiar las reglas)."""
+    etapa = cargar(os.path.join(lectura, "etapa.json"), {"numeros": []})
+    hechos = incompletas = 0
+    for x in etapa["numeros"]:
+        num = Numero(x, rollos, ocr, lectura)
+        if os.path.exists(f"{num.destino}/articulos.json"):
+            finalizar_numero(num)
+            hechos += 1
+            incompletas += sum(1 for n in range(1, num.total + 1)
+                               if json.load(open(f"{num.destino}/p{n:02d}.json")).get("incompleta"))
+    print(f"{hechos} números rehechos; {incompletas} páginas marcadas como incompletas (para revisar)")
 
 
 def estado(lectura):
@@ -292,12 +331,14 @@ def estado(lectura):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("accion", choices=["elegir", "seguir", "estado"])
+    ap.add_argument("accion", choices=["elegir", "seguir", "estado", "refinalizar"])
     ap.add_argument("carpetas", nargs="+")
     ap.add_argument("--tope", type=float, default=100.0)
     a = ap.parse_args()
     if a.accion == "elegir":
         elegir(a.carpetas[0], a.carpetas[1], int(a.carpetas[2]))
+    elif a.accion == "refinalizar":
+        refinalizar(*a.carpetas[:3])
     elif a.accion == "seguir":
         seguir(*a.carpetas[:3], a.tope)
     else:

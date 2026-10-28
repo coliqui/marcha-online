@@ -15,7 +15,7 @@ Las páginas que el filtro de Anthropic bloquea quedan con el texto de Tesseract
 Salida por número: CARPETA/<id>/pNN.json (versión final de cada página),
 pNN.haiku.json / pNN.sonnet.json (lecturas crudas), articulos.json y costo.json.
 """
-import argparse, base64, glob, io, json, os, re, subprocess, sys, tempfile, time
+import argparse, base64, glob, io, json, os, re, subprocess, sys, tempfile, time, unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from typing import List, Literal, Optional
@@ -91,6 +91,20 @@ class Pagina(BaseModel):
     articulos: List[Articulo]
     ilustraciones: List[Ilustracion]
     bloques_girados: List[BloqueGirado]
+
+
+class PaginaCompleta(Pagina):
+    transcripcion_completa: bool
+    omisiones: Optional[str]
+
+
+# Agregados a las instrucciones (desde la etapa 2): contexto verdadero del trabajo y declaración de completitud.
+CONTEXTO = """Contexto: esta transcripción es parte de la digitalización del archivo completo del semanario Marcha (1939-1974) que realizan los herederos de su fundador, Carlos Quijano, para ofrecerlo en consulta pública y gratuita. El objetivo es el texto íntegro de cada página, tal como fue impreso: es un archivo, no un resumen. La respuesta puede ser muy larga (una página de Marcha suele tener entre 1.500 y 3.000 palabras); transcribila entera.
+
+"""
+COMPLETITUD = """
+- transcripcion_completa: true solo si transcribiste todo el texto legible de la página, sin abreviar, resumir ni omitir nada. Si por cualquier motivo dejaste algo afuera, false, y en omisiones explicá qué dejaste afuera y por qué. Nunca pongas [ilegible] en un texto que se puede leer: [ilegible] es solo para lo que no se ve.
+"""
 
 
 INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. Te paso una página del semanario Marcha (Montevideo), número {numero}, del {fecha}; es la imagen {pagina} de {total} del escaneo. La página viene en dos imágenes: "arriba" (el 55 % superior) y "abajo" (el 55 % inferior); se superponen un poco.
@@ -186,7 +200,7 @@ def paginas_de(pdf, tmp):
             yield im.crop((w // 2, 0, w, h))
 
 
-def contenido_pagina(im, meta, n, total, ocr, enderezados=()):
+def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False):
     """El mensaje que se manda por cada página: sus dos mitades, los bloques enderezados y las instrucciones."""
     w, h = im.size
     franjas = [im.crop((0, int(h * a), w, int(h * b))) for a, b in (ARRIBA, ABAJO)]
@@ -203,20 +217,24 @@ def contenido_pagina(im, meta, n, total, ocr, enderezados=()):
              "recortados del escaneo original y girados para que se lean derechos. Transcribí esos bloques a partir "
              "de ellas, palabra por palabra, y ubicá su texto en el lugar que le corresponde dentro del artículo, "
              "según la continuidad con los bloques de antes y de después.\n\n") if enderezados else ""
-    contenido.append({"type": "text", "text": INSTRUCCIONES.format(numero=meta["id"], fecha=meta["fecha"], pagina=n,
-                                                                  total=total, ocr=ocr or "(no hay)", enderezados=aviso)})
+    texto = INSTRUCCIONES.format(numero=meta["id"], fecha=meta["fecha"], pagina=n, total=total,
+                                 ocr=ocr or "(no hay)", enderezados=aviso)
+    if completa:
+        corte = texto.index("\nComo ayuda, este es el texto")
+        texto = CONTEXTO + texto[:corte] + COMPLETITUD + texto[corte:]
+    contenido.append({"type": "text", "text": texto})
     return contenido
 
 
-def leer(cli, modelo, im, meta, n, total, ocr, enderezados=()):
-    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados)
+def leer(cli, modelo, im, meta, n, total, ocr, enderezados=(), esfuerzo="low", completa=False):
+    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados, completa)
     t0 = time.time()
     r = cli.messages.parse(
         model=MODELOS[modelo][0],
         max_tokens=16000,
-        output_config={"effort": "low"},
+        output_config={"effort": esfuerzo},
         messages=[{"role": "user", "content": contenido}],
-        output_format=Pagina,
+        output_format=PaginaCompleta if completa else Pagina,
     )
     if r.stop_reason in ("refusal", "max_tokens") or r.parsed_output is None:
         raise RuntimeError(f"stop_reason={r.stop_reason}")
@@ -234,33 +252,47 @@ def leer_bloque(cli, modelo, recorte, meta, texto_pagina):
     return r.parsed_output.model_dump(), r.usage.input_tokens, r.usage.output_tokens
 
 
+def _palabras_norm(texto):
+    return [m.group(0).lower() for m in re.finditer(r"\w+", unicodedata.normalize("NFC", texto))]
+
+
+def ya_transcripto(articulos, bloque, umbral=0.6):
+    """El bloque ya estaba en la lectura de la página (la IA a veces lo transcribe igual): se comparan
+    secuencias de 4 palabras, sin tildes de puntuación ni mayúsculas."""
+    pb = _palabras_norm(bloque["texto"])
+    if len(pb) < 8:
+        return False
+    texto = _palabras_norm(" ".join(a["texto"] for a in articulos))
+    grupos = {tuple(texto[i:i + 4]) for i in range(len(texto) - 3)}
+    propios = [tuple(pb[i:i + 4]) for i in range(len(pb) - 3)]
+    return sum(g in grupos for g in propios) / len(propios) >= umbral
+
+
 def insertar_bloque(articulos, bloque):
-    """Pone el texto del bloque enderezado en su lugar dentro del artículo; si no encuentra dónde, lo agrega
-    al comienzo del artículo más largo de la página y lo marca para revisar."""
-    normal = lambda t: " ".join(t.split())
-    ancla = normal(bloque.get("va_despues_de") or "")
-    if ancla:
+    """Pone el texto del bloque enderezado en su lugar dentro del artículo. Busca las últimas palabras que
+    indicó la IA (sin puntuación ni mayúsculas; la última puede estar cortada). Si el bloque ya estaba
+    transcripto, no lo repite. Si no encuentra dónde va, lo agrega al comienzo del artículo más largo de la
+    página y lo marca para revisar. Devuelve "ubicado", "ya_estaba" o "sin_ubicar"."""
+    if ya_transcripto(articulos, bloque):
+        return "ya_estaba"
+    ancla = _palabras_norm(bloque.get("va_despues_de") or "")[-5:]
+    if len(ancla) >= 2:
         for a in articulos:
-            plano = normal(a["texto"])
-            if ancla in plano:
-                # se ubica el final del ancla en el texto original (con sus saltos de línea)
-                palabras_ancla, i, visto = ancla.split(), 0, 0
-                for m in re.finditer(r"\S+", a["texto"]):
-                    if m.group(0) == palabras_ancla[visto]:
-                        visto += 1
-                        if visto == len(palabras_ancla):
-                            i = m.end()
-                            break
-                    else:
-                        visto = 1 if m.group(0) == palabras_ancla[0] else 0
-                if i:
-                    a["texto"] = a["texto"][:i] + "\n\n" + bloque["texto"].strip() + "\n\n" + a["texto"][i:].lstrip()
-                    return True
+            tokens = list(re.finditer(r"\w+", a["texto"]))
+            bajas = [t.group(0).lower() for t in tokens]
+            for i in range(len(bajas) - len(ancla) + 1):
+                if bajas[i:i + len(ancla) - 1] == ancla[:-1] and bajas[i + len(ancla) - 1].startswith(ancla[-1]):
+                    fin = tokens[i + len(ancla) - 1].end()
+                    # se avanza hasta el final de la palabra y de su puntuación
+                    while fin < len(a["texto"]) and not a["texto"][fin].isspace():
+                        fin += 1
+                    a["texto"] = a["texto"][:fin] + "\n\n" + bloque["texto"].strip() + "\n\n" + a["texto"][fin:].lstrip()
+                    return "ubicado"
     if articulos:
         a = max(articulos, key=lambda x: len(x["texto"]))
         a["texto"] = bloque["texto"].strip() + "\n\n" + a["texto"]
         a["bloque_sin_ubicar"] = True
-    return False
+    return "sin_ubicar"
 
 
 def enderezar(im, bloque, margen=0.25):
@@ -348,6 +380,8 @@ def dudas(pag, ocr):
     frases = FRASES.findall(notas)
     if any(RESUMIDO.search(f) and "aviso" not in f.lower() for f in frases):
         return 4, "Haiku resumió en vez de transcribir"
+    if pag.get("transcripcion_completa") is False:
+        return 4, f"Haiku declaró la transcripción incompleta: {(pag.get('omisiones') or '')[:80]}"
     if pag.get("bloques_confirmados"):
         return 3, f"{len(pag['bloques_confirmados'])} bloque(s) de texto en diagonal para enderezar"
     if any(TEXTO_GIRADO.search(f) and not NO_CUENTA.search(f) and (pag["partes_sin_leer"] or LECTURA_PARCIAL.search(f))
@@ -531,7 +565,7 @@ def procesar(cli, pdf, salida, carpeta_ocr, caja):
                 caja.sumar(modelo, ent, sal)
                 datos["tokens_entrada"] += ent
                 datos["tokens_salida"] += sal
-                bloque["ubicado"] = insertar_bloque(datos["articulos"], bloque)
+                bloque["ubicacion"] = insertar_bloque(datos["articulos"], bloque)
                 datos.setdefault("bloques", []).append(bloque)
             datos["bloques_enderezados"] = len(enderezados)
         except anthropic.BadRequestError as e:
