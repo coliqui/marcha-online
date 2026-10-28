@@ -2,3 +2,14 @@ salida/
 *.pdf
 __pycache__/
 .DS_Store
+
+# entornos de Python
+.venv/
+.venv-ia/
+# datos generados y secretos: nunca al repositorio
+*.sqlite
+*.sqlite-journal
+prueba-ia*/
+.marcha-clave*
+*.key
+.env
