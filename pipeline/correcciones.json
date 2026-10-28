@@ -1,7 +1,14 @@
 {
- "_explicacion": "Correcciones hechas a mano sobre la lectura con IA. Se aplican cada vez que se regeneran los artículos (leer_ia.py y reunir.py). Cada una identifica el artículo por número, primera página y, si hace falta, tipo; 'cambios' reemplaza esos campos.",
+ "_explicacion": "Correcciones hechas a mano sobre la lectura con IA. Se aplican cada vez que se regeneran los artículos (leer_ia.py y reunir.py). Cada una identifica el artículo por número, primera página y, si hace falta, tipo. 'cambios' reemplaza esos campos; 'reemplazos' corrige el texto: pares [texto leído, texto correcto].",
  "correcciones": [
-  {"numero": "30", "pagina": 2, "tipo": "cuento", "cambios": {"titulo": "El Bar"},
-   "motivo": "Título indicado por Coli Quijano (28/10/2026); la IA lo leyó como \"EL BAR DE SAN MIGUEL\"."}
+  {"numero": "30", "pagina": 2, "tipo": "cuento",
+   "cambios": {"titulo": "El bar de San Miguel"},
+   "reemplazos": [
+    ["¿Porque eres de pájaros por ti?", "¿Porque eres de Panamá voy a dejarme poner nombres de pájaros por ti?"],
+    ["De tiempo en tiempo ex penia, su torso", "De tiempo en tiempo exponía su torso"],
+    ["Aplastados cons-\n\nDel lado de estribor", "Aplastados contra el casco como nueces secas. Del lado de estribor"],
+    ["Al primer torpedo se abrirá contra el casco como nueces secas.", "Al primer torpedo se abriría en dos..."]
+   ],
+   "motivo": "Título confirmado por Coli Quijano (28/10/2026). Reemplazos verificados contra el escaneo: una línea omitida en la diagonal de la pág. 2, una palabra mal leída, y el final de la pág. 2 (\"Aplastados cons-\") que sigue en la diagonal de la pág. 3 (\"tra el casco como nueces secas\"). La diagonal de la pág. 3 sigue incompleta: revisar a mano."}
  ]
 }

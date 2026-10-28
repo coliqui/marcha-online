@@ -77,7 +77,7 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - Incluí también los bloques en diagonal, en recuadros o en tipografía rara. Un bloque en diagonal o girado casi nunca es un texto aparte: suele ser el comienzo o un tramo de un artículo de la misma página y se lee en el lugar que le corresponde dentro de ese artículo.
 - Decidí el orden de lectura por la continuidad del texto, no por la posición en la página: una palabra cortada con guion al final de un bloque ("mayor par-") sigue al comienzo de otro ("te de los…"), y una frase o un diálogo que queda abierto sigue donde tiene sentido. Antes de terminar, revisá cada paso de un bloque a otro.
 - Si un mismo artículo ocupa varios bloques de la página, devolvelo como un solo artículo, con los bloques ya en orden de lectura. Nunca lo partas en varios artículos con el mismo título.
-- Un artículo puede ocupar dos páginas enfrentadas. En ese caso poné el mismo título en las dos partes.
+- Un artículo puede ocupar dos páginas enfrentadas, a veces con el título repartido entre las dos (una parte en cada página). En ese caso usá el título completo en las dos partes.
 - Si una palabra no se puede leer, escribí [ilegible]. No inventes texto.
 - No transcribas dos veces lo que aparece en la zona donde se superponen las dos imágenes.
 
@@ -222,7 +222,8 @@ CORRECCIONES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcc
 def aplicar_correcciones(nid, articulos):
     """Correcciones hechas a mano (correcciones.json): sobreviven a cada nueva lectura o unión.
 
-    Cada corrección identifica un artículo por número y primera página, y reemplaza los campos indicados.
+    Cada corrección identifica un artículo por número y primera página, reemplaza los campos de
+    "cambios" y aplica los "reemplazos" de texto ([texto leído, texto correcto]) en orden.
     """
     if not os.path.exists(CORRECCIONES):
         return articulos
@@ -231,7 +232,12 @@ def aplicar_correcciones(nid, articulos):
             continue
         for a in articulos:
             if a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"]):
-                a.update(c["cambios"])
+                a.update(c.get("cambios", {}))
+                for viejo, nuevo in c.get("reemplazos", []):
+                    if viejo in a["texto"]:
+                        a["texto"] = a["texto"].replace(viejo, nuevo, 1)
+                    else:
+                        print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {viejo!r}")
                 a["corregido_a_mano"] = True
     return articulos
 
