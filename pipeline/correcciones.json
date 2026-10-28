@@ -1,0 +1,7 @@
+{
+ "_explicacion": "Correcciones hechas a mano sobre la lectura con IA. Se aplican cada vez que se regeneran los artículos (leer_ia.py y reunir.py). Cada una identifica el artículo por número, primera página y, si hace falta, tipo; 'cambios' reemplaza esos campos.",
+ "correcciones": [
+  {"numero": "30", "pagina": 2, "tipo": "cuento", "cambios": {"titulo": "El Bar"},
+   "motivo": "Título indicado por Coli Quijano (28/10/2026); la IA lo leyó como \"EL BAR DE SAN MIGUEL\"."}
+ ]
+}

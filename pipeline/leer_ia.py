@@ -77,7 +77,7 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - Incluí también los bloques en diagonal, en recuadros o en tipografía rara. Un bloque en diagonal o girado casi nunca es un texto aparte: suele ser el comienzo o un tramo de un artículo de la misma página y se lee en el lugar que le corresponde dentro de ese artículo.
 - Decidí el orden de lectura por la continuidad del texto, no por la posición en la página: una palabra cortada con guion al final de un bloque ("mayor par-") sigue al comienzo de otro ("te de los…"), y una frase o un diálogo que queda abierto sigue donde tiene sentido. Antes de terminar, revisá cada paso de un bloque a otro.
 - Si un mismo artículo ocupa varios bloques de la página, devolvelo como un solo artículo, con los bloques ya en orden de lectura. Nunca lo partas en varios artículos con el mismo título.
-- Un artículo puede ocupar dos páginas enfrentadas, con el título repartido entre las dos (por ejemplo "EL BAR" en una y "DE SAN MIGUEL" en la otra). En ese caso usá el título completo en las dos partes.
+- Un artículo puede ocupar dos páginas enfrentadas. En ese caso poné el mismo título en las dos partes.
 - Si una palabra no se puede leer, escribí [ilegible]. No inventes texto.
 - No transcribas dos veces lo que aparece en la zona donde se superponen las dos imágenes.
 
@@ -214,6 +214,26 @@ def dudas(pag, ocr):
     if pag["legibilidad"] == "mala" and pag["partes_sin_leer"]:
         return 2, "página muy poco legible con partes sin leer"
     return None
+
+
+CORRECCIONES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")
+
+
+def aplicar_correcciones(nid, articulos):
+    """Correcciones hechas a mano (correcciones.json): sobreviven a cada nueva lectura o unión.
+
+    Cada corrección identifica un artículo por número y primera página, y reemplaza los campos indicados.
+    """
+    if not os.path.exists(CORRECCIONES):
+        return articulos
+    for c in json.load(open(CORRECCIONES))["correcciones"]:
+        if c["numero"] != nid:
+            continue
+        for a in articulos:
+            if a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"]):
+                a.update(c["cambios"])
+                a["corregido_a_mano"] = True
+    return articulos
 
 
 PROPIOS = {"cuento", "poema", "aviso", "humor", "pie de foto", "carta"}  # tipos que solo siguen en uno igual
@@ -368,7 +388,7 @@ def finalizar(meta, destino, total, ocr, lecturas):
                    "bloqueada": bool(pag and pag.get("bloqueada"))}
         json.dump(pag, open(f"{destino}/p{n:02d}.json", "w"), ensure_ascii=False, indent=1)
         paginas.append((n, pag))
-    articulos = unir_continuaciones(paginas)
+    articulos = aplicar_correcciones(meta["id"], unir_continuaciones(paginas))
     json.dump({**meta, "articulos": articulos}, open(f"{destino}/articulos.json", "w"), ensure_ascii=False, indent=1)
     return paginas, articulos
 
