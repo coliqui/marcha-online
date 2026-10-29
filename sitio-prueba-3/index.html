@@ -109,6 +109,16 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .caso { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); max-width: 960px }
 .caso.hecho { opacity: .5 }
 .caso a { font: 700 13px var(--display); text-transform: uppercase; letter-spacing: .06em }
+.btnnota { margin-left: auto; font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 4px 12px; cursor: pointer; align-self: center; white-space: nowrap }
+.nota { background: var(--sheet); border: 1px dashed var(--muted); padding: 10px 12px; display: grid; gap: 6px }
+.nota textarea { width: 100%; min-height: 70px; font: 15px var(--body); background: var(--paper); color: var(--ink); border: 1px solid var(--rule); padding: 6px }
+.nota .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px }
+.nota select, .nota button { font: 600 13px var(--display); padding: 4px 8px }
+.nota .ok { color: #2e7d32; font-weight: 700 }
+.nota .mal { color: var(--ilus); font-weight: 700 }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; padding: 16px; z-index: 20 }
+.modal .nota { max-width: 640px; width: 100%; border-style: solid }
+.notaitem { padding: 10px 0; border-bottom: 1px solid var(--rule); max-width: 900px }
 footer .wrap { padding-block: 0 32px; font-size: 13px; color: var(--muted) }
 footer p { max-width: 80ch }
 </style>
@@ -122,6 +132,8 @@ footer p { max-width: 80ch }
     <a href="#/autores" data-tab="autores">Autores y dibujantes</a>
     <a href="#/grafico" data-tab="grafico">Archivo gráfico</a>
     <a href="#/revisar" data-tab="revisar">Revisión</a>
+    <a href="#/notas" data-tab="notas">Mis notas</a>
+    <button type="button" id="notaGeneral" class="btnnota">+ Nota general</button>
   </nav>
 </div></header>
 <main><div class="wrap" id="app"><p class="muted">Cargando…</p></div></main>
@@ -138,7 +150,7 @@ const fecha = f => { const [a, m, d] = f.split("-"); return `${+d} de ${MESES[m 
 const EJEMPLOS = ["Peloduro", "Mussolini", "Clemenceau", "teatro", "Cortázar", "caricatura", "Cuba"];
 const OSD_IMG = "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/";
 
-let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [], REVISAR_FALLO = false;
+let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [], REVISAR_FALLO = false, REFS = [];
 let visor = null;
 
 // Una firma ("J.E.SUAREZ", "Peloduro", "Constantín") -> clave de la persona, usando la tabla de seudónimos.
@@ -157,6 +169,7 @@ function persona(firma) {
 async function cargar() {
   const [numeros, alias] = await Promise.all(["datos/numeros.json", "datos/alias.json"].map(u => fetch(u).then(r => r.json())));
   NUMEROS = numeros;
+  REFS = await fetch("datos/referencias.json").then(r => r.ok ? r.json() : []).catch(() => []);
   REVISAR = await fetch("datos/revisar.json").then(r => r.ok ? r.json() : Promise.reject()).catch(() => { REVISAR_FALLO = true; return []; });
   for (const [canon, variantes] of Object.entries(alias)) {
     if (canon.startsWith("_")) continue;
@@ -249,6 +262,17 @@ function vistaBuscar(q = "", tipo = "") {
   conLightbox(ilus);
 }
 
+// Enlace a otro número: al visor si ya está leído con IA, si no a su tapa
+const enlaceNumero = id => N[id] ? `#/numero/${id}/1` : `#/tapa/${id}`;
+function citas(nid, i) {
+  const rs = REFS.filter(r => r.origen === nid && r.articulo === i && r.resuelta);
+  return rs.length ? `<div class="small" style="margin-top:6px"><b>Cita:</b> ${rs.map(r => `<a href="${enlaceNumero(r.destino)}" title="${esc(r.contexto)}">Nº ${esc(r.destino)} (${fecha(r.fecha_destino)})</a>`).join(" · ")}</div>` : "";
+}
+function citadoEn(id) {
+  const rs = REFS.filter(r => r.destino === id);
+  return rs.length ? `<div class="info"><b>Citado en ${rs.length === 1 ? "1 artículo" : rs.length + " artículos"}:</b> ${rs.map(r => `<a href="#/numero/${r.origen}/${r.pagina}//${r.articulo}" title="${esc(r.contexto)}">Nº ${esc(r.origen)} (${fecha(r.fecha_origen)}) · «${esc(r.titulo.slice(0, 50))}»</a>`).join(" · ")}</div>` : "";
+}
+
 function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   const d = N[nid];
   if (!d) { app.innerHTML = `<p>Este número todavía no tiene lectura con IA en la prueba. <a href="#/tapa/${esc(nid)}">Ver su tapa</a></p>`; return; }
@@ -271,15 +295,18 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
         <div class="vbar" style="margin-top:8px"><label><input type="checkbox" id="vi" ${verIlus ? "checked" : ""}> Marcar archivo gráfico (${p.ilustraciones.length})</label><span class="muted">Rueda o pellizco para acercar · doble clic para ampliar</span>${hits.length ? `<span>${hits.length} palabras marcadas</span>` : ""}</div>
         <nav class="thumbs" aria-label="Páginas">${d.paginas.map(pp => `<a href="${link(pp.n)}" ${pp.n === n ? 'aria-current="true"' : ""}><img src="${pp.img}" alt="" loading="lazy"><span class="dot ${conHits.has(pp.n) ? "on" : ""}"></span>${pp.n}</a>`).join("")}</nav></div>
       <div class="side">
+        ${formNota({ titulo: `nº ${nid}, pág. ${n}` }, "nota-pagina")}
         <div class="info ${p.modelo === "tesseract" ? "warn" : ""}">Leída con <b>${modelo}</b>${p.modelo !== "tesseract" ? ` · legibilidad ${esc(p.legibilidad)}` : ""}${p.bloqueada ? "<br>La lectura con IA de esta página fue bloqueada por protección de derechos de autor. Se muestra el escaneo y el texto del OCR automático, que se puede buscar pero no está corregido." : p.notas ? `<br>${esc(p.notas)}` : ""}</div>
         ${arts.length ? arts.map(a => `<article class="art ${a.tipo === "ocr" ? "ocr" : ""}" id="a${a.i}">
           <div class="small muted"><span class="pill ${a.tipo === "ocr" ? "ocr" : ""}">${a.tipo === "ocr" ? "OCR sin revisar" : esc(a.tipo)}</span> ${a.seccion ? esc(a.seccion) : ""} ${a.paginas.length > 1 ? `· sigue en págs. ${a.paginas.join(", ")}${a.union_sin_marca ? " (unido automáticamente)" : ""}` : ""}</div>
           <h3>${resaltar(a.titulo, terms)}</h3>
           ${a.autor ? (pa => `<div class="by">por ${pa ? `<a href="#/autor/${encodeURIComponent(pa.clave)}">${esc(a.autor)}</a>` : esc(a.autor)}</div>`)(ARTS.find(x => x.nid === nid && x.i === a.i).persona) : ""}
           <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${resaltar(a.texto, terms)}</div></details>
-          ${a.temas.length ? `<div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div>` : ""}</article>`).join("") : `<p class="muted">No hay textos leídos en esta página.</p>`}
+          ${a.temas.length ? `<div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div>` : ""}${citas(nid, a.i)}</article>`).join("") : `<p class="muted">No hay textos leídos en esta página.</p>`}
+        ${n === 1 ? citadoEn(nid) : ""}
       </div></div>`;
 
+  activarNota("nota-pagina", { numero: nid, pagina: n, titulo: `nº ${nid}, pág. ${n}` });
   if (visor) visor.destroy();
   visor = OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: p.hd, buildPyramid: true }, showNavigator: true, navigatorPosition: "TOP_RIGHT", gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true } });
   const ar = p.ar;  // alto / ancho: las coordenadas del visor van de 0 a 1 en ancho y de 0 a ar en alto
@@ -321,6 +348,7 @@ function vistaTapa(id) {
   app.innerHTML = `<div class="vbar"><a href="#/numeros">← Todos los números</a><span>Nº ${esc(id)} · ${fecha(m.fecha)} · ${m.paginas} páginas</span>
       <span>${prev ? `<a href="#/tapa/${prev.id}"><button aria-label="Número anterior">←</button></a>` : ""} ${next ? `<a href="#/tapa/${next.id}"><button aria-label="Número siguiente">→</button></a>` : ""}</span></div>
     ${m.ia ? `<p><a href="#/numero/${m.id}/1">Recorrer este número página por página →</a></p>` : `<p class="muted small">En la prueba solo se muestra la tapa; el sitio final tendrá el número completo.</p>`}
+    ${citadoEn(m.id)}
     <div class="osd" id="osd" role="img" aria-label="Tapa del nº ${esc(id)}"></div>`;
   if (visor) visor.destroy();
   visor = OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: m.grande ? `tapas/grande/${m.id}.jpg` : `tapas/${m.id}.jpg`, buildPyramid: true }, showNavigator: true, navigatorPosition: "TOP_RIGHT", gestureSettingsMouse: { clickToZoom: false } });
@@ -397,19 +425,92 @@ function vistaRevisar(grupo = "") {
       const visibles = grupo ? cs : cs.slice(0, 30);
       return `<div class="grupo"><h3>${t}</h3><span class="muted small">${cs.filter(c => !revisado(c.clave)).length} sin revisar de ${cs.length}</span></div><p class="muted small" style="margin:0 0 6px">${ayuda}</p>` +
         visibles.map(c => `<div class="caso ${revisado(c.clave) ? "hecho" : ""}"><input type="checkbox" data-c="${esc(c.clave)}" ${revisado(c.clave) ? "checked" : ""} aria-label="Revisado">
-          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}</div></div>`).join("") +
+          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}
+          <button type="button" class="btnnota" style="margin:4px 0 0" data-anotar="${esc(c.clave)}">Anotar</button><div data-caja="${esc(c.clave)}"></div></div></div>`).join("") +
         (visibles.length < cs.length ? `<p><button type="button" data-g="${g}">Ver los ${cs.length} casos de este grupo</button></p>` : ""); }).join("")}`;
   app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => location.hash = `#/revisar/${b.dataset.g}`);
   app.querySelectorAll("[data-c]").forEach(cb => cb.onchange = () => { try { localStorage.setItem("rev:" + cb.dataset.c, cb.checked ? "1" : "0"); } catch {} vistaRevisar(grupo); });
+  app.querySelectorAll("[data-anotar]").forEach((b, i) => b.onclick = () => {
+    const c = casos.find(x => x.clave === b.dataset.anotar), id = "nota-caso-" + i;
+    const ctx = { numero: c.id, pagina: c.n, caso: c.grupo, titulo: GRUPOS.find(g => g[0] === c.grupo)[1], enlace: c.link };
+    b.nextElementSibling.innerHTML = formNota(ctx, id);
+    activarNota(id, ctx);
+    b.remove();
+  });
+}
+
+// ---- Notas de revisión: se guardan en un archivo de la Mac (servidor local) y, si no se puede, en el navegador
+const CATEGORIAS = ["texto mal leído o incompleto", "título, autor o sección", "unión de artículos", "dibujo o archivo gráfico", "diseño del sitio", "otro"];
+const pendientes = () => { try { return JSON.parse(localStorage.getItem("notas-pendientes") || "[]"); } catch { return []; } };
+
+async function guardarNota(nota) {
+  const todas = [...pendientes(), nota];
+  try {
+    for (const n of todas) {
+      const r = await fetch("notas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(n) });
+      if (!r.ok) throw new Error(r.status);
+    }
+    try { localStorage.removeItem("notas-pendientes"); } catch {}
+    return "guardada";
+  } catch {
+    try { localStorage.setItem("notas-pendientes", JSON.stringify(todas)); } catch {}
+    return "pendiente";
+  }
+}
+
+function formNota(ctx, id) {
+  return `<div class="nota" id="${id}"><b class="small">${ctx.titulo ? "Nota sobre " + esc(ctx.titulo) : "Nota"}</b>
+    <textarea placeholder="¿Qué está mal o qué te gustaría distinto?"></textarea>
+    <div class="fila"><select aria-label="Categoría">${CATEGORIAS.map(c => `<option>${c}</option>`).join("")}</select>
+      <label><input type="checkbox"> aplicar como regla en toda la colección</label>
+      <button type="button">Guardar nota</button><span class="estado" aria-live="polite"></span></div></div>`;
+}
+
+function activarNota(id, ctx) {
+  const caja = document.getElementById(id);
+  if (!caja) return;
+  caja.querySelector("button").onclick = async () => {
+    const texto = caja.querySelector("textarea").value.trim(), estado = caja.querySelector(".estado");
+    if (!texto) { estado.className = "estado mal"; estado.textContent = "Escribí algo primero."; return; }
+    const r = await guardarNota({ ...ctx, texto, categoria: caja.querySelector("select").value,
+      regla_general: caja.querySelector("input[type=checkbox]").checked, enlace: ctx.enlace || location.hash });
+    caja.querySelector("textarea").value = "";
+    estado.className = "estado " + (r === "guardada" ? "ok" : "mal");
+    estado.textContent = r === "guardada" ? "✓ Guardada" : "Guardada en este navegador (el servidor no responde); se enviará después.";
+  };
+}
+
+function notaGeneral() {
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = formNota({ titulo: "el sitio en general" }, "nota-general").replace('<b class="small">', '<b class="small"><button type="button" class="cerrar" style="float:right">Cerrar ✕</button>');
+  document.body.appendChild(m);
+  activarNota("nota-general", { titulo: "general" });
+  m.querySelector(".cerrar").onclick = () => m.remove();
+  m.onclick = e => { if (e.target === m) m.remove(); };
+}
+
+async function vistaNotas() {
+  app.innerHTML = `<h2>Mis notas</h2><p class="muted">Cargando…</p>`;
+  let notas = [];
+  try { notas = await (await fetch("notas")).json(); } catch {}
+  const sinEnviar = pendientes();
+  notas = [...notas, ...sinEnviar.map(n => ({ ...n, sinEnviar: true }))].reverse();
+  app.innerHTML = `<h2>Mis notas</h2>
+    <p class="muted small">${notas.length} notas. Se guardan en la Mac, en <code>lectura-ia/notas-revision.jsonl</code>, donde Claude las lee para mejorar el proceso.${sinEnviar.length ? ` ${sinEnviar.length} todavía están solo en este navegador.` : ""}</p>
+    ${notas.map(n => `<div class="notaitem"><div class="small muted">${n.fecha ? n.fecha.replace("T", " ") : "sin enviar"} · ${esc(n.categoria || "")}${n.regla_general ? " · <b>regla general</b>" : ""}${n.sinEnviar ? " · <b>sin enviar</b>" : ""}</div>
+      ${n.numero ? `<a href="${esc(n.enlace || `#/numero/${n.numero}/${n.pagina || 1}`)}">Nº ${esc(n.numero)}${n.pagina ? `, pág. ${n.pagina}` : ""}${n.titulo ? ` · ${esc(n.titulo)}` : ""}</a>` : `<b>${esc(n.titulo || "General")}</b>`}
+      <div style="white-space:pre-wrap">${esc(n.texto)}</div></div>`).join("") || "<p>Todavía no hay notas.</p>"}`;
 }
 
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }
   const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
-  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar" }[vista ?? ""] ?? "buscar";
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar", notas: "notas" }[vista ?? ""] ?? "buscar";
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
   if (vista === "numero") return conPalabras(r[0]).then(() => vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null, r[4] ?? ""));
   if (vista === "revisar") return vistaRevisar(r[0] ?? "");
+  if (vista === "notas") return vistaNotas();
   if (vista === "numeros") return vistaNumeros();
   if (vista === "tapa") return vistaTapa(r[0]);
   if (vista === "autores") return vistaAutores();
@@ -419,6 +520,7 @@ function ruta() {
   vistaBuscar();
 }
 
+$("#notaGeneral").onclick = notaGeneral;
 addEventListener("hashchange", () => { ruta(); if (!location.hash.startsWith("#/numero/")) scrollTo(0, 0); });
 cargar().then(ruta).catch(e => { app.innerHTML = `<p>No se pudieron cargar los datos de la prueba (${esc(e.message)}).</p>`; });
 </script>

@@ -89,9 +89,10 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     pdf = os.path.join(rollos, meta["archivo"])
     with tempfile.TemporaryDirectory() as tmp:
         for n, im in enumerate(paginas_de(pdf, tmp), 1):
-            hd = im.copy()
-            hd.thumbnail((LADO_HD, LADO_HD), Image.LANCZOS)
-            hd.save(os.path.join(destino, f"p{n:02d}-hd.jpg"), quality=75, optimize=True, progressive=True)
+            if not os.path.exists(os.path.join(destino, f"p{n:02d}-hd.jpg")):  # las imágenes no cambian entre armados
+                hd = im.copy()
+                hd.thumbnail((LADO_HD, LADO_HD), Image.LANCZOS)
+                hd.save(os.path.join(destino, f"p{n:02d}-hd.jpg"), quality=75, optimize=True, progressive=True)
             w, h = im.size
             for k, il in enumerate(lecturas[n]["ilustraciones"], 1):
                 total_ilus += 1
@@ -161,4 +162,7 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
           f"{sum(len(p['ilustraciones']) for p in paginas)} en el archivo gráfico")
 
 json.dump(revisar, open(os.path.join(sitio, "datos", "revisar.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+# referencias entre números (las detecta referencias.py)
+if os.path.exists(os.path.join(ia, "referencias.json")):
+    shutil.copy(os.path.join(ia, "referencias.json"), os.path.join(sitio, "datos", "referencias.json"))
 print(f"{len(revisar)} casos para revisar")

@@ -132,6 +132,12 @@ def elegir_lectura(num, n):
     for x in validas:
         if not incompleta(x, num.ocr[n]):
             return x
+    # si ninguna está completa, también cuentan las lecturas de rondas anteriores (carpeta _etapa1) y las
+    # relecturas descartadas por truncas: a veces una vieja tiene más texto que la nueva
+    for f in (glob.glob(f"{num.destino}/_*/p{n:02d}.*.json") + glob.glob(f"{num.destino}/p{n:02d}.sonnet-trunca.json")):
+        x = json.load(open(f))
+        if not x.get("bloqueada") and x.get("articulos") is not None:
+            validas.append(x)
     if not validas:
         return None
     x = max(validas, key=lambda v: sum(palabras(a["texto"]) for a in v["articulos"]))
