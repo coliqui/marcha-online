@@ -38,6 +38,14 @@ TIPOS = Literal["editorial", "nota", "entrevista", "crítica", "columna", "carta
                 "poema", "humor", "aviso", "pie de foto", "otro"]
 
 
+class Referencia(BaseModel):
+    texto_cita: str  # la frase tal como está ("en nuestro número anterior", "ver MARCHA Nº 1079")
+    numero: Optional[str]
+    fecha: Optional[str]  # AAAA-MM-DD si se puede saber
+    titulo: Optional[str]
+    autor: Optional[str]
+
+
 class Articulo(BaseModel):
     titulo: str
     autor: Optional[str]
@@ -49,6 +57,7 @@ class Articulo(BaseModel):
     continua_en_pagina: Optional[int]
     empieza_cortado: bool
     termina_cortado: bool
+    referencias: List[Referencia] = []  # menciones a otros números o artículos de Marcha
 
 
 class Ilustracion(BaseModel):
@@ -125,6 +134,7 @@ Para cada artículo:
 - tipo: el que mejor corresponda. Los avisos publicitarios van como "aviso", con su texto principal.
 - temas: dos o tres temas generales en español ("política uruguaya", "cine", "economía").
 - continua_en_pagina / viene_de_pagina: el número que dicen las marcas impresas como "(Pasa a la pág. X)" o "(Viene de la pág. Y)".
+- referencias: las menciones a otros números o artículos de Marcha ("en nuestro número anterior", "ver MARCHA Nº 1079", "como publicamos el 12 de mayo", "(Viene del número 1078)", "el artículo de Julio Castro sobre…"), con el número, la fecha (AAAA-MM-DD), el título y el autor citados si se pueden saber; si no hay, una lista vacía.
 - empieza_cortado: true si el texto arranca a mitad de frase o es claramente la continuación de algo de otra página sin marca. termina_cortado: true si queda cortado al final de la página sin marca de continuación.
 
 Para la página:

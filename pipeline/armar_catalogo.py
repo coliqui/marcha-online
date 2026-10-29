@@ -80,6 +80,16 @@ CREATE TABLE obras_graficas (
   imagen TEXT,                    -- recorte, relativo al sitio
   FOREIGN KEY (numero_id, n) REFERENCES paginas(numero_id, n)
 );
+CREATE TABLE referencias (
+  numero_id TEXT NOT NULL REFERENCES numeros(id),   -- dónde aparece la cita
+  pagina INTEGER,
+  titulo_articulo TEXT,
+  tipo TEXT,                      -- numero | anterior | fecha (por ahora); titulo | autor más adelante
+  cita TEXT,                      -- la frase tal como está
+  contexto TEXT,
+  destino_id TEXT REFERENCES numeros(id),   -- el número citado; NULL si todavía no se resolvió
+  resuelta INTEGER NOT NULL
+);
 CREATE INDEX articulos_autor ON articulos(autor_id);
 CREATE INDEX obras_autor ON obras_graficas(autor_id);
 CREATE INDEX articulo_paginas_pagina ON articulo_paginas(numero_id, n);
@@ -175,8 +185,12 @@ def main(ocr, ia, destino):
                 aid = autor_de(a.get("autor"))
                 guardar_articulo(db, m["id"], a, aid, nombre_autor(aid))
 
+    refs = os.path.join(ia, "referencias.json")
+    for r in (json.load(open(refs)) if os.path.exists(refs) else []):
+        db.execute("INSERT INTO referencias VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (r["origen"], r["pagina"], r["titulo"], r["tipo"],
+                   r["cita"], r["contexto"], r["destino"], int(r["resuelta"])))
     db.commit()
-    for tabla in ("numeros", "paginas", "articulos", "autores", "seudonimos", "obras_graficas"):
+    for tabla in ("numeros", "paginas", "articulos", "autores", "seudonimos", "obras_graficas", "referencias"):
         print(f"{tabla}: {db.execute(f'SELECT count(*) FROM {tabla}').fetchone()[0]}")
     db.execute("VACUUM")
     db.close()
