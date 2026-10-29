@@ -393,9 +393,12 @@ function vistaRevisar(grupo = "") {
     <p class="muted small">Casos que el proceso marcó como dudosos. Cada uno lleva a la página y, cuando se sabe, al lugar exacto. Marcá los que ya revisaste (queda guardado en este navegador).</p>
     <div class="chips"><button type="button" data-g="" aria-pressed="${!grupo}">Todos</button>${GRUPOS.map(([g, t]) => { const cs = casos.filter(c => c.grupo === g); return cs.length ? `<button type="button" data-g="${g}" aria-pressed="${grupo === g}">${t} (${cs.filter(c => !revisado(c.clave)).length}/${cs.length})</button>` : ""; }).join("")}</div>
     ${lista.map(([g, t, ayuda]) => { const cs = casos.filter(c => c.grupo === g); if (!cs.length) return "";
+      // en la vista general se muestran solo los primeros de cada grupo, para que la página no se haga pesada
+      const visibles = grupo ? cs : cs.slice(0, 30);
       return `<div class="grupo"><h3>${t}</h3><span class="muted small">${cs.filter(c => !revisado(c.clave)).length} sin revisar de ${cs.length}</span></div><p class="muted small" style="margin:0 0 6px">${ayuda}</p>` +
-        cs.map(c => `<div class="caso ${revisado(c.clave) ? "hecho" : ""}"><input type="checkbox" data-c="${esc(c.clave)}" ${revisado(c.clave) ? "checked" : ""} aria-label="Revisado">
-          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}</div></div>`).join(""); }).join("")}`;
+        visibles.map(c => `<div class="caso ${revisado(c.clave) ? "hecho" : ""}"><input type="checkbox" data-c="${esc(c.clave)}" ${revisado(c.clave) ? "checked" : ""} aria-label="Revisado">
+          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}</div></div>`).join("") +
+        (visibles.length < cs.length ? `<p><button type="button" data-g="${g}">Ver los ${cs.length} casos de este grupo</button></p>` : ""); }).join("")}`;
   app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => location.hash = `#/revisar/${b.dataset.g}`);
   app.querySelectorAll("[data-c]").forEach(cb => cb.onchange = () => { try { localStorage.setItem("rev:" + cb.dataset.c, cb.checked ? "1" : "0"); } catch {} vistaRevisar(grupo); });
 }
