@@ -138,7 +138,7 @@ const fecha = f => { const [a, m, d] = f.split("-"); return `${+d} de ${MESES[m 
 const EJEMPLOS = ["Peloduro", "Mussolini", "Clemenceau", "teatro", "Cortázar", "caricatura", "Cuba"];
 const OSD_IMG = "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/";
 
-let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [];
+let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [], REVISAR_FALLO = false;
 let visor = null;
 
 // Una firma ("J.E.SUAREZ", "Peloduro", "Constantín") -> clave de la persona, usando la tabla de seudónimos.
@@ -157,7 +157,7 @@ function persona(firma) {
 async function cargar() {
   const [numeros, alias] = await Promise.all(["datos/numeros.json", "datos/alias.json"].map(u => fetch(u).then(r => r.json())));
   NUMEROS = numeros;
-  REVISAR = await fetch("datos/revisar.json").then(r => r.ok ? r.json() : []).catch(() => []);
+  REVISAR = await fetch("datos/revisar.json").then(r => r.ok ? r.json() : Promise.reject()).catch(() => { REVISAR_FALLO = true; return []; });
   for (const [canon, variantes] of Object.entries(alias)) {
     if (canon.startsWith("_")) continue;
     ALIAS.set(claveFirma(canon), canon);
@@ -380,6 +380,10 @@ const GRUPOS = [
 const revisado = clave => { try { return localStorage.getItem("rev:" + clave) === "1"; } catch { return false; } };
 
 function vistaRevisar(grupo = "") {
+  if (REVISAR_FALLO) {
+    app.innerHTML = `<h2>Revisión</h2><p>No se pudo cargar la lista de casos para revisar. Puede que el servidor del sitio no esté funcionando: abrí de nuevo el sitio con «Abrir sitio de prueba» (en la carpeta MARCHA ONLINE) y recargá la página.</p>`;
+    return;
+  }
   const firmas = [...PERSONAS.values()].filter(p => !ALIAS.has(p.clave)).sort((a, b) => a.nombre.localeCompare(b.nombre))
     .map(p => ({ grupo: "firmas", clave: "firma:" + p.clave, desc: `«${p.nombre}» · ${p.arts.length} textos, ${p.ilus.length} dibujos`, link: `#/autor/${encodeURIComponent(p.clave)}` }));
   const casos = REVISAR.map(c => ({ ...c, clave: `${c.grupo}:${c.id}:${c.n}:${c.art ?? ""}`,
