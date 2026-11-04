@@ -58,6 +58,8 @@ class Articulo(BaseModel):
     empieza_cortado: bool
     termina_cortado: bool
     referencias: List[Referencia] = []  # menciones a otros números o artículos de Marcha
+    # modo pliego: el artículo cruza a la página enfrentada (sigue en ella, viene de ella, o las dos cosas)
+    cruza_pliego: Literal["no", "sigue_en_la_enfrentada", "viene_de_la_enfrentada", "ambas"] = "no"
 
 
 class Ilustracion(BaseModel):
@@ -210,7 +212,30 @@ def paginas_de(pdf, tmp):
             yield im.crop((w // 2, 0, w, h))
 
 
-def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False):
+def pliegos(pdf):
+    """Página -> página enfrentada, según cómo está escaneado el PDF: cada imagen doble (más ancha que alta)
+    es un pliego con la página izquierda y la derecha del diario abierto."""
+    salida = subprocess.run(["pdfimages", "-list", pdf], capture_output=True, text=True, check=True).stdout
+    enfrentadas, n = {}, 1
+    for linea in salida.splitlines()[2:]:
+        c = linea.split()
+        if len(c) > 4 and c[2] == "image":
+            if int(c[3]) > int(c[4]):
+                enfrentadas[n], enfrentadas[n + 1] = n + 1, n
+                n += 2
+            else:
+                n += 1
+    return enfrentadas
+
+
+PLIEGO = """
+Esta página forma un pliego con la imagen {m}, que en el diario abierto está a su {lado}. Te la paso al final ("Página enfrentada") solo como contexto: no la transcribas. Muchos artículos de Marcha cruzan el pliego:
+- Si un artículo de esta página sigue en la página enfrentada, en cruza_pliego poné "sigue_en_la_enfrentada"; si viene de ella, "viene_de_la_enfrentada"; si las dos cosas, "ambas"; si no, "no".
+- Si el título está repartido entre las dos páginas (una parte en cada una), poné en esta página el título completo.
+"""
+
+
+def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False, enfrentada=None):
     """El mensaje que se manda por cada página: sus dos mitades, los bloques enderezados y las instrucciones."""
     w, h = im.size
     franjas = [im.crop((0, int(h * a), w, int(h * b))) for a, b in (ARRIBA, ABAJO)]
@@ -232,12 +257,19 @@ def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False):
     if completa:
         corte = texto.index("\nComo ayuda, este es el texto")
         texto = CONTEXTO + texto[:corte] + COMPLETITUD + texto[corte:]
+    if enfrentada:
+        im_e, m = enfrentada
+        corte = texto.index("\nComo ayuda, este es el texto")
+        texto = texto[:corte] + PLIEGO.format(m=m, lado="izquierda" if m < n else "derecha") + texto[corte:]
     contenido.append({"type": "text", "text": texto})
+    if enfrentada:
+        contenido += [{"type": "text", "text": f"Página enfrentada (imagen {enfrentada[1]}), solo como contexto:"},
+                      {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(enfrentada[0])}}]
     return contenido
 
 
-def leer(cli, modelo, im, meta, n, total, ocr, enderezados=(), esfuerzo="low", completa=False):
-    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados, completa)
+def leer(cli, modelo, im, meta, n, total, ocr, enderezados=(), esfuerzo="low", completa=False, enfrentada=None):
+    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados, completa, enfrentada)
     t0 = time.time()
     r = cli.messages.parse(
         model=MODELOS[modelo][0],
@@ -470,6 +502,7 @@ def unir_continuaciones(paginas):
     siguiente que es del mismo tipo (cuento con cuento, crítica con crítica…).
     """
     impresa = {n: p.get("pagina_impresa") or n for n, p in paginas}
+    enfrentada = {n: p["pagina_enfrentada"] for n, p in paginas if p.get("pagina_enfrentada")}
     lista = []
     for n, p in paginas:
         lista += juntar_partes(dict(a, paginas=[n]) for a in p["articulos"])
@@ -491,6 +524,18 @@ def unir_continuaciones(paginas):
         a["continua_en_pagina"] = b.get("continua_en_pagina")
         a["termina_cortado"] = b.get("termina_cortado", False)
         usados.add(id(b))
+
+    # Modo pliego: la IA vio la página enfrentada y marcó qué artículos cruzan de la izquierda a la derecha
+    for a in lista:
+        n = a["paginas"][-1]
+        if id(a) in usados or a.get("cruza_pliego") not in ("sigue_en_la_enfrentada", "ambas") or enfrentada.get(n) != n + 1:
+            continue
+        candidatos = [b for b in lista if id(b) not in usados and b is not a and b["paginas"][0] == n + 1
+                      and b.get("cruza_pliego") in ("viene_de_la_enfrentada", "ambas")]
+        if candidatos:
+            palabras_a = set(a["titulo"].lower().split())
+            pegar(a, max(candidatos, key=lambda c: len(palabras_a & set(c["titulo"].lower().split()))))
+            a["union_por_pliego"] = True
 
     for a in lista:
         destino = a.get("continua_en_pagina")

@@ -23,12 +23,13 @@ from anthropic.types.messages.batch_create_params import Request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, PaginaCompleta, cliente, confirmar_bloques,
-                     contenido_pagina, dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de)
+                     contenido_pagina, dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de,
+                     pliegos)
 from ocr_numero import metadatos
 
 ESQUEMA = anthropic.transform_schema(PaginaCompleta)  # desde la etapa 2: declara si la transcripción está completa
 ESQUEMA_BLOQUE = anthropic.transform_schema(Bloque)
-PAGINAS_POR_LOTE = 80   # cada página pesa ~2 MB en el pedido (imágenes en base64); un lote admite hasta 256 MB
+PAGINAS_POR_LOTE = 60   # cada página pesa ~3 MB en el pedido (tres imágenes en base64); un lote admite hasta 256 MB
 COSTO_ESTIMADO = {"haiku": 0.0020, "sonnet": 0.040, "bloque": 0.025}  # por pedido, con descuento de lotes y margen
 
 
@@ -73,6 +74,7 @@ class Numero:
             f = os.path.join(ocr, self.id, f"p{n:02d}.txt")
             self.ocr[n] = open(f, encoding="utf-8").read() if os.path.exists(f) else ""
         self._imagenes = None
+        self.pliegos = pliegos(self.pdf)  # página -> página enfrentada en el escaneo de a dos
 
     def imagenes(self):
         if self._imagenes is None:
@@ -89,7 +91,9 @@ class Numero:
 
 def pedido(numero, n, modelo):
     """El pedido de una página entera para el lote (Haiku o Sonnet)."""
-    contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n], completa=True)
+    m = numero.pliegos.get(n)  # modo pliego: la página enfrentada va como contexto
+    contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n], completa=True,
+                                 enfrentada=(numero.imagenes()[m - 1], m) if m else None)
     return Request(custom_id=f"{numero.id}__{n}__{modelo}", params=MessageCreateParamsNonStreaming(
         model=MODELOS[modelo][0], max_tokens=32000, messages=[{"role": "user", "content": contenido}],
         output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}}))
@@ -211,7 +215,7 @@ def seguir(rollos, ocr, lectura, tope):
                 problemas.append(f"{nid} pág. {n} {modelo}: respuesta inválida ({msg.stop_reason}) {str(e)[:80]}")
                 continue
             datos.update(modelo=modelo, tokens_entrada=msg.usage.input_tokens, tokens_salida=msg.usage.output_tokens,
-                         lote=lote["id"])
+                         lote=lote["id"], pagina_enfrentada=num.pliegos.get(n))
             if modelo == "sonnet":
                 previa = num.lectura(n, "haiku") or {}
                 minimo = 0.5 * sum(palabras(a["texto"]) for a in previa.get("articulos", []))
