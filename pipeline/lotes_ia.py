@@ -152,8 +152,15 @@ def incompleta(lectura, ocr):
 def elegir_lectura(num, n, con_bloques=True):
     """La mejor lectura de una página: la primera completa entre Sonnet, Haiku en dos mitades y Haiku entera; si
     ninguna está completa, la más larga, marcada "incompleta" y con el texto de Tesseract al lado para que siga
-    siendo buscable. Después se le agregan los bloques en diagonal leídos enderezados."""
+    siendo buscable. Si la versión final de una ronda anterior (carpeta _ronda1) tenía bastante más texto, queda
+    esa. Después se le agregan los bloques en diagonal leídos enderezados."""
     x = _elegir(num, n)
+    anterior = cargar(f"{num.destino}/_ronda1/p{n:02d}.json", None)
+    if x and anterior and not anterior.get("bloqueada") and "articulos" in anterior and not x.get("bloqueada"):
+        nuevas = sum(palabras(a["texto"]) for a in x.get("articulos", []))
+        viejas = sum(palabras(a["texto"]) for a in anterior["articulos"])
+        if viejas >= 1.3 * nuevas and viejas - nuevas >= 100:
+            x = {**anterior, "de_ronda_anterior": True}
     bloques = cargar(f"{num.destino}/p{n:02d}.bloques.json", [])
     if x and con_bloques and bloques and not x.get("bloqueada"):
         x = json.loads(json.dumps(x))  # copia: la lectura guardada no se toca
@@ -181,6 +188,18 @@ def _elegir(num, n):
         return None
     x = max(validas, key=lambda v: sum(palabras(a["texto"]) for a in v["articulos"]))
     return {**x, "incompleta": True, "texto_tesseract": num.ocr[n]}
+
+
+def juntar_mitades(num, n):
+    """Cuando ya llegaron las dos mitades de una página leída en dos pedidos, arma su lectura unida."""
+    sup, inf = num.lectura(n, "haiku-sup"), num.lectura(n, "haiku-inf")
+    if not (sup and inf) or num.lectura(n, "haiku-dividida"):
+        return
+    if "articulos" in sup and "articulos" in inf:
+        unida = {**unir_mitades(sup, inf), "modelo": "haiku"}
+    else:  # una mitad bloqueada por derechos de autor: queda la lectura de la página entera
+        unida = {"bloqueada": True, "modelo": "haiku", "error": "una mitad bloqueada"}
+    guardar(f"{num.destino}/p{n:02d}.haiku-dividida.json", unida)
 
 
 def finalizar_numero(num):
@@ -255,9 +274,7 @@ def seguir(rollos, ocr, lectura, tope):
                     continue
             guardar(archivo, datos)
             if modelo in ("haiku-sup", "haiku-inf"):
-                sup, inf = num.lectura(n, "haiku-sup"), num.lectura(n, "haiku-inf")
-                if sup and inf:
-                    guardar(f"{num.destino}/p{n:02d}.haiku-dividida.json", {**unir_mitades(sup, inf), "modelo": "haiku"})
+                juntar_mitades(num, n)
         gasto["usd"] += gastado
         gasto["detalle"].append({"lote": lote["id"], "modelo": lote["modelo"], "usd": round(gastado, 4)})
         lote.update(estado="recogido", usd=round(gastado, 4), problemas=problemas)
@@ -297,6 +314,7 @@ def seguir(rollos, ocr, lectura, tope):
             paso = siguiente_paso(h, num.ocr[n])
             if paso == "mitad" and falla(num, n, "haiku-sup") | falla(num, n, "haiku-inf"):
                 paso = "sonnet"
+            juntar_mitades(num, n)
             if paso == "mitad" and num.lectura(n, "haiku-dividida") is None:
                 if not curso(num, n, "haiku-sup") and not curso(num, n, "haiku-inf"):
                     faltan["mitad"].append((num, n))
