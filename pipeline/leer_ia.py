@@ -638,8 +638,18 @@ def unir_continuaciones(paginas):
         n = a["paginas"][-1]
         if id(a) in usados or a.get("cruza_pliego") not in ("sigue_en_la_enfrentada", "ambas") or enfrentada.get(n) != n + 1:
             continue
-        candidatos = [b for b in lista if id(b) not in usados and b is not a and b["paginas"][0] == n + 1
-                      and b.get("cruza_pliego") in ("viene_de_la_enfrentada", "ambas")]
+        libres = [b for b in lista if id(b) not in usados and b is not a and b["paginas"][0] == n + 1
+                  and b.get("tipo") not in ("aviso", "pie de foto")]
+        candidatos = [b for b in libres if b.get("cruza_pliego") in ("viene_de_la_enfrentada", "ambas")]
+        if not candidatos:
+            # la IA marcó solo un lado: vale el único de la página enfrentada que empieza cortado, o que nombra al
+            # mismo autor, o que comparte palabras del título
+            apellido = (a.get("autor") or "").split()[-1:] or ["\0"]
+            propias = {w for w in re.findall(r"\w{5,}", a["titulo"].lower())}
+            candidatos = [b for b in libres if b.get("empieza_cortado")] or \
+                         [b for b in libres if apellido[0].lower() in (b["titulo"] + " " + b["texto"][:300]).lower()] or \
+                         [b for b in libres if len(propias & set(re.findall(r"\w{5,}", b["titulo"].lower()))) >= 2]
+            candidatos = candidatos if len(candidatos) == 1 else []
         if candidatos:
             palabras_a = set(a["titulo"].lower().split())
             pegar(a, max(candidatos, key=lambda c: len(palabras_a & set(c["titulo"].lower().split()))))

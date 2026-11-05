@@ -14,7 +14,7 @@ import glob, json, os, shutil, subprocess, sys, tempfile
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from leer_ia import ARRIBA, ABAJO, paginas_de
+from leer_ia import ARRIBA, ABAJO, paginas_de, pliegos
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 ANCHO_TAPA = 480
@@ -76,11 +76,12 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     os.makedirs(destino, exist_ok=True)
 
     lecturas, paginas = {}, []
+    enfrentadas = pliegos(os.path.join(rollos, meta["archivo"]))  # para la vista de doble página
     for n in range(1, meta["paginas"] + 1):
         shutil.copy(os.path.join(ocr, nid, f"p{n:02d}.jpg"), destino)
         p = lecturas[n] = json.load(open(os.path.join(carpeta_ia, f"p{n:02d}.json")))
         paginas.append({"n": n, "img": f"paginas/{nid}/p{n:02d}.jpg", "hd": f"paginas/{nid}/p{n:02d}-hd.jpg",
-                        "ar": palabras[n]["ar"], "impresa": p.get("pagina_impresa"),
+                        "ar": palabras[n]["ar"], "impresa": p.get("pagina_impresa"), "enfrentada": enfrentadas.get(n),
                         "modelo": p["modelo"], "legibilidad": p["legibilidad"], "notas": p.get("notas"),
                         "bloqueada": p.get("bloqueada", False), "ilustraciones": []})
 
