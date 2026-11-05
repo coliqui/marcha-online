@@ -84,6 +84,20 @@ cp sitio-prueba-3/index.html prueba-ia/sitio/ && python3 -m http.server 8766 --d
 
 Requiere Python 3.10 o más y `pip install anthropic pydantic Pillow opencv-python-headless numpy`.
 
+## Etapa 2 (5/11/2026)
+
+350 números (los 100 de la etapa 1 releídos y 250 nuevos, de 1939 a 1974), 8.869 páginas, con las reglas que salieron de la revisión de Coli Quijano: leer todo aunque sea largo o denso (críticas, cartas, carteleras, recuadros), firma arriba o al pie, modo pliego, páginas de costado enderezadas, páginas largas en dos mitades, Sonnet solo para páginas poco legibles.
+
+| Paso | Páginas | Costo (lotes) | Por página |
+|---|---|---|---|
+| Haiku, página entera con la enfrentada de contexto | 8.869 | US$ 23,60 | US$ 0,0027 |
+| Haiku en dos mitades (páginas largas) | 333 | US$ 1,74 | US$ 0,0052 |
+| Sonnet (poco legibles) | 63 | US$ 1,49 | US$ 0,024 |
+| Bloques en diagonal enderezados | 11 | US$ 0,07 | |
+| **Total** | | **US$ 26,90** | **≈ US$ 0,003** |
+
+Resultado: 28.287 textos, 716 artículos unidos a través del pliego, 33 páginas de costado enderezadas, 348 referencias entre números. En los 100 números releídos hay 6 % más texto que en la etapa 1. Quedan 202 páginas marcadas como incompletas y 59 bloqueadas por derechos de autor (con el texto de Tesseract). Al mismo ritmo, el resto de la colección costaría unos US$ 100.
+
 ## Decisiones de diseño
 
 - **Doble página por defecto** (Coli Quijano, 5/11/2026): el visor muestra cada número como en los rollos de microfilm, de a pliego (página izquierda y derecha enfrentadas), porque muchos artículos y títulos cruzan las dos páginas. La tapa y la contratapa se ven solas. Una casilla permite ver de a una página. Vale para el sitio de prueba, las próximas etapas y el sitio definitivo.
