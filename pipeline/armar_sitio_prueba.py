@@ -84,31 +84,39 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
                         "modelo": p["modelo"], "legibilidad": p["legibilidad"], "notas": p.get("notas"),
                         "bloqueada": p.get("bloqueada", False), "ilustraciones": []})
 
-    # Imagen en alta resolución y recortes de ilustraciones, desde el escaneo original
-    total_ilus = 0
-    pdf = os.path.join(rollos, meta["archivo"])
-    with tempfile.TemporaryDirectory() as tmp:
-        for n, im in enumerate(paginas_de(pdf, tmp), 1):
-            if not os.path.exists(os.path.join(destino, f"p{n:02d}-hd.jpg")):  # las imágenes no cambian entre armados
-                hd = im.copy()
-                hd.thumbnail((LADO_HD, LADO_HD), Image.LANCZOS)
-                hd.save(os.path.join(destino, f"p{n:02d}-hd.jpg"), quality=75, optimize=True, progressive=True)
-            w, h = im.size
-            for k, il in enumerate(lecturas[n]["ilustraciones"], 1):
-                total_ilus += 1
-                if not va_al_archivo_grafico(il):
-                    continue
-                a, b = ARRIBA if il["imagen"] == "arriba" else ABAJO
-                x0, y0, x1, y1 = (max(0, min(1000, v)) / 1000 for v in il["caja"])
-                if x1 <= x0 or y1 <= y0:
-                    continue
-                fy = lambda v: a + v * (b - a)  # de milésimas de la franja a fracción de la página
-                caja = (max(0, x0 - MARGEN), max(0, fy(y0) - MARGEN), min(1, x1 + MARGEN), min(1, fy(y1) + MARGEN))
-                recorte = im.crop((int(caja[0] * w), int(caja[1] * h), int(caja[2] * w), int(caja[3] * h)))
-                recorte.thumbnail((LADO_ILUSTRACION, LADO_ILUSTRACION), Image.LANCZOS)
-                nombre = f"ilustraciones/{nid}-p{n:02d}-{k}.jpg"
-                recorte.save(os.path.join(sitio, nombre), quality=82, optimize=True, progressive=True)
-                paginas[n - 1]["ilustraciones"].append({**il, "img": nombre, "pagina_caja": [round(v * 1000) for v in caja]})
+    # Imagen en alta resolución y recortes de ilustraciones, desde el escaneo original. Primero se calcula qué
+    # hace falta; el PDF se abre solo si falta alguna imagen (las imágenes no cambian entre armados).
+    total_ilus, recortes, faltan = 0, {}, False
+    for n in range(1, meta["paginas"] + 1):
+        faltan |= not os.path.exists(os.path.join(destino, f"p{n:02d}-hd.jpg"))
+        for k, il in enumerate(lecturas[n].get("ilustraciones", []), 1):
+            total_ilus += 1
+            if not va_al_archivo_grafico(il):
+                continue
+            a, b = ARRIBA if il["imagen"] == "arriba" else ABAJO
+            x0, y0, x1, y1 = (max(0, min(1000, v)) / 1000 for v in il["caja"])
+            if x1 <= x0 or y1 <= y0:
+                continue
+            fy = lambda v: a + v * (b - a)  # de milésimas de la franja a fracción de la página
+            caja = (max(0, x0 - MARGEN), max(0, fy(y0) - MARGEN), min(1, x1 + MARGEN), min(1, fy(y1) + MARGEN))
+            nombre = f"ilustraciones/{nid}-p{n:02d}-{k}.jpg"
+            recortes.setdefault(n, []).append((caja, nombre))
+            faltan |= not os.path.exists(os.path.join(sitio, nombre))
+            paginas[n - 1]["ilustraciones"].append({**il, "img": nombre, "pagina_caja": [round(v * 1000) for v in caja]})
+    if faltan:
+        with tempfile.TemporaryDirectory() as tmp:
+            for n, im in enumerate(paginas_de(os.path.join(rollos, meta["archivo"]), tmp), 1):
+                if not os.path.exists(os.path.join(destino, f"p{n:02d}-hd.jpg")):
+                    hd = im.copy()
+                    hd.thumbnail((LADO_HD, LADO_HD), Image.LANCZOS)
+                    hd.save(os.path.join(destino, f"p{n:02d}-hd.jpg"), quality=75, optimize=True, progressive=True)
+                w, h = im.size
+                for caja, nombre in recortes.get(n, []):
+                    if os.path.exists(os.path.join(sitio, nombre)):
+                        continue
+                    recorte = im.crop((int(caja[0] * w), int(caja[1] * h), int(caja[2] * w), int(caja[3] * h)))
+                    recorte.thumbnail((LADO_ILUSTRACION, LADO_ILUSTRACION), Image.LANCZOS)
+                    recorte.save(os.path.join(sitio, nombre), quality=82, optimize=True, progressive=True)
 
     articulos = json.load(open(art))["articulos"]
     for x in articulos:

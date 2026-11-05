@@ -176,8 +176,17 @@ async function cargar() {
     ALIAS.set(claveFirma(canon), canon);
     variantes.forEach(v => ALIAS.set(claveFirma(v), canon));
   }
-  for (const m of NUMEROS.filter(m => m.ia)) {
-    const d = await (await fetch(`datos/${m.id}.json`)).json();
+  // los números se bajan de a 8 a la vez, mostrando el avance (con cientos de números tarda unos segundos)
+  const conIA = NUMEROS.filter(m => m.ia), datos = new Array(conIA.length);
+  let siguiente = 0, listos = 0;
+  await Promise.all(Array.from({ length: 8 }, async () => {
+    while (siguiente < conIA.length) {
+      const i = siguiente++;
+      datos[i] = await (await fetch(`datos/${conIA[i].id}.json`)).json();
+      if (++listos % 10 === 0) app.innerHTML = `<p class="muted">Cargando los números leídos… ${listos} de ${conIA.length}</p>`;
+    }
+  }));
+  for (const d of datos) {
     N[d.id] = d;
     d.articulos.forEach((a, i) => {
       Object.assign(a, { nid: d.id, fecha: d.fecha, i });
@@ -521,8 +530,9 @@ function ruta() {
 }
 
 $("#notaGeneral").onclick = notaGeneral;
-addEventListener("hashchange", () => { ruta(); if (!location.hash.startsWith("#/numero/")) scrollTo(0, 0); });
-cargar().then(ruta).catch(e => { app.innerHTML = `<p>No se pudieron cargar los datos de la prueba (${esc(e.message)}).</p>`; });
+let cargado = false;
+addEventListener("hashchange", () => { if (!cargado) return; ruta(); if (!location.hash.startsWith("#/numero/")) scrollTo(0, 0); });
+cargar().then(() => { cargado = true; ruta(); }).catch(e => { app.innerHTML = `<p>No se pudieron cargar los datos de la prueba (${esc(e.message)}).</p>`; });
 </script>
 </body>
 </html>
