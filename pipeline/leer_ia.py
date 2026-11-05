@@ -87,6 +87,7 @@ INSTRUCCIONES_BLOQUE = """Esta imagen es un bloque de texto de una página del s
 - Respetá la ortografía de época tal como está impresa.
 - Si una palabra o un tramo no se puede leer, escribí [ilegible] en su lugar. Nunca resumas, completes, unas frases ni inventes texto.
 - Si el bloque empieza o termina con una palabra cortada, dejala tal cual (por ejemplo "tra el casco" o "mayor par-").
+- Si en la imagen no hay un bloque de texto corrido de un artículo (es una sombra del escaneo, una mancha, un dibujo, la marca del microfilm o el texto de un aviso), devolvé texto vacío.
 
 Este es el texto ya leído del resto de la página. En va_despues_de copiá, exactamente como aparecen ahí, las últimas cinco a ocho palabras tras las cuales va el bloque, según la continuidad del texto; si el bloque va al comienzo de un artículo o no lo podés saber, null.
 <pagina>
@@ -121,6 +122,9 @@ COMPLETITUD = """
 INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. Te paso una página del semanario Marcha (Montevideo), número {numero}, del {fecha}; es la imagen {pagina} de {total} del escaneo. La página viene en dos imágenes: "arriba" (el 55 % superior) y "abajo" (el 55 % inferior); se superponen un poco.
 
 Transcribí todos los textos de la página en orden de lectura, siguiendo las columnas como lo haría una persona:
+- Transcribí todo, aunque la página sea larga o densa. Las críticas de libros, cine y teatro, las cartas de lectores, las novedades editoriales, las carteleras y los recuadros son parte del archivo y van completos, como cualquier artículo.
+- En las carteleras y guías de cine o teatro, transcribí al menos el título de cada película u obra, cada una en su propio párrafo, como en el original.
+- En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
 - Uní las palabras cortadas con guion al final del renglón ("re-\\nnuncia" -> "renuncia") y los renglones de un mismo párrafo. Separá los párrafos con una línea en blanco.
 - Respetá la ortografía de época tal como está impresa ("fué", "dió", "Constantín"). No corrijas, no resumas, no modernices.
 - Incluí también los bloques en diagonal, en recuadros o en tipografía rara. Un bloque en diagonal o girado casi nunca es un texto aparte: suele ser el comienzo o un tramo de un artículo de la misma página y se lee en el lugar que le corresponde dentro de ese artículo.
@@ -131,7 +135,7 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - No transcribas dos veces lo que aparece en la zona donde se superponen las dos imágenes.
 
 Para cada artículo:
-- autor: la firma tal como está impresa (nombre, iniciales o seudónimo), o null.
+- autor: la firma tal como está impresa (nombre, iniciales o seudónimo), o null. La firma puede estar al pie, arriba del título o en el encabezado ("Por …"): buscala en los tres lugares.
 - seccion: el nombre de la sección o columna si aparece; si no, null.
 - tipo: el que mejor corresponda. Los avisos publicitarios van como "aviso", con su texto principal.
 - temas: dos o tres temas generales en español ("política uruguaya", "cine", "economía").
@@ -142,7 +146,7 @@ Para cada artículo:
 Para la página:
 - pagina_impresa: el número de página impreso en la página (en el pie o el encabezado), o null si no se ve.
 - ilustraciones: solo dos clases de imágenes:
-  1. los dibujos firmados de cualquier tipo (dibujo, grabado, caricatura, viñeta), y
+  1. los dibujos firmados de cualquier tipo (dibujo, grabado, caricatura, viñeta) — una tira de varios recuadros es una sola historieta —, y
   2. el humor gráfico (caricaturas, chistes, historietas), aunque no tenga firma.
   No incluyas fotos, mapas, avisos publicitarios ilustrados, ni dibujos sin firma que solo acompañan un artículo, ni filetes o adornos.
   Para cada una: descripción en una frase; firma: el nombre o seudónimo del dibujante tal como está escrito dentro o al pie del dibujo (por ejemplo "PELODURO", "J. E. Suárez", "Seoane"), o null si no tiene. Cuidado: el nombre de la persona dibujada o el epígrafe NO es la firma; eso va en retratado (a quién muestra el dibujo, si se sabe; si no, null). Decí en qué imagen está ("arriba" o "abajo") y su caja [x0, y0, x1, y1] en milésimas del ancho y alto de esa imagen. Si aparece en las dos imágenes, ponela una sola vez, en la que se vea entera.
@@ -235,16 +239,30 @@ Esta página forma un pliego con la imagen {m}, que en el diario abierto está a
 """
 
 
-def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False, enfrentada=None):
-    """El mensaje que se manda por cada página: sus dos mitades, los bloques enderezados y las instrucciones."""
+MITAD = """
+Esta vez transcribí SOLO la mitad {cual} de la página: la imagen "{imagen}". La otra mitad la transcribe otro pedido; la página entera va al final solo como contexto. {regla}
+- Si un artículo sigue en la otra mitad, marcá termina_cortado (arriba) o empieza_cortado (abajo) y usá el mismo título que tiene en la página.
+"""
+REGLA_MITAD = {"superior": "Terminá donde termina la imagen \"arriba\".",
+               "inferior": "La imagen \"abajo\" se superpone un poco con la de arriba: empezá por el primer renglón que no "
+                           "esté entero en la mitad superior, sin repetir lo de arriba."}
+
+
+def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False, enfrentada=None, mitad=None, giros=(0, 0),
+                     giro=0):
+    """El mensaje que se manda por cada página: sus dos mitades (o solo una, si la página se lee en dos pedidos),
+    los bloques enderezados, la página enfrentada como contexto y las instrucciones. giros: cuánto girar cada
+    mitad (grados) para que el texto quede derecho; giro: cuánto girar la página entera (impresa de costado)."""
+    if giro:
+        im = im.rotate(-giro, expand=True)
     w, h = im.size
-    franjas = [im.crop((0, int(h * a), w, int(h * b))) for a, b in (ARRIBA, ABAJO)]
-    contenido = [
-        {"type": "text", "text": "Imagen \"arriba\":"},
-        {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(franjas[0])}},
-        {"type": "text", "text": "Imagen \"abajo\":"},
-        {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(franjas[1])}},
-    ]
+    franjas = [im.crop((0, int(h * a), w, int(h * b))).rotate(-g, expand=True) if g else im.crop((0, int(h * a), w, int(h * b)))
+               for (a, b), g in zip((ARRIBA, ABAJO), giros)]
+    contenido = []
+    for nombre, franja, cual in (("arriba", franjas[0], "superior"), ("abajo", franjas[1], "inferior")):
+        if mitad in (None, cual):
+            contenido += [{"type": "text", "text": f"Imagen \"{nombre}\":"},
+                          {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(franja)}}]
     for k, b in enumerate(enderezados, 1):
         contenido += [{"type": "text", "text": f"Bloque enderezado {k}:"},
                       {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(b)}}]
@@ -261,15 +279,23 @@ def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False, en
         im_e, m = enfrentada
         corte = texto.index("\nComo ayuda, este es el texto")
         texto = texto[:corte] + PLIEGO.format(m=m, lado="izquierda" if m < n else "derecha") + texto[corte:]
+    if mitad:
+        corte = texto.index("\nComo ayuda, este es el texto")
+        texto = texto[:corte] + MITAD.format(cual=mitad, imagen="arriba" if mitad == "superior" else "abajo",
+                                             regla=REGLA_MITAD[mitad]) + texto[corte:]
     contenido.append({"type": "text", "text": texto})
+    if mitad:
+        contenido += [{"type": "text", "text": "Página entera, solo como contexto:"},
+                      {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(im)}}]
     if enfrentada:
         contenido += [{"type": "text", "text": f"Página enfrentada (imagen {enfrentada[1]}), solo como contexto:"},
                       {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": imagen_b64(enfrentada[0])}}]
     return contenido
 
 
-def leer(cli, modelo, im, meta, n, total, ocr, enderezados=(), esfuerzo="low", completa=False, enfrentada=None):
-    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados, completa, enfrentada)
+def leer(cli, modelo, im, meta, n, total, ocr, enderezados=(), esfuerzo="low", completa=False, enfrentada=None,
+         mitad=None, giros=(0, 0), giro=0):
+    contenido = contenido_pagina(im, meta, n, total, ocr, enderezados, completa, enfrentada, mitad, giros, giro)
     t0 = time.time()
     r = cli.messages.parse(
         model=MODELOS[modelo][0],
@@ -315,6 +341,8 @@ def insertar_bloque(articulos, bloque):
     indicó la IA (sin puntuación ni mayúsculas; la última puede estar cortada). Si el bloque ya estaba
     transcripto, no lo repite. Si no encuentra dónde va, lo agrega al comienzo del artículo más largo de la
     página y lo marca para revisar. Devuelve "ubicado", "ya_estaba" o "sin_ubicar"."""
+    if len(bloque["texto"].split()) < 5:
+        return "sin_texto"
     if ya_transcripto(articulos, bloque):
         return "ya_estaba"
     ancla = _palabras_norm(bloque.get("va_despues_de") or "")[-5:]
@@ -388,6 +416,21 @@ def enderezar(im, bloque, margen=0.25):
 DIAGONAL = (15, 75)  # grados: fuera de este rango el bloque no está de verdad inclinado
 
 
+def orientacion(im):
+    """Cuántos grados hay que girar una página para que el texto quede derecho, según Tesseract: 90 o 270 si está
+    impresa de costado, 0 si está derecha o si no está seguro. No se usa 180 porque da falsas alarmas."""
+    with tempfile.NamedTemporaryFile(suffix=".png") as f:
+        chica = im.copy()
+        chica.thumbnail((2000, 2000))
+        chica.save(f.name)
+        salida = subprocess.run(["tesseract", f.name, "stdout", "--psm", "0"], capture_output=True, text=True).stdout
+    giro = re.search(r"Rotate: (\d+)", salida)
+    confianza = re.search(r"Orientation confidence: ([\d.]+)", salida)
+    if giro and confianza and float(confianza.group(1)) >= 2 and int(giro.group(1)) in (90, 270):
+        return int(giro.group(1))
+    return 0
+
+
 def confirmar_bloques(pag, im):
     """Mide el ángulo real de cada bloque girado que informó la IA y guarda en la página solo los que
     están de verdad en diagonal ("bloques_confirmados"); la IA suele marcar recuadros y avisos derechos."""
@@ -440,7 +483,8 @@ CORRECCIONES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcc
 def aplicar_correcciones(nid, articulos):
     """Correcciones hechas a mano (correcciones.json): sobreviven a cada nueva lectura o unión.
 
-    Cada corrección identifica un artículo por número y primera página, reemplaza los campos de
+    Cada corrección identifica un artículo por número y primera página (y, si hace falta, tipo o parte del
+    título: "titulo_contiene", sin importar tildes ni mayúsculas), reemplaza los campos de
     "cambios" y aplica los "reemplazos" de texto ([texto leído, texto correcto]) en orden.
     """
     if not os.path.exists(CORRECCIONES):
@@ -449,7 +493,9 @@ def aplicar_correcciones(nid, articulos):
         if c["numero"] != nid:
             continue
         for a in articulos:
-            if a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"]):
+            parecido = lambda t: unicodedata.normalize("NFD", t).encode("ascii", "ignore").decode().lower()
+            if (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
+                    and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"]))):
                 a.update(c.get("cambios", {}))
                 for viejo, nuevo in c.get("reemplazos", []):
                     if viejo in a["texto"]:
@@ -466,6 +512,43 @@ PROPIOS = {"cuento", "poema", "aviso", "humor", "pie de foto", "carta"}  # tipos
 def compatibles(a, b):
     """Dos partes pueden ser el mismo texto: del mismo tipo, o ambas de tipo periodístico general."""
     return a.get("tipo") == b.get("tipo") or not ({a.get("tipo"), b.get("tipo")} & PROPIOS)
+
+
+def sin_repetir(fin, inicio, maximo=80):
+    """Saca del comienzo de `inicio` el tramo que repite el final de `fin` (la franja donde se superponen las dos
+    mitades de la página). Devuelve `inicio` recortado."""
+    pf, pi = fin.split(), inicio.split()
+    for k in range(min(maximo, len(pf), len(pi)), 4, -1):
+        if [w.strip(".,;:") for w in pf[-k:]] == [w.strip(".,;:") for w in pi[:k]]:
+            return " ".join(pi[k:])
+    return inicio
+
+
+def unir_mitades(arriba, abajo):
+    """Una página leída en dos pedidos (mitad superior e inferior) -> una sola lectura."""
+    clave = lambda a: " ".join(a["titulo"].lower().split())
+    articulos = [dict(a) for a in arriba["articulos"]]
+    for b in abajo["articulos"]:
+        par = next((a for a in articulos if clave(a) == clave(b)), None)
+        if par is None and b.get("empieza_cortado"):
+            cortados = [a for a in articulos if a.get("termina_cortado")]
+            par = cortados[-1] if len(cortados) == 1 else None
+        if par is None:
+            articulos.append(dict(b))
+            continue
+        texto = sin_repetir(par["texto"], b["texto"])
+        par["texto"] = par["texto"].rstrip() + ("" if par["texto"].rstrip().endswith("-") else "\n\n") + texto
+        par["termina_cortado"] = b.get("termina_cortado", False)
+        par["autor"] = par.get("autor") or b.get("autor")
+    completa = bool(arriba.get("transcripcion_completa")) and bool(abajo.get("transcripcion_completa"))
+    return {**arriba, "articulos": articulos, "ilustraciones": arriba["ilustraciones"] + abajo["ilustraciones"],
+            "bloques_girados": arriba.get("bloques_girados", []) + abajo.get("bloques_girados", []),
+            "transcripcion_completa": completa,
+            "omisiones": " / ".join(x for x in (arriba.get("omisiones"), abajo.get("omisiones")) if x) or None,
+            "notas": " / ".join(x for x in (arriba.get("notas"), abajo.get("notas")) if x) or None,
+            "partes_sin_leer": arriba.get("partes_sin_leer") or abajo.get("partes_sin_leer"),
+            "tokens_entrada": arriba["tokens_entrada"] + abajo["tokens_entrada"],
+            "tokens_salida": arriba["tokens_salida"] + abajo["tokens_salida"], "dividida": True}
 
 
 def juntar_partes(articulos):
@@ -490,6 +573,31 @@ def juntar_partes(articulos):
             a["termina_cortado"], a["continua_en_pagina"] = b.get("termina_cortado"), b.get("continua_en_pagina")
         juntos.append(a)
     return juntos
+
+
+RAZON_EXTENSION = re.compile(r"extensi[oó]n|largo|densidad|denso|abreviad|resumid|parcial", re.I)
+
+
+def siguiente_paso(pag, ocr):
+    """Qué hacer después de la lectura de Haiku (etapa 2 en adelante):
+    "mitad"  -> releerla con Haiku en dos pedidos (mitad superior e inferior): le falta texto, casi siempre
+                porque la IA abrevia las páginas largas o densas;
+    "sonnet" -> releerla con Sonnet: Haiku no pudo, o la página es muy poco legible;
+    None     -> la lectura alcanza."""
+    if pag is None:
+        return "sonnet"
+    if pag.get("bloqueada"):
+        return None
+    p_ia = sum(palabras(a["texto"]) for a in pag["articulos"])
+    p_ocr = palabras(ocr)
+    if p_ocr > 150 and p_ia < 0.6 * p_ocr:
+        return "mitad"
+    declara = pag.get("transcripcion_completa") is False and RAZON_EXTENSION.search(pag.get("omisiones") or "")
+    if p_ocr > 150 and p_ia < 0.75 * p_ocr and declara:
+        return "mitad"
+    if pag.get("legibilidad") == "mala" and pag.get("partes_sin_leer"):
+        return "sonnet"
+    return None
 
 
 def unir_continuaciones(paginas):

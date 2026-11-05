@@ -6,8 +6,13 @@ Uso:
       aparezcan pronto los distintos estilos de impresión. Los agrega a CARPETA_LECTURA/etapa.json.
   python3 lotes_ia.py seguir CARPETA_ROLLOS CARPETA_OCR CARPETA_LECTURA [--tope DOLARES]
       Avanza lo que se pueda y termina: manda los lotes que falten, recoge los que ya
-      terminaron, decide qué páginas pasan a Sonnet y arma la versión final de cada número.
-      Se puede correr las veces que haga falta; nunca repite una página ya leída.
+      terminaron, decide los pasos siguientes de cada página y arma la versión final de cada
+      número. Se puede correr las veces que haga falta; nunca repite una página ya leída.
+
+Pasos por página (etapa 2): Haiku la lee entera, con la página enfrentada como contexto y
+enderezada si está impresa de costado; si le falta texto, Haiku la relee en dos mitades
+("mitad"); si es muy poco legible o Haiku falló, Sonnet ("sonnet"); los bloques de texto en
+diagonal confirmados se leen enderezados ("bloque").
   python3 lotes_ia.py estado CARPETA_LECTURA
 
 Todo el estado queda en CARPETA_LECTURA: etapa.json (números elegidos), lotes.json (lotes
@@ -15,6 +20,7 @@ mandados y su estado), gasto.json (gasto acumulado, que no puede pasar el tope) 
 las mismas lecturas que deja leer_ia.py (pNN.haiku.json, pNN.sonnet.json, pNN.json, articulos.json).
 """
 import argparse, glob, json, os, re, sys, tempfile, time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import anthropic
@@ -23,14 +29,15 @@ from anthropic.types.messages.batch_create_params import Request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, PaginaCompleta, cliente, confirmar_bloques,
-                     contenido_pagina, dudas, enderezar, finalizar, imagen_b64, insertar_bloque, palabras, paginas_de,
-                     pliegos)
+                     contenido_pagina, enderezar, finalizar, imagen_b64, insertar_bloque, orientacion, palabras,
+                     paginas_de, pliegos, siguiente_paso, unir_mitades)
 from ocr_numero import metadatos
 
 ESQUEMA = anthropic.transform_schema(PaginaCompleta)  # desde la etapa 2: declara si la transcripción está completa
 ESQUEMA_BLOQUE = anthropic.transform_schema(Bloque)
-PAGINAS_POR_LOTE = 60   # cada página pesa ~3 MB en el pedido (tres imágenes en base64); un lote admite hasta 256 MB
-COSTO_ESTIMADO = {"haiku": 0.0020, "sonnet": 0.040, "bloque": 0.025}  # por pedido, con descuento de lotes y margen
+PEDIDOS_POR_LOTE = 60   # cada pedido pesa ~3 MB (tres imágenes en base64); un lote admite hasta 256 MB
+# por página, con descuento de lotes y algo de margen ("mitad" son dos pedidos; "bloque", uno por bloque)
+COSTO_ESTIMADO = {"haiku": 0.0030, "mitad": 0.0060, "sonnet": 0.040, "bloque": 0.025}
 
 
 def cargar(ruta, vacio):
@@ -88,20 +95,36 @@ class Numero:
         f = f"{self.destino}/p{n:02d}.{modelo}.json"
         return json.load(open(f)) if os.path.exists(f) else None
 
+    def giro(self, n):
+        """Grados para enderezar la página si está impresa de costado (Tesseract); se mide una sola vez."""
+        archivo = f"{self.destino}/giros.json"
+        giros = cargar(archivo, {})
+        if str(n) not in giros:
+            # todas las páginas del número de una vez, en paralelo (Tesseract tarda un segundo por página)
+            faltan = [k for k in range(1, self.total + 1) if str(k) not in giros]
+            self.imagenes()  # extraer las páginas antes de repartir el trabajo
+            with ThreadPoolExecutor(10) as ex:
+                for k, g in zip(faltan, ex.map(lambda k: orientacion(self.imagenes()[k - 1]), faltan)):
+                    giros[str(k)] = g
+            guardar(archivo, giros)
+        return giros[str(n)]
 
-def pedido(numero, n, modelo):
-    """El pedido de una página entera para el lote (Haiku o Sonnet)."""
+
+def pedido(numero, n, modelo, mitad=None):
+    """El pedido de una página para el lote (Haiku o Sonnet; entera o una mitad)."""
     m = numero.pliegos.get(n)  # modo pliego: la página enfrentada va como contexto
     contenido = contenido_pagina(numero.imagenes()[n - 1], numero.meta, n, numero.total, numero.ocr[n], completa=True,
-                                 enfrentada=(numero.imagenes()[m - 1], m) if m else None)
-    return Request(custom_id=f"{numero.id}__{n}__{modelo}", params=MessageCreateParamsNonStreaming(
+                                 enfrentada=(numero.imagenes()[m - 1], m) if m else None, mitad=mitad,
+                                 giro=numero.giro(n))
+    sufijo = {None: "", "superior": "-sup", "inferior": "-inf"}[mitad]
+    return Request(custom_id=f"{numero.id}__{n}__{modelo}{sufijo}", params=MessageCreateParamsNonStreaming(
         model=MODELOS[modelo][0], max_tokens=32000, messages=[{"role": "user", "content": contenido}],
         output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}}))
 
 
 def pedidos_bloques(numero, n):
-    """Un pedido por cada bloque girado de la página: el bloque enderezado y el texto que ya leyó Sonnet."""
-    leida = numero.lectura(n, "sonnet")
+    """Un pedido por cada bloque en diagonal confirmado: el bloque enderezado y el texto ya leído de la página."""
+    leida = elegir_lectura(numero, n, con_bloques=False) or {"articulos": []}
     texto = "\n\n".join(a["texto"] for a in leida["articulos"])
     pedidos = []
     for k, bloque in enumerate(numero.lectura(n, "haiku")["bloques_confirmados"], 1):
@@ -126,10 +149,22 @@ def incompleta(lectura, ocr):
     return declara and sum(palabras(a["texto"]) for a in lectura["articulos"]) < 0.75 * palabras(ocr)
 
 
-def elegir_lectura(num, n):
-    """La mejor lectura de una página: Sonnet completo; si no, Haiku completo; si ninguna está completa,
-    la más larga, marcada "incompleta" y con el texto de Tesseract al lado para que siga siendo buscable."""
-    lecturas = [x for x in (num.lectura(n, "sonnet"), num.lectura(n, "haiku")) if x]
+def elegir_lectura(num, n, con_bloques=True):
+    """La mejor lectura de una página: la primera completa entre Sonnet, Haiku en dos mitades y Haiku entera; si
+    ninguna está completa, la más larga, marcada "incompleta" y con el texto de Tesseract al lado para que siga
+    siendo buscable. Después se le agregan los bloques en diagonal leídos enderezados."""
+    x = _elegir(num, n)
+    bloques = cargar(f"{num.destino}/p{n:02d}.bloques.json", [])
+    if x and con_bloques and bloques and not x.get("bloqueada"):
+        x = json.loads(json.dumps(x))  # copia: la lectura guardada no se toca
+        for b in bloques:
+            b["ubicacion"] = insertar_bloque(x["articulos"], b)
+        x["bloques"] = bloques
+    return x
+
+
+def _elegir(num, n):
+    lecturas = [x for x in (num.lectura(n, "sonnet"), num.lectura(n, "haiku-dividida"), num.lectura(n, "haiku")) if x]
     validas = [x for x in lecturas if not x.get("bloqueada")]
     if lecturas and not validas:
         return {"bloqueada": True}  # derechos de autor: finalizar() deja el texto de Tesseract
@@ -153,7 +188,7 @@ def finalizar_numero(num):
 
 
 def costo(modelo, entrada, salida):
-    _, p_ent, p_sal = MODELOS["sonnet" if modelo.startswith("bloque") else modelo]
+    _, p_ent, p_sal = MODELOS["sonnet" if modelo.startswith("bloque") else modelo.split("-")[0]]
     return (entrada * p_ent + salida * p_sal) / 1e6 / 2  # la API de lotes cobra la mitad
 
 
@@ -199,14 +234,9 @@ def seguir(rollos, ocr, lectura, tope):
                     fallas[r.custom_id] = fallas.get(r.custom_id, 0) + 1
                     problemas.append(f"{nid} pág. {n} {modelo}: respuesta inválida {str(e)[:80]}")
                     continue
-                leida = num.lectura(n, "sonnet")
-                bloque["ubicacion"] = insertar_bloque(leida["articulos"], bloque)
-                leida.setdefault("bloques", []).append(bloque)
-                leida["tokens_entrada"] += msg.usage.input_tokens
-                leida["tokens_salida"] += msg.usage.output_tokens
-                if bloque["ubicacion"] == "sin_ubicar":
-                    problemas.append(f"{nid} pág. {n}: bloque enderezado sin ubicar, se puso al comienzo (revisar)")
-                guardar(f"{num.destino}/p{n:02d}.sonnet.json", leida)
+                bloques = cargar(f"{num.destino}/p{n:02d}.bloques.json", [])
+                bloques.append({**bloque, "pedido": modelo})
+                guardar(f"{num.destino}/p{n:02d}.bloques.json", bloques)
                 continue
             try:
                 datos = PaginaCompleta.model_validate_json(texto).model_dump()
@@ -217,13 +247,17 @@ def seguir(rollos, ocr, lectura, tope):
             datos.update(modelo=modelo, tokens_entrada=msg.usage.input_tokens, tokens_salida=msg.usage.output_tokens,
                          lote=lote["id"], pagina_enfrentada=num.pliegos.get(n))
             if modelo == "sonnet":
-                previa = num.lectura(n, "haiku") or {}
-                minimo = 0.5 * sum(palabras(a["texto"]) for a in previa.get("articulos", []))
+                previas = [x for x in (num.lectura(n, "haiku-dividida"), num.lectura(n, "haiku")) if x and "articulos" in x]
+                minimo = 0.5 * max([sum(palabras(a["texto"]) for a in x["articulos"]) for x in previas] or [0])
                 if sum(palabras(a["texto"]) for a in datos["articulos"]) < minimo:
                     guardar(f"{num.destino}/p{n:02d}.sonnet-trunca.json", datos)
                     problemas.append(f"{nid} pág. {n} sonnet: lectura trunca, queda la de Haiku")
                     continue
             guardar(archivo, datos)
+            if modelo in ("haiku-sup", "haiku-inf"):
+                sup, inf = num.lectura(n, "haiku-sup"), num.lectura(n, "haiku-inf")
+                if sup and inf:
+                    guardar(f"{num.destino}/p{n:02d}.haiku-dividida.json", {**unir_mitades(sup, inf), "modelo": "haiku"})
         gasto["usd"] += gastado
         gasto["detalle"].append({"lote": lote["id"], "modelo": lote["modelo"], "usd": round(gastado, 4)})
         lote.update(estado="recogido", usd=round(gastado, 4), problemas=problemas)
@@ -247,37 +281,43 @@ def seguir(rollos, ocr, lectura, tope):
             confirmar_bloques(h, num.imagenes()[n - 1])
             guardar(f"{num.destino}/p{n:02d}.haiku.json", h)
         num._imagenes = None
-    # (una página que falló dos veces con Haiku pasa a Sonnet; dos veces con Sonnet, queda lo que haya)
+    # (una página que falló dos veces en un paso pasa al siguiente)
     falla = lambda num, n, m: fallas.get(f"{num.id}__{n}__{m}", 0) >= 2
-    faltan = {"haiku": [], "sonnet": [], "bloque": []}
+    curso = lambda num, n, m: any(i == num.id and p == n and x.startswith(m) for i, p, x in en_curso)
+    faltan = {"haiku": [], "mitad": [], "sonnet": [], "bloque": []}
     for num in numeros.values():
         for n in range(1, num.total + 1):
+            if os.path.exists(f"{num.destino}/p{n:02d}.json"):
+                continue  # ya tiene su versión final
             h = num.lectura(n, "haiku")
             if h is None and not falla(num, n, "haiku"):
-                if (num.id, n, "haiku") not in en_curso and not os.path.exists(f"{num.destino}/p{n:02d}.json"):
+                if not curso(num, n, "haiku"):
                     faltan["haiku"].append((num, n))
                 continue
-            if (num.lectura(n, "sonnet") is None and (num.id, n, "sonnet") not in en_curso and not falla(num, n, "sonnet")
-                    and not os.path.exists(f"{num.destino}/p{n:02d}.sonnet-trunca.json") and dudas(h, num.ocr[n])):
+            paso = siguiente_paso(h, num.ocr[n])
+            if paso == "mitad" and falla(num, n, "haiku-sup") | falla(num, n, "haiku-inf"):
+                paso = "sonnet"
+            if paso == "mitad" and num.lectura(n, "haiku-dividida") is None:
+                if not curso(num, n, "haiku-sup") and not curso(num, n, "haiku-inf"):
+                    faltan["mitad"].append((num, n))
+                continue
+            if (paso == "sonnet" and num.lectura(n, "sonnet") is None and not curso(num, n, "sonnet")
+                    and not falla(num, n, "sonnet") and not os.path.exists(f"{num.destino}/p{n:02d}.sonnet-trunca.json")):
                 faltan["sonnet"].append((num, n))
-    # Bloques girados: cuando Sonnet ya leyó la página y todavía no se leyeron aparte
-    for num in numeros.values():
-        for n in range(1, num.total + 1):
-            h, son = num.lectura(n, "haiku"), num.lectura(n, "sonnet")
-            if (h and son and not son.get("bloqueada") and h.get("bloques_confirmados") and "bloques" not in son
-                    and not any(i == num.id and p == n and m.startswith("bloque") for i, p, m in en_curso)
-                    and not falla(num, n, "bloque1")):
+                continue
+            if (h and h.get("bloques_confirmados") and not os.path.exists(f"{num.destino}/p{n:02d}.bloques.json")
+                    and not curso(num, n, "bloque") and not falla(num, n, "bloque1")
+                    and not curso(num, n, "haiku") and not curso(num, n, "sonnet")):
                 faltan["bloque"].append((num, n))
-    # Sonnet espera a que Haiku haya terminado con el número, para decidir con toda la información
-    pendientes_haiku = {num.id for num, _ in faltan["haiku"]} | {i for i, _, m in en_curso if m == "haiku"}
-    faltan["sonnet"] = [(num, n) for num, n in faltan["sonnet"] if num.id not in pendientes_haiku]
 
     # 3. Mandar lotes nuevos, sin pasar el tope
-    comprometido = gasto["usd"] + sum(COSTO_ESTIMADO[l["modelo"]] * l["paginas"] for l in lotes if l["estado"] != "recogido")
-    for modelo in ("haiku", "sonnet", "bloque"):
+    comprometido = gasto["usd"] + sum(COSTO_ESTIMADO.get(l["modelo"], 0.04) * l["paginas"] for l in lotes
+                                      if l["estado"] != "recogido")
+    for modelo in ("haiku", "mitad", "sonnet", "bloque"):
         cola = faltan[modelo]
-        for i in range(0, len(cola), PAGINAS_POR_LOTE):
-            parte = cola[i:i + PAGINAS_POR_LOTE]
+        por_lote = PEDIDOS_POR_LOTE // 2 if modelo in ("mitad", "bloque") else PEDIDOS_POR_LOTE
+        for i in range(0, len(cola), por_lote):
+            parte = cola[i:i + por_lote]
             estimado = COSTO_ESTIMADO[modelo] * len(parte) * (2 if modelo == "bloque" else 1)
             if comprometido + estimado > tope:
                 print(f"Tope de US$ {tope:.2f}: no mando {len(cola) - i} páginas de {modelo} "
@@ -285,11 +325,13 @@ def seguir(rollos, ocr, lectura, tope):
                 break
             if modelo == "bloque":
                 pedidos = [p for num, n in parte for p in pedidos_bloques(num, n)]
+            elif modelo == "mitad":
+                pedidos = [pedido(num, n, "haiku", mitad) for num, n in parte for mitad in ("superior", "inferior")]
             else:
                 pedidos = [pedido(num, n, modelo) for num, n in parte]
             # liberar las imágenes de los números ya preparados (el último puede seguir en el próximo lote)
             usados = list({num.id: num for num, _ in parte}.values())
-            for num in usados[:-1] if i + PAGINAS_POR_LOTE < len(cola) else usados:
+            for num in usados[:-1] if i + por_lote < len(cola) else usados:
                 num._imagenes = None
             try:
                 b = cli.messages.batches.create(requests=pedidos)
@@ -310,7 +352,8 @@ def seguir(rollos, ocr, lectura, tope):
     for num in numeros.values():
         if num.id in en_curso or any(n.id == num.id for lista in faltan.values() for n, _ in lista):
             continue
-        if os.path.exists(f"{num.destino}/articulos.json"):
+        if os.path.exists(f"{num.destino}/articulos.json") and all(
+                os.path.exists(f"{num.destino}/p{n:02d}.json") for n in range(1, num.total + 1)):
             listos += 1
             continue
         finalizar_numero(num)
