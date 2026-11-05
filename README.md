@@ -84,6 +84,10 @@ cp sitio-prueba-3/index.html prueba-ia/sitio/ && python3 -m http.server 8766 --d
 
 Requiere Python 3.10 o más y `pip install anthropic pydantic Pillow opencv-python-headless numpy`.
 
+## Decisiones de diseño
+
+- **Doble página por defecto** (Coli Quijano, 5/11/2026): el visor muestra cada número como en los rollos de microfilm, de a pliego (página izquierda y derecha enfrentadas), porque muchos artículos y títulos cruzan las dos páginas. La tapa y la contratapa se ven solas. Una casilla permite ver de a una página. Vale para el sitio de prueba, las próximas etapas y el sitio definitivo.
+
 ## Colección (inventario del 26/10/2026)
 
 1676 PDFs, 89 GB, en 34 carpetas de rollo. Números 1 a 1674 (julio 1939 a 1974), falta el 1242. Casos especiales: `280-misterio-Mayo-4-1945.pdf`, `Chasque1-Agosto-28-1968.pdf` y `Chasque2-Setiembre-04-1968.pdf`.
