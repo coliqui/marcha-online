@@ -124,6 +124,7 @@ INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. 
 Transcribí todos los textos de la página en orden de lectura, siguiendo las columnas como lo haría una persona:
 - Transcribí todo, aunque la página sea larga o densa. Las críticas de libros, cine y teatro, las cartas de lectores, las novedades editoriales, las carteleras y los recuadros son parte del archivo y van completos, como cualquier artículo.
 - En las carteleras y guías de cine o teatro, transcribí al menos el título de cada película u obra, cada una en su propio párrafo, como en el original.
+- Las tablas (cifras, estadísticas, resultados, horarios, cuadros comparativos) transcribilas como tabla Markdown dentro del texto del artículo, celda por celda y con todas sus filas, incluidas las de totales: una línea por fila, las celdas separadas por "|", la fila de encabezados seguida de una línea "| --- | --- |". Respetá las cifras tal como están impresas; si una celda no se puede leer, poné [ilegible]. El texto que rodea a la tabla va antes y después, en párrafos aparte.
 - En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
 - Uní las palabras cortadas con guion al final del renglón ("re-\\nnuncia" -> "renuncia") y los renglones de un mismo párrafo. Separá los párrafos con una línea en blanco.
 - Respetá la ortografía de época tal como está impresa ("fué", "dió", "Constantín"). No corrijas, no resumas, no modernices.

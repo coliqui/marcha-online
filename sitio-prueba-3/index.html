@@ -89,6 +89,11 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .art .by { font-size: 14px; margin-bottom: 6px }
 .art .txt { white-space: pre-wrap; font-size: 15px; max-height: 60vh; overflow: auto }
 .art details summary { cursor: pointer; font: 600 13px var(--display); color: var(--accent) }
+.txt table { border-collapse: collapse; margin: 8px 0; font-size: 14px; white-space: normal }
+.txt .tabla { overflow-x: auto; max-width: 100% }
+.txt th, .txt td { border: 1px solid var(--rule); padding: 3px 8px; text-align: left; vertical-align: top }
+.txt th { background: var(--sheet); font-weight: 700 }
+.txt td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap }
 .art.ocr .txt { font-family: ui-monospace, Menlo, monospace; font-size: 13px }
 
 /* Grids */
@@ -159,16 +164,30 @@ const GESTOS = { clickToZoom: false, dblClickToZoom: true, scrollToZoom: false }
 
 // Trackpad: desplazar con dos dedos mueve la página; pellizcar (que el navegador manda como rueda con Ctrl)
 // acerca o aleja. En el teléfono, pellizcar acerca y un dedo arrastra, como siempre.
+// La columna de artículos ocupa exactamente lo que se ve de la ventana desde su borde de arriba hasta abajo,
+// así su último artículo se alcanza desplazando solo la columna (sin tener que mover la página entera).
+function ajustarPanel() {
+  const side = document.querySelector(".viewer > .side");
+  if (!side) return;
+  if (innerWidth <= 900) { side.style.maxHeight = ""; return; }
+  const arriba = Math.max(8, side.getBoundingClientRect().top);
+  side.style.maxHeight = Math.max(200, innerHeight - arriba - 8) + "px";
+}
+addEventListener("scroll", ajustarPanel, { passive: true });
+addEventListener("resize", ajustarPanel);
+
 function gestos(v) {
   v.addHandler("canvas-scroll", e => {
     const ev = e.originalEvent;
     e.preventDefaultAction = true;
     e.preventDefault = true;
     ev.preventDefault();
+    // el trackpad manda muchos pasos chicos: se aplican al instante (fluido); la rueda del ratón, pasos grandes y animados
+    const fino = Math.abs(ev.deltaX) + Math.abs(ev.deltaY) < 40;
     if (ev.ctrlKey || ev.metaKey) {
-      v.viewport.zoomBy(Math.exp(-ev.deltaY * 0.01), v.viewport.pointFromPixel(e.position, true));
+      v.viewport.zoomBy(Math.exp(-ev.deltaY * 0.025), v.viewport.pointFromPixel(e.position, true), fino);
     } else {
-      v.viewport.panBy(v.viewport.deltaPointsFromPixels(new OpenSeadragon.Point(ev.deltaX, ev.deltaY)));
+      v.viewport.panBy(v.viewport.deltaPointsFromPixels(new OpenSeadragon.Point(ev.deltaX * 2, ev.deltaY * 2)), fino);
     }
     v.viewport.applyConstraints();
   });
@@ -230,6 +249,29 @@ async function cargar() {
 
 const coincide = (x, terms) => terms.every(t => [...x.tok].some(w => w.startsWith(t)));
 const resaltar = (texto, terms) => esc(texto).replace(/[\p{L}\d]+/gu, w => terms.some(t => norm(w).startsWith(t)) ? `<mark>${w}</mark>` : w);
+
+// El texto de un artículo, con las tablas Markdown (líneas que empiezan con "|") dibujadas como tablas
+function textoConTablas(texto, terms) {
+  const lineas = texto.split("\n"), partes = [];
+  let i = 0;
+  while (i < lineas.length) {
+    if (/^\s*\|/.test(lineas[i])) {
+      const filas = [];
+      while (i < lineas.length && /^\s*\|/.test(lineas[i])) filas.push(lineas[i++]);
+      const celdas = f => f.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+      const separador = f => /^[\s|:-]+$/.test(f) && f.includes("-");
+      const cuerpo = filas.filter(f => !separador(f)).map(celdas);
+      const conEncabezado = filas.length > 1 && separador(filas[1]);
+      const celda = (c, tag) => `<${tag}${tag === "td" && /^[\d.,%" ()$-]+$/.test(c) && /\d/.test(c) ? ' class="num"' : ""}>${resaltar(c, terms)}</${tag}>`;
+      partes.push(`<div class="tabla"><table>${cuerpo.map((f, k) => `<tr>${f.map(c => celda(c, conEncabezado && k === 0 ? "th" : "td")).join("")}</tr>`).join("")}</table></div>`);
+    } else {
+      const bloque = [];
+      while (i < lineas.length && !/^\s*\|/.test(lineas[i])) bloque.push(lineas[i++]);
+      partes.push(resaltar(bloque.join("\n"), terms));
+    }
+  }
+  return partes.join("");
+}
 
 function fragmento(texto, terms) {
   const n = norm(texto);
@@ -349,13 +391,14 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
           <div class="small muted"><span class="pill ${a.tipo === "ocr" ? "ocr" : ""}">${a.tipo === "ocr" ? "OCR sin revisar" : esc(a.tipo)}</span> ${a.seccion ? esc(a.seccion) : ""} ${a.paginas.length > 1 ? `· págs. ${a.paginas.join(", ")}${a.union_por_pliego ? " (cruza el pliego)" : a.union_sin_marca ? " (unido automáticamente)" : ""}` : vistas.length > 1 ? `· pág. ${a.paginas[0]}` : ""}</div>
           <h3>${resaltar(a.titulo, terms)}</h3>
           ${a.autor ? (pa => `<div class="by">por ${pa ? `<a href="#/autor/${encodeURIComponent(pa.clave)}">${esc(a.autor)}</a>` : esc(a.autor)}</div>`)(ARTS.find(x => x.nid === nid && x.i === a.i).persona) : ""}
-          <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${resaltar(a.texto, terms)}</div></details>
+          <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${textoConTablas(a.texto, terms)}</div></details>
           ${a.temas.length ? `<div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div>` : ""}${citas(nid, a.i)}</article>`).join("") : `<p class="muted">No hay textos leídos en ${vistas.length > 1 ? "estas páginas" : "esta página"}.</p>`}
         ${numeros.includes(1) ? citadoEn(nid) : ""}
       </div></div>`;
 
   activarNota("nota-pagina", { numero: nid, pagina: n, titulo: `nº ${nid}, pág. ${n}` });
   if (visor) visor.destroy();
+  ajustarPanel();
   visor = OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, showNavigator: true, navigatorPosition: "TOP_RIGHT",
     gestureSettingsMouse: GESTOS,
     tileSources: vistas.map((pp, i) => ({ tileSource: { type: "image", url: pp.hd, buildPyramid: true }, x: desplazamiento(i), y: 0, width: 1 })) });
