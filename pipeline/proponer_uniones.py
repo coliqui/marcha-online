@@ -97,6 +97,8 @@ if __name__ == "__main__":
         if not re.match(r"^\d+\.json$", os.path.basename(f)):
             continue
         d = json.load(open(f))
+        # los artículos, de la versión final (con las uniones ya aplicadas); las páginas, del sitio
+        d["articulos"] = json.load(open(os.path.join(lectura, d["id"], "articulos.json")))["articulos"]
         vocab = []
         for t in glob.glob(os.path.join(ocr, d["id"], "p*.txt")):
             vocab += pal(open(t, encoding="utf-8").read())

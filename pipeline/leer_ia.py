@@ -522,7 +522,8 @@ def aplicar_correcciones(nid, articulos):
         return articulos
     parecido = lambda t: unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()
     es = lambda a, c: (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
-                       and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"])))
+                       and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"]))
+                       and (not c.get("empieza") or parecido(a["texto"]).lstrip().startswith(parecido(c["empieza"]))))
     sacar = []
     for c in json.load(open(CORRECCIONES))["correcciones"]:
         if c["numero"] != nid:
@@ -530,6 +531,17 @@ def aplicar_correcciones(nid, articulos):
         for a in articulos:
             if a in sacar or not es(a, c):
                 continue
+            if c.get("partir"):  # un tramo del texto pegado por error a este artículo pasa a otro
+                corte = a["texto"].find(c["partir"]["desde"])
+                b = next((x for x in articulos if x is not a and es(x, c["partir"]["a"])), None)
+                if corte < 0 or b is None:
+                    print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no pude partir {c['partir']}")
+                else:
+                    tramo, a["texto"] = a["texto"][corte:], a["texto"][:corte].rstrip()
+                    b["texto"] = b["texto"].rstrip() + "\n\n" + tramo
+                    b["paginas"] = sorted(set(b["paginas"]) | set(c["partir"].get("paginas", [])))
+                    a["paginas"] = sorted(set(a["paginas"]) - set(c["partir"].get("quitar_paginas", [])))
+                    b["corregido_a_mano"] = True
             for clave in ("unir", "destacados", "recuadros"):
                 for pieza in c.get(clave, []):
                     b = next((x for x in articulos if x is not a and x not in sacar and es(x, pieza)), None)
@@ -538,7 +550,11 @@ def aplicar_correcciones(nid, articulos):
                         continue
                     sacar.append(b)
                     if clave == "unir":
-                        a["texto"] = a["texto"].rstrip() + "\n\n" + (pieza["antes"] + "\n\n" if pieza.get("antes") else "") + b["texto"].lstrip()
+                        fin = a["texto"].rstrip()
+                        if fin.endswith("-") and not pieza.get("antes"):  # palabra cortada: "porcenta-" + "je"
+                            a["texto"] = fin[:-1] + b["texto"].lstrip()
+                        else:
+                            a["texto"] = fin + "\n\n" + (pieza["antes"] + "\n\n" if pieza.get("antes") else "") + b["texto"].lstrip()
                         a["paginas"] = sorted(set(a["paginas"]) | set(b["paginas"]))
                         a["continua_en_pagina"] = b.get("continua_en_pagina") or a.get("continua_en_pagina")
                         a["temas"] = list(dict.fromkeys(a.get("temas", []) + b.get("temas", [])))
@@ -550,7 +566,10 @@ def aplicar_correcciones(nid, articulos):
                     a["texto"] = a["texto"].replace(viejo, nuevo, 1)
                 else:
                     print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {viejo!r}")
-            a["corregido_a_mano"] = True
+            if c.get("automatica"):  # unión automática (proponer_uniones.py): se puede deshacer borrando la entrada
+                a.setdefault("uniones_automaticas", []).append(c["unir"][0]["pagina"])
+            else:
+                a["corregido_a_mano"] = True
             break
     return [a for a in articulos if a not in sacar]
 

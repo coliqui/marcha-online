@@ -234,6 +234,10 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
         if a.get("union_sin_marca"):
             caso("uniones_sin_marca", meta, a["paginas"][0], f"«{a['titulo'][:70]}» se unió entre las págs. "
                  f"{', '.join(map(str, a['paginas']))} sin marca «pasa a pág.»: verificar que sea el mismo texto.", articulo=i)
+        if a.get("uniones_automaticas"):
+            caso("uniones_aplicadas", meta, a["paginas"][0], f"«{a['titulo'][:70]}» se unió automáticamente con el pedazo "
+                 f"suelto de la pág. {', '.join(map(str, a['uniones_automaticas']))} (palabra cortada o título repetido). "
+                 "Si está mal, anotalo y se deshace.", articulo=i)
         if a.get("corregido_a_mano"):
             caso("corregidos", meta, a["paginas"][0], f"«{a['titulo'][:70]}» tiene correcciones hechas a mano.", articulo=i)
 
