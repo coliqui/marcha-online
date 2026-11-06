@@ -35,7 +35,7 @@ MODELOS = {
 LADO_MAXIMO = 1568
 ARRIBA, ABAJO = (0.0, 0.55), (0.45, 1.0)  # franjas de la página que van en cada imagen
 TIPOS = Literal["editorial", "nota", "entrevista", "crítica", "columna", "carta", "cuento",
-                "poema", "humor", "aviso", "pie de foto", "otro"]
+                "poema", "humor", "aviso", "pie de foto", "destacado", "otro"]
 
 
 class Referencia(BaseModel):
@@ -60,6 +60,8 @@ class Articulo(BaseModel):
     referencias: List[Referencia] = []  # menciones a otros números o artículos de Marcha
     # modo pliego: el artículo cruza a la página enfrentada (sigue en ella, viene de ella, o las dos cosas)
     cruza_pliego: Literal["no", "sigue_en_la_enfrentada", "viene_de_la_enfrentada", "ambas"] = "no"
+    # tipo "destacado": cita en recuadro o letra grande que repite una frase de otro artículo (su título va acá)
+    destacado_de: Optional[str] = None
 
 
 class Ilustracion(BaseModel):
@@ -127,6 +129,8 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - En las carteleras y guías de cine o teatro, transcribí al menos el título de cada película u obra, cada una en su propio párrafo, como en el original.
 - Las tablas (cifras, estadísticas, resultados, horarios, cuadros comparativos) transcribilas como tabla Markdown dentro del texto del artículo, celda por celda y con todas sus filas, incluidas las de totales: una línea por fila, las celdas separadas por "|", la fila de encabezados seguida de una línea "| --- | --- |". Respetá las cifras tal como están impresas; si una celda no se puede leer, poné [ilegible]. El texto que rodea a la tabla va antes y después, en párrafos aparte.
 - En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
+- La firma ("Escribe X", "Por X", o un nombre arriba o al pie) va en autor: nunca es el título de un artículo aparte, aunque esté en letra grande en medio de la página. Las volantas, intertítulos y subtítulos que aparecen entre las columnas de un artículo tampoco empiezan otro: quedan dentro de su texto, como párrafo aparte, y el artículo sigue.
+- Las citas destacadas (una frase del mismo artículo repetida en un recuadro o en letra grande) van como un ítem de tipo "destacado", con el título del artículo del que salen en destacado_de. Un recuadro con texto propio (una nota del autor o de la redacción) es un artículo o recuadro normal.
 - Uní las palabras cortadas con guion al final del renglón ("re-\\nnuncia" -> "renuncia") y los renglones de un mismo párrafo. Separá los párrafos con una línea en blanco.
 - Respetá la ortografía de época tal como está impresa ("fué", "dió", "Constantín"). No corrijas, no resumas, no modernices.
 - Incluí también los bloques en diagonal, en recuadros o en tipografía rara. Un bloque en diagonal o girado casi nunca es un texto aparte: suele ser el comienzo o un tramo de un artículo de la misma página y se lee en el lugar que le corresponde dentro de ese artículo.
@@ -484,31 +488,71 @@ def dudas(pag, ocr):
 CORRECCIONES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")
 
 
+def adjuntar_destacados(articulos):
+    """Las citas destacadas (tipo "destacado") pasan a ser parte del artículo del que salen: se busca por el título
+    que dio la IA (destacado_de) entre los artículos de la misma página o la de al lado. Si no se encuentra, queda
+    como ítem aparte, de tipo "destacado"."""
+    parecido = lambda t: " ".join(re.findall(r"[a-z0-9]+", unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()))
+    sacar = []
+    for d in articulos:
+        if d.get("tipo") != "destacado" or not d.get("destacado_de"):
+            continue
+        cerca = lambda a: any(abs(n - m) <= 1 for n in a["paginas"] for m in d["paginas"])
+        de = parecido(d["destacado_de"])
+        a = next((a for a in articulos if a is not d and a.get("tipo") != "destacado" and cerca(a)
+                  and (parecido(a["titulo"]) == de or (len(de) > 8 and de in parecido(a["titulo"])))), None)
+        if a:
+            a.setdefault("destacados", []).append({"texto": d["texto"], "autor": d.get("autor"), "nota": None})
+            sacar.append(d)
+    return [a for a in articulos if a not in sacar]
+
+
 def aplicar_correcciones(nid, articulos):
     """Correcciones hechas a mano (correcciones.json): sobreviven a cada nueva lectura o unión.
 
     Cada corrección identifica un artículo por número y primera página (y, si hace falta, tipo o parte del
     título: "titulo_contiene", sin importar tildes ni mayúsculas), reemplaza los campos de
     "cambios" y aplica los "reemplazos" de texto ([texto leído, texto correcto]) en orden.
+    Además puede juntar en ese artículo otras piezas que la IA separó por error, identificadas igual (página,
+    tipo, titulo_contiene): "unir" (su texto sigue al del artículo, en ese orden; "antes" es un intertítulo que
+    va entre medio), "destacados" (citas destacadas en recuadro: quedan como cita del artículo, no como artículo
+    aparte) y "recuadros" (recuadros propios del artículo, como una nota del autor).
     """
     if not os.path.exists(CORRECCIONES):
         return articulos
+    parecido = lambda t: unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()
+    es = lambda a, c: (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
+                       and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"])))
+    sacar = []
     for c in json.load(open(CORRECCIONES))["correcciones"]:
         if c["numero"] != nid:
             continue
         for a in articulos:
-            parecido = lambda t: unicodedata.normalize("NFD", t).encode("ascii", "ignore").decode().lower()
-            if (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
-                    and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"]))):
-                a.update(c.get("cambios", {}))
-                for viejo, nuevo in c.get("reemplazos", []):
-                    if viejo in a["texto"]:
-                        a["texto"] = a["texto"].replace(viejo, nuevo, 1)
+            if a in sacar or not es(a, c):
+                continue
+            for clave in ("unir", "destacados", "recuadros"):
+                for pieza in c.get(clave, []):
+                    b = next((x for x in articulos if x is not a and x not in sacar and es(x, pieza)), None)
+                    if b is None:
+                        print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {pieza}")
+                        continue
+                    sacar.append(b)
+                    if clave == "unir":
+                        a["texto"] = a["texto"].rstrip() + "\n\n" + (pieza["antes"] + "\n\n" if pieza.get("antes") else "") + b["texto"].lstrip()
+                        a["paginas"] = sorted(set(a["paginas"]) | set(b["paginas"]))
+                        a["continua_en_pagina"] = b.get("continua_en_pagina") or a.get("continua_en_pagina")
+                        a["temas"] = list(dict.fromkeys(a.get("temas", []) + b.get("temas", [])))
                     else:
-                        print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {viejo!r}")
-                a["corregido_a_mano"] = True
-    return articulos
-
+                        a.setdefault(clave, []).append({"texto": b["texto"], "autor": b.get("autor"), "nota": pieza.get("nota")})
+            a.update(c.get("cambios", {}))
+            for viejo, nuevo in c.get("reemplazos", []):
+                if viejo in a["texto"]:
+                    a["texto"] = a["texto"].replace(viejo, nuevo, 1)
+                else:
+                    print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {viejo!r}")
+            a["corregido_a_mano"] = True
+            break
+    return [a for a in articulos if a not in sacar]
 
 PROPIOS = {"cuento", "poema", "aviso", "humor", "pie de foto", "carta"}  # tipos que solo siguen en uno igual
 
@@ -823,7 +867,7 @@ def finalizar(meta, destino, total, ocr, lecturas):
                    "bloqueada": bool(pag and pag.get("bloqueada"))}
         json.dump(pag, open(f"{destino}/p{n:02d}.json", "w"), ensure_ascii=False, indent=1)
         paginas.append((n, pag))
-    articulos = aplicar_correcciones(meta["id"], unir_continuaciones(paginas))
+    articulos = adjuntar_destacados(aplicar_correcciones(meta["id"], unir_continuaciones(paginas)))
     json.dump({**meta, "articulos": articulos}, open(f"{destino}/articulos.json", "w"), ensure_ascii=False, indent=1)
     return paginas, articulos
 

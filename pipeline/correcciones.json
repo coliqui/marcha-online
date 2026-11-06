@@ -37,6 +37,46 @@
     "titulo": "Nasser, artífice de la unidad árabe"
    },
    "motivo": "Título indicado por Coli Quijano (revisión, nov. 2026); la página está impresa de costado."
+  },
+  {
+   "numero": "059",
+   "pagina": 3,
+   "tipo": "editorial",
+   "titulo_contiene": "camino de liberacion",
+   "unir": [
+    {
+     "pagina": 3,
+     "titulo_contiene": "escribe mario"
+    },
+    {
+     "pagina": 3,
+     "tipo": "nota",
+     "titulo_contiene": "el camino de liberacion",
+     "antes": "ARGENTINA-URUGUAY, BLOQUE PLATENSE"
+    }
+   ],
+   "destacados": [
+    {
+     "pagina": 3,
+     "titulo_contiene": "por que vamos a pedir ayuda",
+     "nota": "Junto a caricaturas de Roosevelt (firma Ortiz)."
+    },
+    {
+     "pagina": 3,
+     "titulo_contiene": "que hemos querido decir"
+    }
+   ],
+   "recuadros": [
+    {
+     "pagina": 3,
+     "titulo_contiene": "en el presente articulo"
+    }
+   ],
+   "cambios": {
+    "tipo": "nota",
+    "autor": "Mario F. Real de Azúa"
+   },
+   "motivo": "Indicado por Coli Quijano (6/11/2026): es un solo artículo. «Escribe Mario F. Real de Azúa» es la firma y «Argentina-Uruguay, bloque platense» un intertítulo; los recuadros son citas destacadas, salvo «En el presente artículo…», nota del autor. Orden verificado contra el escaneo: «…DEFENDER LOS INTERESES» sigue en «DE NUESTRA NACIONALIDAD!», y después del intertítulo «Hasta Caseros…», que pasa a la pág. 4."
   }
  ]
 }

@@ -94,6 +94,44 @@ def ubicar_articulos(articulos, palabras):
             articulos[i].setdefault("zonas", {})[str(n)] = [q(xs, .04), q(ys, .04), q(xe, .96), q(ye, .96)]
 
 
+def dudas_de_titulos(articulos, enfrentadas):
+    """Casos dudosos de estructura, para revisar a mano (no se cambia nada):
+    - un texto corto que aparece casi igual dentro de otro artículo del pliego (cita destacada o texto leído dos veces);
+    - un "título" que es una firma ("Escribe X", "Por X") y cuyo autor firma otro artículo del pliego;
+    - un texto que empieza a mitad de frase y no se unió a nada (pedazo de otro artículo, con volanta o intertítulo
+      tomado como título)."""
+    from difflib import SequenceMatcher
+    sin = lambda t: unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()
+    tok = lambda t: re.findall(r"[a-z0-9]{2,}", sin(t))
+    pliego = lambda a: {k for n in a["paginas"] for k in (n, enfrentadas.get(n)) if k}
+    salida = []
+    for i, a in enumerate(articulos):
+        if a["tipo"] in ("aviso", "ocr", "pie de foto", "humor"):
+            continue
+        ta = tok(a["texto"])
+        if 6 <= len(ta) <= 90:
+            for c in articulos:
+                if c is a or len(tok(c["texto"])) < 3 * len(ta) or not (pliego(a) & set(c["paginas"])):
+                    continue
+                m = SequenceMatcher(None, ta, tok(c["texto"]), autojunk=False)
+                if sum(b.size for b in m.get_matching_blocks() if b.size >= 3) >= 0.8 * len(ta):
+                    salida.append((a["paginas"][0], f"«{a['titulo'][:60]}» está casi igual dentro de «{c['titulo'][:50]}»: "
+                                   "¿es una cita destacada (recuadro) o un texto leído dos veces?", i))
+                    break
+        m = re.match(r"^(escribe[n]?|por|de nuestro (?:corresponsal|enviado)(?: especial)?)[:\s]+(.+)$", a["titulo"].strip(), re.I)
+        if m and len(a["titulo"].split()) <= 8:
+            ape = [w for w in tok(m.group(2)) if len(w) >= 4]
+            socio = next((c for c in articulos if c is not a and c.get("autor") and pliego(a) & set(c["paginas"])
+                          and any(w in tok(c["autor"]) for w in ape)), None)
+            if socio or m.group(1).lower().startswith("escribe"):
+                salida.append((a["paginas"][0], f"«{a['titulo'][:60]}» parece una firma, no un título"
+                               + (f": ¿es parte de «{socio['titulo'][:50]}»?" if socio else "."), i))
+        if len(a["paginas"]) == 1 and re.match(r"^[a-záéíóúñ]", a["texto"].strip()) and a["tipo"] != "poema":
+            salida.append((a["paginas"][0], f"«{a['titulo'][:60]}» empieza a mitad de frase («{a['texto'].strip()[:40]}…»): "
+                           "parece la continuación de otro artículo, y su título una volanta o intertítulo.", i))
+    return salida
+
+
 def caso(grupo, meta, n, descripcion, articulo=None, zona=None):
     revisar.append({"grupo": grupo, "id": meta["id"], "fecha": meta["fecha"], "n": n,
                     "desc": descripcion, "art": articulo, "zona": zona})
@@ -198,6 +236,8 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
             caso("corregidos", meta, a["paginas"][0], f"«{a['titulo'][:70]}» tiene correcciones hechas a mano.", articulo=i)
 
     ubicar_articulos(articulos, palabras)
+    for n, desc, i in dudas_de_titulos(articulos, enfrentadas):
+        caso("estructura", meta, n, desc, articulo=i)
     # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
     json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(sitio, "datos", f"{nid}-palabras.json"), "w"),
               ensure_ascii=False, separators=(",", ":"))

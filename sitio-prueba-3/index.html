@@ -74,6 +74,9 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .vbar label { text-transform: none; letter-spacing: 0; font-weight: 500; display: flex; gap: 4px; align-items: center }
 .osd { width: 100%; height: min(82vh, 1100px); overscroll-behavior: contain; background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
 .box { background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
+.recuadro { border: 1px solid var(--ink); padding: 8px 10px; margin: 8px 0; font-size: 14px }
+.destacados { margin: 8px 0 }
+.destacados blockquote { margin: 4px 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--mark-edge); font-style: italic; font-size: 14px }
 .abox { outline: 3px solid var(--mark-edge); background: rgba(255,216,74,.12); pointer-events: none }
 .ibox { outline: 2px dashed var(--ilus); pointer-events: none }
 .thumbs { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 }
@@ -419,6 +422,8 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
           <h3>${resaltar(a.titulo, terms)}</h3>
           ${a.autor ? (pa => `<div class="by">por ${pa ? `<a href="#/autor/${encodeURIComponent(pa.clave)}">${esc(a.autor)}</a>` : esc(a.autor)}</div>`)(ARTS.find(x => x.nid === nid && x.i === a.i).persona) : ""}
           <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${textoConTablas(a.texto, terms)}</div></details>
+          ${(a.recuadros || []).map(r => `<aside class="recuadro"><span class="small muted">Recuadro${r.autor ? " · " + esc(r.autor) : ""}</span><div>${resaltar(r.texto, terms)}</div></aside>`).join("")}
+          ${(a.destacados || []).length ? `<div class="destacados"><span class="small muted">Citas destacadas en la página</span>${a.destacados.map(r => `<blockquote>${resaltar(r.texto, terms)}${r.nota ? `<span class="small muted"> (${esc(r.nota)})</span>` : ""}</blockquote>`).join("")}</div>` : ""}
           ${a.temas.length ? `<div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div>` : ""}${citas(nid, a.i)}</article>`).join("") : `<p class="muted">No hay textos leídos en ${vistas.length > 1 ? "estas páginas" : "esta página"}.</p>`}
         ${numeros.includes(1) ? citadoEn(nid) : ""}
       </div></div>`;
@@ -541,6 +546,7 @@ async function conPalabras(nid) {
 
 const GRUPOS = [
   ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
+  ["estructura", "Posible destacado o falso título", "Citas destacadas tomadas como artículos, firmas o volantas tomadas como título, y pedazos de artículos que quedaron sueltos. No se cambió nada: marcar lo que haya que unir."],
   ["repetidos", "Texto repetido quitado", "La IA había copiado dos veces párrafos de la página; se dejó una sola copia. Verificar que el texto siga entero."],
   ["bloques_sin_ubicar", "Bloques en diagonal sin ubicar", "El bloque se leyó enderezado pero no se supo dónde va; quedó al comienzo del artículo."],
   ["diagonales", "Bloques en diagonal leídos enderezados", "Verificar que el texto inclinado esté completo y en su lugar (el recuadro azul marca el bloque)."],
