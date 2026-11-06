@@ -419,6 +419,7 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
       <div><div class="osd" id="osd" role="img" aria-label="Marcha nº ${esc(nid)}, ${vistas.length > 1 ? "páginas " + numeros.join(" y ") : "página " + n}"></div>
         <div class="vbar" style="margin-top:8px"><label><input type="checkbox" id="vd" ${doble ? "checked" : ""}> Doble página, como en el rollo</label>
           <label><input type="checkbox" id="vi" ${verIlus ? "checked" : ""}> Marcar archivo gráfico (${total(vistas, pp => pp.ilustraciones.length)})</label>
+          <span><button type="button" id="girar" title="Girar la página 90°">↻ Girar</button> <button type="button" id="restablecer" title="Volver a la rotación, el zoom y la posición de entrada">Restablecer vista</button></span>
           <span class="muted">Dos dedos para moverte · pellizcar o doble clic para acercar</span>${total(hits, h => h.length) ? `<span>${total(hits, h => h.length)} palabras marcadas</span>` : ""}</div>
         <nav class="thumbs" aria-label="Páginas">${d.paginas.map(pp => `<a href="${link(pp.n)}" ${numeros.includes(pp.n) ? 'aria-current="true"' : ""}><img src="${pp.img}" alt="" loading="lazy"><span class="dot ${conHits.has(pp.n) ? "on" : ""}"></span>${pp.n}</a>`).join("")}</nav></div>
       <div class="side">
@@ -482,6 +483,8 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
       visor.viewport.fitBoundsWithConstraints(rect(yo, x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60), true);
     } else if (marcas.length) { const r = marcas[0]; visor.viewport.fitBoundsWithConstraints(new OpenSeadragon.Rect(r.x - .25, r.y - .18, .5 + r.width, .36 + r.height), true); }
   });
+  $("#girar").onclick = () => visor.viewport.setRotation((visor.viewport.getRotation() + 90) % 360);
+  $("#restablecer").onclick = () => { visor.viewport.setRotation(0); visor.viewport.setFlip && visor.viewport.setFlip(false); visor.viewport.goHome(); };
   $("#vi").onchange = e => { try { localStorage.setItem("verIlus", e.target.checked ? "1" : "0"); } catch {} vistaNumero(nid, n, q, artSel, zona); };
   $("#vd").onchange = e => { try { localStorage.setItem("vista-pliego", e.target.checked ? "1" : "0"); } catch {} vistaNumero(nid, n, q, artSel, zona); };
   if (artSel !== null && artSel !== "" && document.getElementById("a" + artSel)) document.getElementById("a" + artSel).scrollIntoView({ block: "start" });
