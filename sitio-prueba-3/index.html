@@ -258,8 +258,54 @@ async function cargar() {
   }
 }
 
-const coincide = (x, terms) => terms.every(t => [...x.tok].some(w => w.startsWith(t)));
-const resaltar = (texto, terms) => esc(texto).replace(/[\p{L}\d]+/gu, w => terms.some(t => norm(w).startsWith(t)) ? `<mark>${w}</mark>` : w);
+// una palabra buscada encaja con las que empiezan igual; si se buscaron varias, las cortas (menos de 5 letras) tienen
+// que ser exactas, para que «mar» no traiga «marcha» ni «María»
+const encaja = (w, t, terms) => terms.length > 1 && t.length < 5 ? w === t : w.startsWith(t);
+const coincide = (x, terms) => terms.every(t => [...x.tok].some(w => encaja(w, t, terms)));
+// Palabras que no se resaltan sueltas (artículos, preposiciones, conjunciones): sí cuentan dentro de una frase
+const VACIAS = new Set("a al ante bajo con contra de del desde e el en entre hacia hasta la las le les lo los mas mi mis ni no o para pero por que se sin sobre su sus te tu u un una unas uno unos y ya".split(" "));
+// Lo buscado: las palabras, y si es una frase (varias palabras) o solo la frase exacta (entre comillas)
+function consulta(q) {
+  const t = tokens(q);
+  t.exacta = /["“”«»]/.test(q || "") && t.length > 1;
+  t.frase = t.length > 1;
+  t.sueltas = t.filter(w => !VACIAS.has(w));
+  if (!t.sueltas.length) t.sueltas = [...t];
+  return t;
+}
+// Las palabras de un texto con su posición; una palabra cortada con guion al final de renglón cuenta como una sola
+function palabrasDe(texto) {
+  const out = [], re = /[\p{L}\d]+/gu;
+  let m;
+  while ((m = re.exec(texto))) {
+    const prev = out[out.length - 1];
+    if (prev && /^-[ \t]*\n\s*$/.test(texto.slice(prev.fin, m.index))) {
+      prev.n += norm(m[0]).replace(/[^a-z0-9ñ]/g, ""); prev.fin = m.index + m[0].length;
+    } else out.push({ n: norm(m[0]).replace(/[^a-z0-9ñ]/g, ""), ini: m.index, fin: m.index + m[0].length });
+  }
+  return out;
+}
+// Dónde aparece la frase (palabras seguidas; la última puede estar empezada): lista de [primera, última]
+function apariciones(ws, terms) {
+  const r = [];
+  for (let i = 0; i + terms.length <= ws.length; i++) {
+    if (terms.every((t, k) => k === terms.length - 1 ? ws[i + k].n.startsWith(t) : ws[i + k].n === t)) r.push([i, i + terms.length - 1]);
+  }
+  return r;
+}
+const tieneFrase = (texto, terms) => apariciones(palabrasDe(texto), terms).length > 0;
+function resaltar(texto, terms) {
+  texto = String(texto ?? "");
+  if (!terms || !terms.length) return esc(texto);
+  if (terms.frase && terms.modo !== "sueltas") {
+    const ws = palabrasDe(texto), tramos = apariciones(ws, terms).map(([i, j]) => [ws[i].ini, ws[j].fin]);
+    let out = "", pos = 0;
+    tramos.forEach(([a, b]) => { out += esc(texto.slice(pos, a)) + `<mark>${esc(texto.slice(a, b))}</mark>`; pos = b; });
+    return out + esc(texto.slice(pos));
+  }
+  const ts = terms.sueltas ?? terms;
+  return esc(texto).replace(/[\p{L}\d]+/gu, w => ts.some(t => encaja(norm(w), t, terms)) ? `<mark>${w}</mark>` : w);
+}
 
 // El texto de un artículo, con las tablas Markdown (líneas que empiezan con "|") dibujadas como tablas
 function textoConTablas(texto, terms) {
@@ -287,14 +333,17 @@ function textoConTablas(texto, terms) {
 function fragmento(texto, terms) {
   const n = norm(texto);
   let pos = 0;
-  for (const t of terms) { const r = new RegExp(`(^|[^a-z0-9ñ])${t}`).exec(n); if (r) { pos = r.index; break; } }
+  const ap = terms.frase && terms.modo !== "sueltas" ? (ws => (x => x ? ws[x[0]].ini : null)(apariciones(ws, terms)[0]))(palabrasDe(texto)) : null;
+  if (ap !== null) pos = ap;
+  else for (const t of (terms.sueltas ?? terms)) { const r = new RegExp(`(^|[^a-z0-9ñ])${t}`).exec(n); if (r) { pos = r.index; break; } }
   const a = Math.max(0, pos - 90), b = Math.min(texto.length, pos + 200);
   return (a ? "… " : "") + resaltar(texto.slice(a, b), terms) + (b < texto.length ? " …" : "");
 }
 
 function resultado(a, terms) {
   const pags = a.paginas.map(n => N[a.nid].paginas[n - 1].impresa ?? n);
-  return `<a class="res" href="#/numero/${a.nid}/${a.paginas[0]}/${encodeURIComponent(terms.join(" "))}/${a.i}">
+  const q = terms.frase && terms.modo !== "sueltas" ? `"${terms.join(" ")}"` : terms.join(" ");
+  return `<a class="res" href="#/numero/${a.nid}/${a.paginas[0]}/${encodeURIComponent(q)}/${a.i}">
     <span class="meta"><span>Nº ${esc(a.nid)}</span><span>${fecha(a.fecha)}</span><span>pág. ${pags.join(", ")}</span><span class="pill ${a.tipo === "ocr" ? "ocr" : ""}">${a.tipo === "ocr" ? "OCR sin revisar" : esc(a.tipo)}</span>${a.seccion ? `<span>${esc(a.seccion)}</span>` : ""}</span>
     <div class="t">${resaltar(a.titulo, terms)}</div>
     ${a.autor ? `<div class="small">por ${resaltar(a.autor, terms)}${a.persona && a.persona.nombre !== a.autor ? ` (${esc(a.persona.nombre)})` : ""}</div>` : ""}
@@ -328,22 +377,43 @@ function abrirLightbox(src, pie) {
 }
 
 function vistaBuscar(q = "", tipo = "") {
-  const terms = tokens(q);
+  const terms = consulta(q);
   const tipos = [...new Set(ARTS.map(a => a.tipo))].sort();
   let lista = terms.length ? ARTS.filter(a => coincide(a, terms)) : [];
   if (tipo) lista = (terms.length ? lista : ARTS).filter(a => a.tipo === tipo);
+  // varias palabras: primero los textos con la frase tal cual; después, si no se pidió solo la frase, los que
+  // tienen todas las palabras pero no juntas
+  let sueltos = [];
+  if (terms.frase) {
+    const conFrase = a => tieneFrase(a.titulo, terms) || tieneFrase(a.texto, terms) || tieneFrase(a.autor || "", terms) ||
+      tieneFrase(a.bajada || "", terms) || (a.destacados || []).concat(a.recuadros || []).some(r => tieneFrase(r.texto, terms));
+    const todos = lista;
+    lista = todos.filter(conFrase);
+    sueltos = terms.exacta ? [] : todos.filter(a => !conFrase(a));
+  }
+  const termsSueltas = Object.assign([...terms], { frase: terms.frase, sueltas: terms.sueltas, modo: "sueltas" });
   const ilus = terms.length ? ILUS.filter(il => coincide(il, terms)) : [];
   const personas = terms.length ? [...PERSONAS.values()].filter(p => terms.every(t => [...p.firmas, p.nombre].some(f => tokens(f).some(w => w.startsWith(t))))) : [];
   app.innerHTML = `
     <form class="field" id="f"><input id="q" type="search" value="${esc(q)}" placeholder="Buscá una palabra, un tema, un autor o un dibujante…" aria-label="Buscar"><button>Buscar</button></form>
+    <label class="small"><input type="checkbox" id="exacta" ${terms.exacta ? "checked" : ""}> Solo la frase exacta (también se puede escribir entre comillas)</label>
     <div class="chips"><span>Probá:</span>${EJEMPLOS.map(e => `<button type="button" data-q="${esc(e)}">${esc(e)}</button>`).join("")}
       <select id="tipo" aria-label="Tipo de texto"><option value="">Todos los tipos</option>${tipos.map(t => `<option ${t === tipo ? "selected" : ""} value="${esc(t)}">${t === "ocr" ? "OCR sin revisar" : esc(t)}</option>`).join("")}</select></div>
-    <div class="status">${terms.length || tipo ? `${lista.length} ${lista.length === 1 ? "texto" : "textos"}${ilus.length ? ` y ${ilus.length} ${ilus.length === 1 ? "dibujo" : "dibujos"}` : ""}${terms.length ? ` con “${esc(q)}”` : ""}${tipo ? ` de tipo ${esc(tipo)}` : ""}.` :
+    <div class="status">${terms.length || tipo ? `${lista.length} ${lista.length === 1 ? "texto" : "textos"}${ilus.length ? ` y ${ilus.length} ${ilus.length === 1 ? "dibujo" : "dibujos"}` : ""}${terms.length ? ` con ${terms.frase ? "la frase" : ""} “${esc(terms.join(" "))}”` : ""}${tipo ? ` de tipo ${esc(tipo)}` : ""}${sueltos.length ? `; ${sueltos.length} más con todas las palabras, no juntas` : ""}.` :
       `${ARTS.length} textos de ${Object.keys(N).length} números, ${PERSONAS.size} autores y dibujantes, ${ILUS.length} piezas en el archivo gráfico. Las búsquedas ignoran tildes y mayúsculas y encuentran palabras que empiezan como lo que escribiste.`}</div>
     ${personas.length ? `<div class="chips"><span>Personas:</span>${personas.map(p => `<a class="pill" href="#/autor/${encodeURIComponent(p.clave)}">${esc(p.nombre)} · ${p.arts.length + p.ilus.length}</a>`).join("")}</div>` : ""}
     ${ilus.length ? `<h3 class="sec">Archivo gráfico</h3><div class="gal">${ilus.slice(0, 24).map(tarjetaIlus).join("")}</div>` : ""}
-    ${lista.length ? `<h3 class="sec">Textos</h3>` : ""}<div>${lista.slice(0, 200).map(a => resultado(a, terms)).join("")}</div>`;
-  $("#f").onsubmit = e => { e.preventDefault(); location.hash = `#/buscar/${encodeURIComponent($("#q").value.trim())}/${encodeURIComponent($("#tipo").value)}`; };
+    ${lista.length ? `<h3 class="sec">${terms.frase ? "Textos con la frase" : "Textos"}</h3>` : ""}<div>${lista.slice(0, 200).map(a => resultado(a, terms)).join("")}</div>
+    ${sueltos.length ? `<h3 class="sec">Con todas las palabras, no juntas</h3><div>${sueltos.slice(0, 200).map(a => resultado(a, termsSueltas)).join("")}</div>` : ""}`;
+  $("#f").onsubmit = e => {
+    e.preventDefault();
+    let v = $("#q").value.trim();
+    const comillas = /["“”«»]/.test(v);
+    if ($("#exacta").checked && !comillas && v.includes(" ")) v = `"${v}"`;
+    if (!$("#exacta").checked && comillas) v = v.replace(/["“”«»]/g, "");
+    location.hash = `#/buscar/${encodeURIComponent(v)}/${encodeURIComponent($("#tipo").value)}`;
+  };
+  $("#exacta").onchange = () => $("#f").requestSubmit();
   $("#tipo").onchange = () => $("#f").requestSubmit();
   app.querySelectorAll("[data-q]").forEach(b => b.onclick = () => location.hash = `#/buscar/${encodeURIComponent(b.dataset.q)}/`);
   conLightbox(ilus);
@@ -398,11 +468,26 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   const doble = vistaDoble(), p = d.paginas[n - 1], m = doble ? p.enfrentada : null;
   const vistas = m ? [Math.min(n, m), Math.max(n, m)].map(k => d.paginas[k - 1]) : [p];  // de izquierda a derecha
   const desplazamiento = i => i * (1 + SEPARACION);
-  const terms = tokens(q);
-  const hits = vistas.map(pp => terms.length ? pp.nw.flatMap((w, i) => terms.some(t => w.startsWith(t)) ? [i] : []) : []);
-  const conHits = new Set(terms.length ? d.paginas.filter(pp => pp.nw.some(w => terms.some(t => w.startsWith(t)))).map(pp => pp.n) : []);
+  const terms = consulta(q);
+  // en el escaneo: si se buscó una frase, se marcan solo sus palabras seguidas (una palabra cortada con guion al
+  // final del renglón cuenta como una); si no aparece la frase, las palabras con contenido sueltas
+  const enOCR = pp => pp.ws ??= (() => { const r = []; pp.w.forEach((w, i) => { const prev = r[r.length - 1];
+    if (prev && /-$/.test(pp.w[prev.ult][0])) { prev.n += pp.nw[i]; prev.ult = i; prev.idx.push(i); } else r.push({ n: pp.nw[i], ult: i, idx: [i] }); }); return r; })();
+  const marcasDe = pp => {
+    if (!terms.length) return [];
+    if (terms.frase) {
+      const ws = enOCR(pp), ap = apariciones(ws, terms);
+      if (ap.length) return ap.flatMap(([i, j]) => ws.slice(i, j + 1).flatMap(x => x.idx));
+    }
+    // el OCR puede haber leído mal la frase: entonces se marcan las palabras con contenido
+    return pp.nw.flatMap((w, i) => terms.sueltas.some(t => encaja(w, t, terms)) ? [i] : []);
+  };
+  const hits = vistas.map(marcasDe);
+  const conHits = new Set(terms.length ? d.paginas.filter(pp => marcasDe(pp).length).map(pp => pp.n) : []);
   const numeros = vistas.map(pp => pp.n);
   const arts = ordenLectura(d.articulos.map((a, i) => ({ ...a, i })).filter(a => a.paginas.some(k => numeros.includes(k))), numeros);
+  // si en estas páginas no está la frase (y no se pidió solo la frase), se resaltan las palabras sueltas con contenido
+  if (terms.frase && !terms.exacta && !arts.some(a => tieneFrase(a.titulo, terms) || tieneFrase(a.texto, terms))) terms.modo = "sueltas";
   let verIlus = false;
   try { verIlus = localStorage.getItem("verIlus") === "1"; } catch {}
   const link = k => `#/numero/${nid}/${k}/${encodeURIComponent(q)}`;
