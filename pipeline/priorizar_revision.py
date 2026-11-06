@@ -37,6 +37,10 @@ def articulo(nid, i):
     return _datos[nid][i] if i is not None and i < len(_datos[nid]) else None
 
 
+def entre_comillas(texto):
+    return re.findall(r"«([^»]{1,80})»", texto or "")
+
+
 def evaluar(c):
     """-> (razón de resuelto automático o None, prioridad 0-100, qué mirar)"""
     g, nid, n = c["grupo"], c["id"], c["n"]
@@ -72,14 +76,18 @@ def evaluar(c):
         if "empieza a mitad de frase" in c["desc"]:
             return "Es el mismo caso que figura en «Uniones propuestas» (no se cuenta dos veces).", 0, ""
         if "casi igual" in c["desc"]:
-            return None, 55, "Este texto corto repite parte de otra nota (cita destacada o leído dos veces). Propongo que deje de ser un artículo aparte. ¿Está bien?"
-        return None, 50, "El «título» parece una firma («Escribe…», «Por…»). Propongo pasarlo a autor y unir el texto a la nota de esa firma. ¿Está bien?"
+            t = entre_comillas(c["desc"]) + ["", ""]
+            return None, 55, f"¿Sacar «{t[0]}» como artículo aparte? Repite parte de «{t[1]}»: es una cita destacada de esa nota o un texto que la IA leyó dos veces."
+        t = entre_comillas(c["desc"]) + ["", ""]
+        destino = f"a «{t[1]}»" if "es parte de" in c["desc"] else "a la nota de esa firma"
+        return None, 50, f"¿Pasar «{t[0]}» a autor (es una firma, no un título) y unir su texto {destino}?"
     if g == "union_dudosa":
         largo = palabras(a["texto"]) if a else 0
-        return None, min(45, 15 + largo // 40), f"Propongo unir este pedazo suelto ({largo} palabras) a la nota indicada. ¿Está bien?"
+        t = entre_comillas(c["desc"]) + ["", "", ""]
+        return None, min(45, 15 + largo // 40), f"¿Unir el pedazo suelto «{t[0]}» ({largo} palabras) a la nota «{t[2]}»?"
     if g == "uniones_sin_marca":
         largo = palabras(a["texto"]) if a else 0
-        return None, min(48, 10 + largo // 100), "Estas dos partes se unieron sin «pasa a pág.». ¿Son el mismo texto?"
+        return None, min(48, 10 + largo // 100), f"¿Dejar unidas las partes de «{a['titulo'][:60] if a else ''}» (se unieron sin «pasa a pág.»)?"
     if g == "diagonales":
         return None, 30, "El texto en diagonal se leyó enderezado. ¿Está completo y en su lugar?"
     if g == "bloques_sin_ubicar":

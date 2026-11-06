@@ -581,18 +581,28 @@ function vistaColi() {
     .sort((a, b) => (b.prioridad ?? 0) - (a.prioridad ?? 0));
   const hoy = pendientes.slice(0, 30), hechos = casosRevision().filter(c => veredicto(c.clave));
   app.innerHTML = `<h2>Para Coli: lo importante</h2>
-    <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá y respondé a la propuesta. «Sí, hacelo así»: aplico lo que propongo. «No, está mal»: no lo aplico y lo miro de nuevo (si querés, dejá una nota diciendo qué es). «No sé»: queda como está. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length}.` : ""}</p>
+    <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá y respondé a la propuesta. «Sí, aplicar»: aplico lo que dice la pregunta. «No, dejar como está»: no se toca (podés escribir qué es lo correcto). «No sé»: queda como está, sin cambios. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length}.` : ""}</p>
     ${hoy.length ? hoy.map((c, k) => `<div class="caso"><div style="flex:1"><b>${k + 1}.</b> <a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a> <span class="small muted">· ${esc(GRUPOS.find(g => g[0] === c.grupo)?.[1] ?? c.grupo)}</span><br>
       <b>${esc(c.mirar || "Mirar el caso")}</b><br><span class="small muted">${esc(c.desc)}</span><br>
-      <span class="veredictos">${["bien", "mal", "no sé"].map(v => `<button type="button" data-v="${v}" data-k="${esc(c.clave)}">${v === "bien" ? "Sí, hacelo así" : v === "mal" ? "No, está mal" : "No sé"}</button>`).join(" ")}</span></div></div>`).join("")
+      <span class="veredictos">${["bien", "mal", "no sé"].map(v => `<button type="button" data-v="${v}" data-k="${esc(c.clave)}">${v === "bien" ? "Sí, aplicar" : v === "mal" ? "No, dejar como está" : "No sé"}</button>`).join(" ")}</span></div></div>`).join("")
       : `<p>No queda nada importante por revisar. 🎉</p>`}`;
-  app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => {
-    const c = hoy.find(x => x.clave === b.dataset.k);
-    try { localStorage.setItem("ver:" + c.clave, b.dataset.v); } catch {}
+  const responder = async (c, v, extra = "") => {
+    try { localStorage.setItem("ver:" + c.clave, v); } catch {}
     await guardarNota({ numero: c.id, pagina: c.n, titulo: `nº ${c.id}, pág. ${c.n}`, caso: c.grupo, clave: c.clave,
-      texto: `Veredicto: ${b.dataset.v}. ${c.mirar || ""} (${c.desc})`, categoria: "veredicto", regla_general: false,
-      enlace: c.link, fecha: new Date().toISOString().slice(0, 19) });
+      texto: `Veredicto: ${v === "bien" ? "sí, aplicar" : v === "mal" ? "no, dejar como está" : "no sé"}. ${c.mirar || ""}${extra ? " Lo correcto: " + extra : ""} (${c.desc})`,
+      categoria: "veredicto", veredicto: v, regla_general: false, enlace: c.link, fecha: new Date().toISOString().slice(0, 19) });
     vistaColi();
+  };
+  app.querySelectorAll("[data-v]").forEach(b => b.onclick = () => {
+    const c = hoy.find(x => x.clave === b.dataset.k);
+    if (b.dataset.v !== "mal") return responder(c, b.dataset.v);
+    // «No»: campo opcional para escribir qué es lo correcto
+    const caja = b.closest(".veredictos");
+    caja.innerHTML = `<label class="small">¿Qué es lo correcto? (opcional)<br><textarea rows="2" style="width:100%"></textarea></label><br>
+      <button type="button" data-enviar>Guardar «No, dejar como está»</button> <button type="button" data-volver>Volver</button>`;
+    caja.querySelector("[data-enviar]").onclick = () => responder(c, "mal", caja.querySelector("textarea").value.trim());
+    caja.querySelector("[data-volver]").onclick = () => vistaColi();
+    caja.querySelector("textarea").focus();
   });
 }
 
