@@ -86,7 +86,7 @@ def evaluar(c):
     if g == "union_dudosa":
         largo = palabras(a["texto"]) if a else 0
         t = entre_comillas(c["desc"]) + ["", "", ""]
-        return None, min(45, 15 + largo // 40), f"¿Unir el pedazo suelto «{t[0]}» ({largo} palabras) a la nota «{t[2]}»?"
+        return None, min(20, 5 + largo // 200), f"¿Unir el pedazo suelto «{t[0]}» ({largo} palabras) a la nota «{t[2]}»?"
     if g == "uniones_sin_marca":
         largo = palabras(a["texto"]) if a else 0
         return None, min(48, 10 + largo // 100), f"¿Dejar unidas las partes de «{a['titulo'][:60] if a else ''}» (se unieron sin «pasa a pág.»)?"

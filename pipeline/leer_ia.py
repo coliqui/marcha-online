@@ -128,7 +128,7 @@ INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. 
 Transcribí todos los textos de la página en orden de lectura, siguiendo las columnas como lo haría una persona:
 - Transcribí todo, aunque la página sea larga o densa. Leé siempre de la imagen: el texto OCR es solo una ayuda y en las páginas gastadas viene lleno de errores, aunque la imagen se lea bien.
 - Las listas de nombres (el staff o cuerpo de redacción, nóminas, censos, listas de firmantes) van completas, nombre por nombre: son parte del archivo. Las críticas de libros, cine y teatro, las cartas de lectores, las novedades editoriales, las carteleras y los recuadros son parte del archivo y van completos, como cualquier artículo.
-- En las carteleras y guías de cine o teatro, transcribí al menos el título de cada película u obra, cada una en su propio párrafo, como en el original.
+- En las carteleras y guías de cine o teatro, lo más importante es, de cada película u obra, el título, el director y el reparto (y la sala, si figura): transcribilos siempre, cada película u obra en su propio párrafo, como en el original. Las reseñas también, si se pueden leer, pero son secundarias.
 - Las tablas (cifras, estadísticas, resultados, horarios, cuadros comparativos) transcribilas como tabla Markdown dentro del texto del artículo, celda por celda y con todas sus filas, incluidas las de totales: una línea por fila, las celdas separadas por "|", la fila de encabezados seguida de una línea "| --- | --- |". Respetá las cifras tal como están impresas; si una celda no se puede leer, poné [ilegible]. El texto que rodea a la tabla va antes y después, en párrafos aparte.
 - En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
 - La firma ("Escribe X", "Por X", o un nombre arriba o al pie) va en autor: nunca es el título de un artículo aparte, aunque esté en letra grande en medio de la página. Las volantas, intertítulos y subtítulos que aparecen entre las columnas de un artículo tampoco empiezan otro: quedan dentro de su texto, como párrafo aparte, y el artículo sigue.
@@ -503,7 +503,8 @@ def adjuntar_destacados(articulos):
         cerca = lambda a: any(abs(n - m) <= 1 for n in a["paginas"] for m in d["paginas"])
         de = parecido(d["destacado_de"])
         a = next((a for a in articulos if a is not d and a.get("tipo") != "destacado" and cerca(a)
-                  and (parecido(a["titulo"]) == de or (len(de) > 8 and de in parecido(a["titulo"])))), None)
+                  and (parecido(a["titulo"]) == de or (len(de) > 8 and de in parecido(a["titulo"]))
+                       or (len(de) > 15 and parecido(a["titulo"])[:15] == de[:15]))), None)
         if a:
             a.setdefault("destacados", []).append({"texto": d["texto"], "autor": d.get("autor"), "nota": None})
             sacar.append(d)
@@ -558,7 +559,19 @@ def aplicar_correcciones(nid, articulos):
                         print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {pieza}")
                         continue
                     sacar.append(b)
-                    if clave == "unir":
+                    if clave == "unir" and pieza.get("despues_de"):  # el pedazo va en medio, tras ese texto
+                        k = a["texto"].find(pieza["despues_de"])
+                        if k < 0:
+                            print(f"  corrección sin aplicar en nº {nid}: no encontré {pieza['despues_de']!r}")
+                            sacar.remove(b)
+                            continue
+                        k += len(pieza["despues_de"])
+                        resto = a["texto"][k:]
+                        if resto.startswith(".") and b["texto"].lstrip()[:1].islower():
+                            resto = resto[1:]  # la IA había cerrado la frase que en realidad sigue
+                        a["texto"] = a["texto"][:k] + " " + b["texto"].strip() + "\n\n" + resto.lstrip()
+                        a["paginas"] = sorted(set(a["paginas"]) | set(b["paginas"]))
+                    elif clave == "unir":
                         fin = a["texto"].rstrip()
                         if fin.endswith("-") and not pieza.get("antes"):  # palabra cortada: "porcenta-" + "je"
                             a["texto"] = fin[:-1] + b["texto"].lstrip()
