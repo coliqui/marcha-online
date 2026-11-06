@@ -75,6 +75,7 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .osd { width: 100%; height: min(82vh, 1100px); overscroll-behavior: contain; background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
 .box { background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
 .art .bajada { font: 600 15px/1.3 var(--display); margin: 2px 0 6px; color: var(--muted) }
+.veredictos button { font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 4px 10px; margin-top: 6px; cursor: pointer }
 .recuadro { border: 1px solid var(--ink); padding: 8px 10px; margin: 8px 0; font-size: 14px }
 .destacados { margin: 8px 0 }
 .destacados blockquote { margin: 4px 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--mark-edge); font-style: italic; font-size: 14px }
@@ -147,6 +148,7 @@ footer p { max-width: 80ch }
     <a href="#/numeros" data-tab="numeros">Números</a>
     <a href="#/autores" data-tab="autores">Autores y dibujantes</a>
     <a href="#/grafico" data-tab="grafico">Archivo gráfico</a>
+    <a href="#/coli" data-tab="coli">Para Coli</a>
     <a href="#/revisar" data-tab="revisar">Revisión</a>
     <a href="#/notas" data-tab="notas">Mis notas</a>
     <button type="button" id="notaGeneral" class="btnnota">+ Nota general</button>
@@ -547,6 +549,7 @@ async function conPalabras(nid) {
 }
 
 const GRUPOS = [
+  ["auto", "Resueltos automáticamente", "Casos que se pudieron verificar con evidencia objetiva (Tesseract, ángulos medidos, palabras cortadas que empalman). Si alguno no te convence, «Reabrir» lo devuelve a la lista."],
   ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
   ["uniones_aplicadas", "Uniones automáticas aplicadas", "Pedazos sueltos unidos a su nota por palabra cortada o título repetido (6/11/2026). Si alguna está mal, anotala y se deshace de a una."],
   ["union_segura", "Uniones propuestas: seguras", "Vista previa, todavía no aplicadas: el pedazo suelto (que empieza a mitad de frase) seguiría a esa nota. Marcar las que estén mal."],
@@ -564,6 +567,35 @@ const GRUPOS = [
 ];
 const revisado = clave => { try { return localStorage.getItem("rev:" + clave) === "1"; } catch { return false; } };
 
+const reabierto = clave => { try { return localStorage.getItem("reabierto:" + clave) === "1"; } catch { return false; } };
+const veredicto = clave => { try { return localStorage.getItem("ver:" + clave) || ""; } catch { return ""; } };
+function casosRevision() {
+  return REVISAR.map(c => ({ ...c, clave: `${c.grupo}:${c.id}:${c.n}:${c.art ?? ""}`,
+    link: `#/numero/${c.id}/${c.n}//${c.art ?? ""}/${c.zona ? c.zona.join(",") : ""}` }));
+}
+
+// Para Coli: como máximo 30 casos, los que más afectan al lector, con un botón de un clic por respuesta
+function vistaColi() {
+  if (REVISAR_FALLO) return vistaRevisar();
+  const pendientes = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && !veredicto(c.clave) && !revisado(c.clave))
+    .sort((a, b) => (b.prioridad ?? 0) - (a.prioridad ?? 0));
+  const hoy = pendientes.slice(0, 30), hechos = casosRevision().filter(c => veredicto(c.clave));
+  app.innerHTML = `<h2>Para Coli: lo importante</h2>
+    <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá lo que dice y tocá un botón. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length}.` : ""}</p>
+    ${hoy.length ? hoy.map((c, k) => `<div class="caso"><div style="flex:1"><b>${k + 1}.</b> <a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a> <span class="small muted">· ${esc(GRUPOS.find(g => g[0] === c.grupo)?.[1] ?? c.grupo)}</span><br>
+      <b>${esc(c.mirar || "Mirar el caso")}</b><br><span class="small muted">${esc(c.desc)}</span><br>
+      <span class="veredictos">${["bien", "mal", "no sé"].map(v => `<button type="button" data-v="${v}" data-k="${esc(c.clave)}">${v === "bien" ? "Está bien" : v === "mal" ? "Está mal" : "No sé"}</button>`).join(" ")}</span></div></div>`).join("")
+      : `<p>No queda nada importante por revisar. 🎉</p>`}`;
+  app.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => {
+    const c = hoy.find(x => x.clave === b.dataset.k);
+    try { localStorage.setItem("ver:" + c.clave, b.dataset.v); } catch {}
+    await guardarNota({ numero: c.id, pagina: c.n, titulo: `nº ${c.id}, pág. ${c.n}`, caso: c.grupo, clave: c.clave,
+      texto: `Veredicto: ${b.dataset.v}. ${c.mirar || ""} (${c.desc})`, categoria: "veredicto", regla_general: false,
+      enlace: c.link, fecha: new Date().toISOString().slice(0, 19) });
+    vistaColi();
+  });
+}
+
 function vistaRevisar(grupo = "") {
   if (REVISAR_FALLO) {
     app.innerHTML = `<h2>Revisión</h2><p>No se pudo cargar la lista de casos para revisar. Puede que el servidor del sitio no esté funcionando: abrí de nuevo el sitio con «Abrir sitio de prueba» (en la carpeta MARCHA ONLINE) y recargá la página.</p>`;
@@ -571,21 +603,23 @@ function vistaRevisar(grupo = "") {
   }
   const firmas = [...PERSONAS.values()].filter(p => !ALIAS.has(p.clave)).sort((a, b) => a.nombre.localeCompare(b.nombre))
     .map(p => ({ grupo: "firmas", clave: "firma:" + p.clave, desc: `«${p.nombre}» · ${p.arts.length} textos, ${p.ilus.length} dibujos`, link: `#/autor/${encodeURIComponent(p.clave)}` }));
-  const casos = REVISAR.map(c => ({ ...c, clave: `${c.grupo}:${c.id}:${c.n}:${c.art ?? ""}`,
-    link: `#/numero/${c.id}/${c.n}//${c.art ?? ""}/${c.zona ? c.zona.join(",") : ""}` })).concat(firmas);
-  const lista = grupo ? GRUPOS.filter(g => g[0] === grupo) : GRUPOS;
+  const todos = casosRevision(), resueltos = todos.filter(c => c.auto && !reabierto(c.clave));
+  const casos = (grupo === "auto" ? resueltos : todos.filter(c => !c.auto || reabierto(c.clave))).concat(grupo === "auto" ? [] : firmas);
+  const lista = grupo && grupo !== "auto" ? GRUPOS.filter(g => g[0] === grupo) : GRUPOS.filter(g => g[0] !== "auto");
   app.innerHTML = `<h2>Revisión</h2>
     <p class="muted small">Casos que el proceso marcó como dudosos. Cada uno lleva a la página y, cuando se sabe, al lugar exacto. Marcá los que ya revisaste (queda guardado en este navegador).</p>
+    <p class="small"><a href="#/coli">→ Para Coli: lo importante</a> · Esta pestaña es la lista <b>opcional</b>, para mirar sin apuro. ${resueltos.length} casos se resolvieron solos con evidencia objetiva: <a href="#/revisar/auto">ver cuáles y por qué</a>.</p>
     <div class="chips"><button type="button" data-g="" aria-pressed="${!grupo}">Todos</button>${GRUPOS.map(([g, t]) => { const cs = casos.filter(c => c.grupo === g); return cs.length ? `<button type="button" data-g="${g}" aria-pressed="${grupo === g}">${t} (${cs.filter(c => !revisado(c.clave)).length}/${cs.length})</button>` : ""; }).join("")}</div>
     ${lista.map(([g, t, ayuda]) => { const cs = casos.filter(c => c.grupo === g); if (!cs.length) return "";
       // en la vista general se muestran solo los primeros de cada grupo, para que la página no se haga pesada
-      const visibles = grupo ? cs : cs.slice(0, 30);
+      const visibles = grupo && grupo !== "auto" ? cs : cs.slice(0, 30);
       return `<div class="grupo"><h3>${t}</h3><span class="muted small">${cs.filter(c => !revisado(c.clave)).length} sin revisar de ${cs.length}</span></div><p class="muted small" style="margin:0 0 6px">${ayuda}</p>` +
         visibles.map(c => `<div class="caso ${revisado(c.clave) ? "hecho" : ""}"><input type="checkbox" data-c="${esc(c.clave)}" ${revisado(c.clave) ? "checked" : ""} aria-label="Revisado">
-          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}
+          <div>${c.id ? `<a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a><br>` : `<a href="${c.link}">Ver</a> `}${esc(c.desc)}${c.auto && !reabierto(c.clave) ? `<br><b>Resuelto solo:</b> ${esc(c.auto)} <button type="button" data-reabrir="${esc(c.clave)}">Reabrir</button>` : ""}
           <button type="button" class="btnnota" style="margin:4px 0 0" data-anotar="${esc(c.clave)}">Anotar</button><div data-caja="${esc(c.clave)}"></div></div></div>`).join("") +
         (visibles.length < cs.length ? `<p><button type="button" data-g="${g}">Ver los ${cs.length} casos de este grupo</button></p>` : ""); }).join("")}`;
   app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => location.hash = `#/revisar/${b.dataset.g}`);
+  app.querySelectorAll("[data-reabrir]").forEach(b => b.onclick = () => { try { localStorage.setItem("reabierto:" + b.dataset.reabrir, "1"); } catch {} vistaRevisar(grupo); });
   app.querySelectorAll("[data-c]").forEach(cb => cb.onchange = () => { try { localStorage.setItem("rev:" + cb.dataset.c, cb.checked ? "1" : "0"); } catch {} vistaRevisar(grupo); });
   app.querySelectorAll("[data-anotar]").forEach((b, i) => b.onclick = () => {
     const c = casos.find(x => x.clave === b.dataset.anotar), id = "nota-caso-" + i;
@@ -663,10 +697,11 @@ async function vistaNotas() {
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }
   const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
-  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar", notas: "notas" }[vista ?? ""] ?? "buscar";
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar", coli: "coli", notas: "notas" }[vista ?? ""] ?? "buscar";
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
   if (vista === "numero") return conPalabras(r[0]).then(() => vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null, r[4] ?? ""));
   if (vista === "revisar") return vistaRevisar(r[0] ?? "");
+  if (vista === "coli") return vistaColi();
   if (vista === "notas") return vistaNotas();
   if (vista === "numeros") return vistaNumeros();
   if (vista === "tapa") return vistaTapa(r[0]);

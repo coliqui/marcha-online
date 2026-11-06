@@ -1,0 +1,98 @@
+"""Achica la lista de Revisión: marca como «resuelto automáticamente» lo que se puede verificar con evidencia
+objetiva (con la razón, y se puede reabrir desde el sitio) y le da al resto una prioridad según cuánto afecta al
+lector, con una frase de qué mirar. Corre después de armar_sitio_prueba.py y reescribe datos/revisar.json.
+
+Uso: python3 priorizar_revision.py CARPETA_OCR CARPETA_LECTURA CARPETA_SITIO
+"""
+import json, os, re, sys
+
+ocr_dir, lectura, sitio = sys.argv[1:4]
+arch = os.path.join(sitio, "datos", "revisar.json")
+casos = json.load(open(arch))
+correcciones = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")))["correcciones"]
+
+palabras = lambda t: len(re.findall(r"\w{2,}", t or ""))
+# palabras «de verdad» del OCR: 3+ letras con vocal (descarta la basura de manchas y bordes)
+reales = lambda t: len([w for w in re.findall(r"[^\W\d_]{3,}", t or "") if re.search("[aeiouáéíóú]", w, re.I)])
+_cache = {}
+
+
+def pagina(nid, n):
+    if (nid, n) not in _cache:
+        f = os.path.join(lectura, nid, f"p{n:02d}.json")
+        p = json.load(open(f)) if os.path.exists(f) else {}
+        o = os.path.join(ocr_dir, nid, f"p{n:02d}.txt")
+        ocr = open(o, encoding="utf-8").read() if os.path.exists(o) else ""
+        ia = sum(palabras(a["texto"]) for a in p.get("articulos", []))
+        _cache[(nid, n)] = (p, ia, reales(ocr))
+    return _cache[(nid, n)]
+
+
+_datos = {}
+
+
+def articulo(nid, i):
+    if nid not in _datos:
+        _datos[nid] = json.load(open(os.path.join(sitio, "datos", f"{nid}.json")))["articulos"]
+    return _datos[nid][i] if i is not None and i < len(_datos[nid]) else None
+
+
+def evaluar(c):
+    """-> (razón de resuelto automático o None, prioridad 0-100, qué mirar)"""
+    g, nid, n = c["grupo"], c["id"], c["n"]
+    p, ia, ocr = pagina(nid, n)
+    cobertura = ia / ocr if ocr else 1
+    a = articulo(nid, c.get("art"))
+    if g == "bloqueadas":
+        return "La IA no la transcribe por derechos de autor; el escaneo y el texto de Tesseract ya son buscables. No hay nada que corregir.", 0, ""
+    if g == "corregidos":
+        return "Corrección hecha a mano: ya está aplicada.", 0, ""
+    if g == "falsas_diagonales":
+        return "El ángulo medido en el escaneo confirma que el texto está derecho (menos de 15° o más de 75°).", 0, ""
+    if g == "relecturas_descartadas" and not p.get("incompleta"):
+        return f"La lectura que quedó está completa: tiene el {min(100, round(100 * cobertura))}% de las palabras de Tesseract.", 0, ""
+    if g == "incompletas":
+        if n == 1:
+            return "Es la tapa: solo tiene titulares y llamadas; los textos siguen adentro.", 0, ""
+        if cobertura >= 0.85:
+            return f"La lectura tiene el {min(100, round(100 * cobertura))}% de las palabras de Tesseract: no falta texto.", 0, ""
+        falta = max(0, ocr - ia)
+        return None, min(35, 10 + falta // 60), f"Faltan unas {falta} palabras frente a Tesseract; se relee sola en la etapa 3. ¿Está bien dejarla para esa relectura?"
+    if g == "repetidos":
+        if cobertura >= 0.8:
+            return f"Sin lo repetido queda el {min(100, round(100 * cobertura))}% de las palabras de Tesseract: no se perdió texto.", 0, ""
+        return None, 60, "Se sacó texto que la IA copió dos veces. ¿Está entero el texto que quedó?"
+    if g == "uniones_aplicadas":
+        motivos = [x.get("motivo", "") for x in correcciones if x.get("automatica") and x["numero"] == nid
+                   and a and x["titulo_contiene"][:30].lower() in a["titulo"].lower()]
+        if any("palabra cortada" in m for m in motivos):
+            return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
+        return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
+    if g == "estructura":
+        if "empieza a mitad de frase" in c["desc"]:
+            return "Es el mismo caso que figura en «Uniones propuestas» (no se cuenta dos veces).", 0, ""
+        if "casi igual" in c["desc"]:
+            return None, 55, "Este texto corto repite parte de otra nota (cita destacada o leído dos veces). Propongo que deje de ser un artículo aparte. ¿Está bien?"
+        return None, 50, "El «título» parece una firma («Escribe…», «Por…»). Propongo pasarlo a autor y unir el texto a la nota de esa firma. ¿Está bien?"
+    if g == "union_dudosa":
+        largo = palabras(a["texto"]) if a else 0
+        return None, min(45, 15 + largo // 40), f"Propongo unir este pedazo suelto ({largo} palabras) a la nota indicada. ¿Está bien?"
+    if g == "uniones_sin_marca":
+        largo = palabras(a["texto"]) if a else 0
+        return None, min(48, 10 + largo // 100), "Estas dos partes se unieron sin «pasa a pág.». ¿Son el mismo texto?"
+    if g == "diagonales":
+        return None, 30, "El texto en diagonal se leyó enderezado. ¿Está completo y en su lugar?"
+    if g == "bloques_sin_ubicar":
+        return None, 40, "Un bloque en diagonal quedó al comienzo del artículo: ver dónde va."
+    return None, 20, ""
+
+
+auto = 0
+for c in casos:
+    razon, prioridad, mirar = evaluar(c)
+    c["auto"], c["prioridad"], c["mirar"] = razon, prioridad, mirar
+    auto += bool(razon)
+json.dump(casos, open(arch, "w"), ensure_ascii=False, separators=(",", ":"))
+quedan = [c for c in casos if not c["auto"]]
+print(f"{len(casos)} casos: {auto} resueltos automáticamente, {len(quedan)} quedan "
+      f"({sum(c['prioridad'] >= 50 for c in quedan)} con prioridad alta)")
