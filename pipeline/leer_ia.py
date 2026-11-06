@@ -115,14 +115,15 @@ CONTEXTO = """Contexto: esta transcripción es parte de la digitalización del a
 
 """
 COMPLETITUD = """
-- transcripcion_completa: true si transcribiste entero el texto legible de todos los artículos de la página (notas, editoriales, críticas, cartas, cuentos, poemas, columnas). No cuentan como omisión: los avisos publicitarios, los encabezados y adornos, los crucigramas o tableros, ni la zona repetida donde se superponen las dos imágenes. false solo si abreviaste, resumiste o dejaste afuera texto de algún artículo; en ese caso, en omisiones explicá qué y por qué. Nunca pongas [ilegible] en un texto que se puede leer: [ilegible] es solo para lo que no se ve.
+- transcripcion_completa: true si transcribiste entero el texto legible de todos los artículos de la página (notas, editoriales, críticas, cartas, cuentos, poemas, columnas). No cuentan como omisión: los avisos publicitarios, los encabezados y adornos, los crucigramas o tableros, ni la zona repetida donde se superponen las dos imágenes. false solo si abreviaste, resumiste o dejaste afuera texto de algún artículo; en ese caso, en omisiones decí exactamente qué quedó afuera (qué artículo, qué columna o qué renglones) y por qué. "Mala lectura", "calidad del OCR" o "texto denso" no son razones: el texto se lee de la imagen, no del OCR (que es solo una ayuda y suele tener errores); si la imagen se lee, se transcribe. Nunca pongas [ilegible] en un texto que se puede leer: [ilegible] es solo para lo que no se ve.
 """
 
 
 INSTRUCCIONES = """Sos un transcriptor experto en prensa uruguaya del siglo XX. Te paso una página del semanario Marcha (Montevideo), número {numero}, del {fecha}; es la imagen {pagina} de {total} del escaneo. La página viene en dos imágenes: "arriba" (el 55 % superior) y "abajo" (el 55 % inferior); se superponen un poco.
 
 Transcribí todos los textos de la página en orden de lectura, siguiendo las columnas como lo haría una persona:
-- Transcribí todo, aunque la página sea larga o densa. Las críticas de libros, cine y teatro, las cartas de lectores, las novedades editoriales, las carteleras y los recuadros son parte del archivo y van completos, como cualquier artículo.
+- Transcribí todo, aunque la página sea larga o densa. Leé siempre de la imagen: el texto OCR es solo una ayuda y en las páginas gastadas viene lleno de errores, aunque la imagen se lea bien.
+- Las listas de nombres (el staff o cuerpo de redacción, nóminas, censos, listas de firmantes) van completas, nombre por nombre: son parte del archivo. Las críticas de libros, cine y teatro, las cartas de lectores, las novedades editoriales, las carteleras y los recuadros son parte del archivo y van completos, como cualquier artículo.
 - En las carteleras y guías de cine o teatro, transcribí al menos el título de cada película u obra, cada una en su propio párrafo, como en el original.
 - Las tablas (cifras, estadísticas, resultados, horarios, cuadros comparativos) transcribilas como tabla Markdown dentro del texto del artículo, celda por celda y con todas sus filas, incluidas las de totales: una línea por fila, las celdas separadas por "|", la fila de encabezados seguida de una línea "| --- | --- |". Respetá las cifras tal como están impresas; si una celda no se puede leer, poné [ilegible]. El texto que rodea a la tabla va antes y después, en párrafos aparte.
 - En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
@@ -241,12 +242,14 @@ Esta página forma un pliego con la imagen {m}, que en el diario abierto está a
 
 
 MITAD = """
-Esta vez transcribí SOLO la mitad {cual} de la página: la imagen "{imagen}". La otra mitad la transcribe otro pedido; la página entera va al final solo como contexto. {regla}
+Esta vez transcribí SOLO la mitad {cual} de la página: la imagen "{imagen}". La otra mitad la transcribe otro pedido; la página entera va al final solo como contexto. {regla} En transcripcion_completa y omisiones hablá solo de tu mitad: que la otra mitad la transcriba otro pedido no es una omisión.
 - Si un artículo sigue en la otra mitad, marcá termina_cortado (arriba) o empieza_cortado (abajo) y usá el mismo título que tiene en la página.
 """
 REGLA_MITAD = {"superior": "Terminá donde termina la imagen \"arriba\".",
                "inferior": "La imagen \"abajo\" se superpone un poco con la de arriba: empezá por el primer renglón que no "
-                           "esté entero en la mitad superior, sin repetir lo de arriba."}
+                           "esté entero en la mitad superior, sin repetir lo de arriba. No vuelvas a copiar párrafos de "
+                           "la mitad superior aunque sean del mismo artículo: cada renglón impreso se transcribe una sola "
+                           "vez, en el pedido de la mitad donde está."}
 
 
 def contenido_pagina(im, meta, n, total, ocr, enderezados=(), completa=False, enfrentada=None, mitad=None, giros=(0, 0),
@@ -523,6 +526,49 @@ def sin_repetir(fin, inicio, maximo=80):
         if [w.strip(".,;:") for w in pf[-k:]] == [w.strip(".,;:") for w in pi[:k]]:
             return " ".join(pi[k:])
     return inicio
+
+
+TRAMO_REPETIDO = 12  # palabras seguidas idénticas
+
+
+def quitar_repetidos(articulos, ocr=""):
+    """Saca los tramos de 12 o más palabras que la IA copió dos veces en una misma página (pasa sobre todo al
+    leer en dos mitades: la de abajo vuelve a copiar párrafos de la de arriba). Queda la primera aparición. Un
+    tramo que el OCR de Tesseract también tiene dos veces está impreso dos veces y no se toca.
+    Cambia los textos en el lugar y devuelve cuántas palabras sacó."""
+    norm = lambda w: re.sub(r"\W", "", w.lower())
+    palabras_ocr = [x for x in map(norm, (ocr or "").split()) if x]
+    veces_ocr = {}
+    for k in range(len(palabras_ocr) - TRAMO_REPETIDO + 1):
+        g = tuple(palabras_ocr[k:k + TRAMO_REPETIDO])
+        veces_ocr[g] = veces_ocr.get(g, 0) + 1
+    vistos, sacadas = set(), 0
+    for a in articulos:
+        partes = re.split(r"(\s+)", a["texto"])
+        idx = [i for i, x in enumerate(partes) if x.strip()]
+        nw = [norm(partes[i]) for i in idx]
+        fuera, k = set(), 0
+        while k <= len(idx) - TRAMO_REPETIDO:
+            g = tuple(nw[k:k + TRAMO_REPETIDO])
+            if all(g) and g in vistos and veces_ocr.get(g, 0) < 2:
+                j = k + TRAMO_REPETIDO
+                while j < len(idx) and tuple(nw[j - TRAMO_REPETIDO + 1:j + 1]) in vistos:
+                    j += 1
+                fuera.update(idx[t] for t in range(k, j))
+                k = j
+            else:
+                if all(g):
+                    vistos.add(g)
+                k += 1
+        if fuera:
+            sacadas += len(fuera)
+            salida = []
+            for i, x in enumerate(partes):
+                if i in fuera or (not x.strip() and salida and not salida[-1].strip()):
+                    continue
+                salida.append(x)
+            a["texto"] = "".join(salida).strip()
+    return sacadas
 
 
 def unir_mitades(arriba, abajo):

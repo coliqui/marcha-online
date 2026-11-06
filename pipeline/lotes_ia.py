@@ -30,7 +30,7 @@ from anthropic.types.messages.batch_create_params import Request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from leer_ia import (INSTRUCCIONES_BLOQUE, MODELOS, Bloque, PaginaCompleta, cliente, confirmar_bloques,
                      contenido_pagina, enderezar, finalizar, imagen_b64, insertar_bloque, orientacion, palabras,
-                     paginas_de, pliegos, siguiente_paso, unir_mitades)
+                     paginas_de, pliegos, siguiente_paso, unir_mitades, quitar_repetidos)
 from ocr_numero import metadatos
 
 ESQUEMA = anthropic.transform_schema(PaginaCompleta)  # desde la etapa 2: declara si la transcripción está completa
@@ -155,7 +155,7 @@ def elegir_lectura(num, n, con_bloques=True):
     siendo buscable. Si la versión final de una ronda anterior (carpeta _ronda1) tenía bastante más texto, queda
     esa. Después se le agregan los bloques en diagonal leídos enderezados."""
     x = _elegir(num, n)
-    anterior = cargar(f"{num.destino}/_ronda1/p{n:02d}.json", None)
+    anterior = sin_duplicados(cargar(f"{num.destino}/_ronda1/p{n:02d}.json", None), num.ocr[n])
     if x and anterior and not anterior.get("bloqueada") and "articulos" in anterior and not x.get("bloqueada"):
         nuevas = sum(palabras(a["texto"]) for a in x.get("articulos", []))
         viejas = sum(palabras(a["texto"]) for a in anterior["articulos"])
@@ -170,8 +170,20 @@ def elegir_lectura(num, n, con_bloques=True):
     return x
 
 
+def sin_duplicados(lectura, ocr):
+    """Copia de la lectura sin los párrafos que la IA copió dos veces (la lectura guardada no se toca: queda de respaldo)."""
+    if not lectura or lectura.get("bloqueada") or "articulos" not in lectura:
+        return lectura
+    x = json.loads(json.dumps(lectura))
+    sacadas = quitar_repetidos(x["articulos"], ocr)
+    if sacadas:
+        x["repetidos_quitados"] = sacadas
+    return x
+
+
 def _elegir(num, n):
-    lecturas = [x for x in (num.lectura(n, "sonnet"), num.lectura(n, "haiku-dividida"), num.lectura(n, "haiku")) if x]
+    lecturas = [sin_duplicados(x, num.ocr[n]) for x in
+                (num.lectura(n, "sonnet"), num.lectura(n, "haiku-dividida"), num.lectura(n, "haiku")) if x]
     validas = [x for x in lecturas if not x.get("bloqueada")]
     if lecturas and not validas:
         return {"bloqueada": True}  # derechos de autor: finalizar() deja el texto de Tesseract
@@ -181,7 +193,7 @@ def _elegir(num, n):
     # si ninguna está completa, también cuentan las lecturas de rondas anteriores (carpeta _etapa1) y las
     # relecturas descartadas por truncas: a veces una vieja tiene más texto que la nueva
     for f in (glob.glob(f"{num.destino}/_*/p{n:02d}.*.json") + glob.glob(f"{num.destino}/p{n:02d}.sonnet-trunca.json")):
-        x = json.load(open(f))
+        x = sin_duplicados(json.load(open(f)), num.ocr[n])
         if not x.get("bloqueada") and x.get("articulos") is not None:
             validas.append(x)
     if not validas:

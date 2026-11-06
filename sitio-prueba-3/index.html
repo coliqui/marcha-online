@@ -74,6 +74,7 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .vbar label { text-transform: none; letter-spacing: 0; font-weight: 500; display: flex; gap: 4px; align-items: center }
 .osd { width: 100%; height: min(82vh, 1100px); overscroll-behavior: contain; background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
 .box { background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
+.abox { outline: 3px solid var(--mark-edge); background: rgba(255,216,74,.12); pointer-events: none }
 .ibox { outline: 2px dashed var(--ilus); pointer-events: none }
 .thumbs { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 }
 .thumbs a { flex: 0 0 auto; width: 48px; display: grid; gap: 2px; text-align: center; font: 600 11px var(--display); color: var(--muted); text-decoration: none }
@@ -354,6 +355,32 @@ function citadoEn(id) {
 const SEPARACION = 0.02;  // espacio entre las dos páginas del pliego, en ancho de página
 const vistaDoble = () => { try { return localStorage.getItem("vista-pliego") !== "0"; } catch { return true; } };
 
+// Orden de la columna de artículos: como se lee el pliego. Primero la página de la izquierda; en cada página, los
+// artículos anchos (titulares que cruzan varias columnas) cortan la página en franjas, y dentro de cada franja se va
+// columna por columna, de arriba abajo. La zona de cada artículo sale de ubicar sus palabras en el OCR; los que no se
+// pudieron ubicar van al final de su página, en el orden de la IA. Un artículo que cruza el pliego va donde empieza.
+function ordenLectura(arts, numeros) {
+  const salida = [];
+  numeros.forEach(pag => {
+    const deAca = arts.filter(a => a.paginas.find(k => numeros.includes(k)) === pag);
+    const conZona = deAca.filter(a => a.zonas && a.zonas[pag]).map(a => ({ a, z: a.zonas[pag] }));
+    const sinZona = deAca.filter(a => !(a.zonas && a.zonas[pag]));
+    const anchos = conZona.filter(x => x.z[2] - x.z[0] >= 550).sort((p, q) => p.z[1] - q.z[1]);
+    const angostos = conZona.filter(x => x.z[2] - x.z[0] < 550);
+    const cortes = [-1, ...anchos.map(x => x.z[1])];
+    cortes.forEach((desde, k) => {
+      if (k > 0) salida.push(anchos[k - 1].a);
+      const hasta = k + 1 < cortes.length ? cortes[k + 1] : Infinity;
+      const franja = angostos.filter(x => x.z[1] > desde && x.z[1] <= hasta).sort((p, q) => p.z[0] - q.z[0]);
+      const columnas = [];  // agrupa por borde izquierdo parecido (misma columna)
+      franja.forEach(x => { const c = columnas.find(c => Math.abs(c.x - x.z[0]) < 70); c ? c.items.push(x) : columnas.push({ x: x.z[0], items: [x] }); });
+      columnas.forEach(c => c.items.sort((p, q) => p.z[1] - q.z[1]).forEach(x => salida.push(x.a)));
+    });
+    salida.push(...sinZona);
+  });
+  return salida;
+}
+
 function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   const d = N[nid];
   if (!d) { app.innerHTML = `<p>Este número todavía no tiene lectura con IA en la prueba. <a href="#/tapa/${esc(nid)}">Ver su tapa</a></p>`; return; }
@@ -365,7 +392,7 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   const hits = vistas.map(pp => terms.length ? pp.nw.flatMap((w, i) => terms.some(t => w.startsWith(t)) ? [i] : []) : []);
   const conHits = new Set(terms.length ? d.paginas.filter(pp => pp.nw.some(w => terms.some(t => w.startsWith(t)))).map(pp => pp.n) : []);
   const numeros = vistas.map(pp => pp.n);
-  const arts = d.articulos.map((a, i) => ({ ...a, i })).filter(a => a.paginas.some(k => numeros.includes(k)));
+  const arts = ordenLectura(d.articulos.map((a, i) => ({ ...a, i })).filter(a => a.paginas.some(k => numeros.includes(k))), numeros);
   let verIlus = false;
   try { verIlus = localStorage.getItem("verIlus") === "1"; } catch {}
   const link = k => `#/numero/${nid}/${k}/${encodeURIComponent(q)}`;
@@ -415,6 +442,25 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
     vistas.forEach((pp, i) => {
       hits[i].forEach(j => { const [, x, y, w, h] = pp.w[j]; caja(i, x - 3, y - 2.5, w + 6, h + 5, "box"); marcas.push(rect(i, x - 3, y - 2.5, w + 6, h + 5)); });
       if (verIlus) pp.ilustraciones.forEach(il => { const [x0, y0, x1, y1] = il.pagina_caja; caja(i, x0, y0, x1 - x0, y1 - y0, "ibox", il.descripcion); });
+    });
+    // al pasar por un artículo de la columna (o tocarlo), se marca su zona aproximada en el escaneo
+    let marcadas = [];
+    const desmarcar = () => { marcadas.forEach(el => visor.removeOverlay(el)); marcadas = []; };
+    document.querySelectorAll(".side .art").forEach(el => {
+      const a = arts.find(x => "a" + x.i === el.id);
+      if (!a || !a.zonas) return;
+      const marcar = () => {
+        desmarcar();
+        vistas.forEach((pp, i) => {
+          const z = a.zonas[pp.n]; if (!z) return;
+          const m = document.createElement("div"); m.className = "abox";
+          visor.addOverlay({ element: m, location: rect(i, z[0] - 8, z[1] - 8, z[2] - z[0] + 16, z[3] - z[1] + 16) });
+          marcadas.push(m);
+        });
+      };
+      el.addEventListener("mouseenter", marcar);
+      el.addEventListener("focusin", marcar);
+      el.addEventListener("mouseleave", desmarcar);
     });
     const yo = vistas.findIndex(pp => pp.n === n);
     if (zona) {
@@ -495,6 +541,7 @@ async function conPalabras(nid) {
 
 const GRUPOS = [
   ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
+  ["repetidos", "Texto repetido quitado", "La IA había copiado dos veces párrafos de la página; se dejó una sola copia. Verificar que el texto siga entero."],
   ["bloques_sin_ubicar", "Bloques en diagonal sin ubicar", "El bloque se leyó enderezado pero no se supo dónde va; quedó al comienzo del artículo."],
   ["diagonales", "Bloques en diagonal leídos enderezados", "Verificar que el texto inclinado esté completo y en su lugar (el recuadro azul marca el bloque)."],
   ["uniones_sin_marca", "Artículos unidos entre páginas sin marca", "Se unieron porque uno termina cortado y el otro sigue; verificar que sean el mismo texto."],

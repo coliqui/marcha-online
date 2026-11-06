@@ -9,6 +9,7 @@ Uso: python3 armar_sitio_prueba.py CARPETA_ROLLOS CARPETA_OCR CARPETA_IA CARPETA
   (posición de cada palabra del OCR, que el sitio carga solo al abrir ese número)
   y alias.json (seudónimos y variantes de firma de autores y dibujantes).
 """
+import unicodedata, re
 import glob, json, os, shutil, subprocess, sys, tempfile
 
 from PIL import Image
@@ -59,6 +60,38 @@ def caja_en_pagina(bloque, margen=0.0):
 
 
 revisar = []  # casos para revisar a mano, con el lugar de la página donde mirar
+
+
+def ubicar_articulos(articulos, palabras):
+    """Zona aproximada de cada artículo en cada una de sus páginas, en milésimas [x0, y0, x1, y1]: se buscan sus
+    palabras propias (las que no tiene ningún otro artículo de esa página) entre las palabras de Tesseract y se
+    toma el rectángulo que las encierra (sin los puntos sueltos). Sirve para ordenar la columna de artículos como
+    se lee la página y para marcar el artículo sobre el escaneo."""
+    norm = lambda t: [w for w in re.findall(r"[a-zñ]{4,}", unicodedata.normalize("NFKD", t.lower()).encode("ascii", "ignore").decode().replace("~", "")) ]
+    por_pagina = {}
+    for i, a in enumerate(articulos):
+        for n in a["paginas"]:
+            por_pagina.setdefault(n, []).append(i)
+    for n, idx in por_pagina.items():
+        ws = palabras.get(n, {}).get("w", [])
+        if not ws:
+            continue
+        conjuntos = {i: set(norm(articulos[i]["titulo"] + " " + articulos[i]["texto"])) for i in idx}
+        puntos = {i: [] for i in idx}
+        for w in ws:
+            t = norm(w[0])
+            if len(t) != 1:
+                continue
+            duenos = [i for i in idx if t[0] in conjuntos[i]]
+            if len(duenos) == 1:
+                puntos[duenos[0]].append(w)
+        for i, ps in puntos.items():
+            if len(ps) < 6:
+                continue
+            xs = sorted(p[1] for p in ps); ys = sorted(p[2] for p in ps)
+            xe = sorted(p[1] + p[3] for p in ps); ye = sorted(p[2] + p[4] for p in ps)
+            q = lambda v, f: v[min(len(v) - 1, int(f * len(v)))]
+            articulos[i].setdefault("zonas", {})[str(n)] = [q(xs, .04), q(ys, .04), q(xe, .96), q(ye, .96)]
 
 
 def caso(grupo, meta, n, descripcion, articulo=None, zona=None):
@@ -136,6 +169,9 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
             caso("bloqueadas", meta, n, "La IA no la transcribió por derechos de autor: queda el escaneo y el texto de Tesseract.")
         elif p.get("incompleta"):
             caso("incompletas", meta, n, "Ninguna lectura quedó completa. " + (p.get("omisiones") or p.get("notas") or "")[:200])
+        if p.get("repetidos_quitados", 0) >= 150:
+            caso("repetidos", meta, n, f"La IA había copiado dos veces parte del texto: se sacaron {p['repetidos_quitados']} "
+                 "palabras repetidas (la lectura original queda guardada). Verificar que no falte nada.")
         for b in p.get("bloques", []):
             if b.get("ubicacion") == "sin_ubicar":
                 caso("bloques_sin_ubicar", meta, n, "Bloque en diagonal enderezado que no se pudo ubicar; quedó al comienzo del "
@@ -161,6 +197,7 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
         if a.get("corregido_a_mano"):
             caso("corregidos", meta, a["paginas"][0], f"«{a['titulo'][:70]}» tiene correcciones hechas a mano.", articulo=i)
 
+    ubicar_articulos(articulos, palabras)
     # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
     json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(sitio, "datos", f"{nid}-palabras.json"), "w"),
               ensure_ascii=False, separators=(",", ":"))
