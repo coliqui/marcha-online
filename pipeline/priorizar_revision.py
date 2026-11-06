@@ -8,7 +8,7 @@ import json, os, re, sys
 
 ocr_dir, lectura, sitio = sys.argv[1:4]
 arch = os.path.join(sitio, "datos", "revisar.json")
-casos = json.load(open(arch))
+casos = [c for c in json.load(open(arch)) if not c.get("carta_suelta")]  # se recalculan abajo (sin duplicar)
 correcciones = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")))["correcciones"]
 
 palabras = lambda t: len(re.findall(r"\w{2,}", t or ""))
