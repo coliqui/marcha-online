@@ -62,6 +62,8 @@ class Articulo(BaseModel):
     cruza_pliego: Literal["no", "sigue_en_la_enfrentada", "viene_de_la_enfrentada", "ambas"] = "no"
     # tipo "destacado": cita en recuadro o letra grande que repite una frase de otro artículo (su título va acá)
     destacado_de: Optional[str] = None
+    # bajada o copete: texto corto en otra letra junto al título (o un segundo titular del mismo artículo)
+    bajada: Optional[str] = None
 
 
 class Ilustracion(BaseModel):
@@ -130,6 +132,7 @@ Transcribí todos los textos de la página en orden de lectura, siguiendo las co
 - Las tablas (cifras, estadísticas, resultados, horarios, cuadros comparativos) transcribilas como tabla Markdown dentro del texto del artículo, celda por celda y con todas sus filas, incluidas las de totales: una línea por fila, las celdas separadas por "|", la fila de encabezados seguida de una línea "| --- | --- |". Respetá las cifras tal como están impresas; si una celda no se puede leer, poné [ilegible]. El texto que rodea a la tabla va antes y después, en párrafos aparte.
 - En la tapa, cada titular o llamada es un ítem aparte (no mezcles una llamada con la nota principal).
 - La firma ("Escribe X", "Por X", o un nombre arriba o al pie) va en autor: nunca es el título de un artículo aparte, aunque esté en letra grande en medio de la página. Las volantas, intertítulos y subtítulos que aparecen entre las columnas de un artículo tampoco empiezan otro: quedan dentro de su texto, como párrafo aparte, y el artículo sigue.
+- La bajada o copete (un texto corto en negrita o en otra letra junto al título, que resume la nota) y los titulares secundarios de un mismo artículo van en el campo bajada de ese artículo: no son un artículo aparte. Si las columnas que rodean un titular son la continuación del mismo artículo, es todo un solo artículo.
 - Las citas destacadas (una frase del mismo artículo repetida en un recuadro o en letra grande) van como un ítem de tipo "destacado", con el título del artículo del que salen en destacado_de. Un recuadro con texto propio (una nota del autor o de la redacción) es un artículo o recuadro normal.
 - Uní las palabras cortadas con guion al final del renglón ("re-\\nnuncia" -> "renuncia") y los renglones de un mismo párrafo. Separá los párrafos con una línea en blanco.
 - Respetá la ortografía de época tal como está impresa ("fué", "dió", "Constantín"). No corrijas, no resumas, no modernices.
@@ -668,8 +671,10 @@ def juntar_partes(articulos):
     página va primera; el resto conserva el orden en que las devolvió la IA.
     """
     grupos = {}
-    for a in articulos:
-        grupos.setdefault(" ".join(a["titulo"].lower().split()), []).append(a)
+    for k, a in enumerate(articulos):
+        # las citas destacadas llevan el título de su artículo, pero no son una parte de su texto
+        clave = ("destacado", k) if a.get("tipo") == "destacado" else " ".join(a["titulo"].lower().split())
+        grupos.setdefault(clave, []).append(a)
     juntos = []
     for partes in grupos.values():
         partes.sort(key=lambda a: (not (a.get("viene_de_pagina")),
