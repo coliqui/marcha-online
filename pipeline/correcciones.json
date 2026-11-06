@@ -1255,6 +1255,39 @@
     }
    ],
    "motivo": "Verificado contra el escaneo (6/11/2026): «Los viajes forman la juventud» (Mistinguett) termina en «Dos comunas se enorgullecen de posesión. (Pasa a la Pág. 13)» y sigue en «en sus archivos, sus actas de nacimiento…», bajo el título de sección «El cine francés al día». El texto de fútbol desde «(Viene de la pág. 12)» es la continuación de «Programa de acción» y se había pegado por error."
+  },
+  {
+   "numero": "1129",
+   "pagina": 8,
+   "titulo_contiene": "no votare",
+   "cortar_desde": "No sé, señor Encargado",
+   "unir": [
+    {
+     "pagina": 9,
+     "titulo_contiene": "carta de malbajar"
+    }
+   ],
+   "cambios": {
+    "autor": "MALBAJAR",
+    "tipo": "carta"
+   },
+   "motivo": "Indicado por Coli Quijano y verificado contra el escaneo (6/11/2026): «No votaré» termina en la pág. 8 con «…son el uno y las otras» y sigue arriba a la izquierda de la pág. 9 («…y por lo tanto irrespetables…»), firmado MALBAJAR. El cierre del Dr. Vigil se le había pegado por error: es de «Voto original»."
+  },
+  {
+   "numero": "1129",
+   "pagina": 9,
+   "titulo_contiene": "voto original",
+   "unir": [
+    {
+     "pagina": 9,
+     "titulo_contiene": "carta de dr. horacio vigil"
+    }
+   ],
+   "cambios": {
+    "autor": "Dr. Horacio Vigil",
+    "tipo": "carta"
+   },
+   "motivo": "Indicado por Coli Quijano y verificado contra el escaneo (6/11/2026): «Voto original» es una sola carta, firmada por el Dr. Horacio Vigil; sigue en la columna 3 (VOTO POR / FUNDAMENTOS 1º-6º) y termina arriba de la columna 4 («No sé, señor Encargado…»). El título «Carta de Dr. Horacio Vigil» no existe en el original."
   }
  ]
 }

@@ -72,6 +72,8 @@ def evaluar(c):
         if any("palabra cortada" in m for m in motivos):
             return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
         return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
+    if g == "estructura" and c.get("carta_suelta"):
+        return None, 52, f"¿«{entre_comillas(c['desc'])[0]}» es la continuación o el final de otra carta del pliego? Si es así, decime de cuál (en «No, dejar como está» podés escribirlo)."
     if g == "estructura":
         if "empieza a mitad de frase" in c["desc"]:
             return "Es el mismo caso que figura en «Uniones propuestas» (no se cuenta dos veces).", 0, ""
@@ -94,6 +96,26 @@ def evaluar(c):
         return None, 40, "Un bloque en diagonal quedó al comienzo del artículo: ver dónde va."
     return None, 20, ""
 
+
+# «Carta de X» con un título que no está impreso y un texto que empieza a mitad de frase o es solo un cierre:
+# suele ser la continuación o el final de otra carta del pliego (caso del nº 1129, señalado por Coli)
+import glob, unicodedata
+sin = lambda t: unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()
+fechas = {c["id"]: c["fecha"] for c in casos}
+for f in sorted(glob.glob(os.path.join(sitio, "datos", "*.json"))):
+    if not re.match(r"^\d+\.json$", os.path.basename(f)):
+        continue
+    d = json.load(open(f))
+    for i, a in enumerate(d["articulos"]):
+        if not re.match(r"(?i)^carta (de|del) ", a["titulo"]):
+            continue
+        n, t = a["paginas"][0], a["texto"].strip()
+        o = os.path.join(ocr_dir, d["id"], f"p{n:02d}.txt")
+        impreso = os.path.exists(o) and sin(a["titulo"])[:14] in re.sub(r"\s+", " ", sin(open(o, encoding="utf-8").read()))
+        if not impreso and (re.match(r"^[a-záéíóúñ….]", t) or len(t.split()) < 80):
+            casos.append({"grupo": "estructura", "id": d["id"], "fecha": d["fecha"], "n": n, "art": i, "zona": None,
+                          "desc": f"«{a['titulo'][:60]}» no es un título impreso y su texto empieza «{t[:40]}…».",
+                          "carta_suelta": True})
 
 auto = 0
 for c in casos:

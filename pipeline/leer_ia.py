@@ -534,6 +534,12 @@ def aplicar_correcciones(nid, articulos):
         for a in articulos:
             if a in sacar or not es(a, c):
                 continue
+            if c.get("cortar_desde"):  # un tramo pegado por error (copiado de otra nota que ya lo tiene): se saca
+                corte = a["texto"].find(c["cortar_desde"])
+                if corte < 0:
+                    print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {c['cortar_desde']!r}")
+                else:
+                    a["texto"] = a["texto"][:corte].rstrip()
             if c.get("partir"):  # un tramo del texto pegado por error a este artículo pasa a otro
                 corte = a["texto"].find(c["partir"]["desde"])
                 b = next((x for x in articulos if x is not a and es(x, c["partir"]["a"])), None)
