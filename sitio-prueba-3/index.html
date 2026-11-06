@@ -575,16 +575,21 @@ function casosRevision() {
 }
 
 // Para Coli: como máximo 30 casos, los que más afectan al lector, con un botón de un clic por respuesta
-function vistaColi() {
+async function vistaColi() {
   if (REVISAR_FALLO) return vistaRevisar();
-  const pendientes = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && !veredicto(c.clave) && !revisado(c.clave))
+  // una nota escrita sobre esa página (o ese caso) cuenta como respuesta: el caso sale de los pendientes
+  let notas = [];
+  try { notas = await (await fetch("notas")).json(); } catch {}
+  const conNota = c => notas.some(x => x.categoria !== "veredicto" && String(x.numero) === String(c.id) && Number(x.pagina) === Number(c.n));
+  const pendientes = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && !veredicto(c.clave) && !revisado(c.clave) && !conNota(c))
     .sort((a, b) => (b.prioridad ?? 0) - (a.prioridad ?? 0));
+  const anotados = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && conNota(c));
   const hoy = pendientes.slice(0, 30), hechos = casosRevision().filter(c => veredicto(c.clave));
   app.innerHTML = `<h2>Para Coli: lo importante</h2>
-    <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá y respondé a la propuesta. «Sí, aplicar»: aplico lo que dice la pregunta. «No, dejar como está»: no se toca (podés escribir qué es lo correcto). «No sé»: queda como está, sin cambios. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length}.` : ""}</p>
+    <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá y respondé a la propuesta. «Sí, aplicar»: aplico lo que dice la pregunta. «No, dejar como está»: no se toca (podés escribir qué es lo correcto). «No sé»: queda como está, sin cambios. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length} con botón.` : ""} ${anotados.length ? `${anotados.length} casos tienen una nota tuya y cuentan como respondidos (los veo en <a href="#/notas">Mis notas</a>).` : ""} También podés contestar con «Anotar» en vez de los botones.</p>
     ${hoy.length ? hoy.map((c, k) => `<div class="caso"><div style="flex:1"><b>${k + 1}.</b> <a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a> <span class="small muted">· ${esc(GRUPOS.find(g => g[0] === c.grupo)?.[1] ?? c.grupo)}</span><br>
       <b>${esc(c.mirar || "Mirar el caso")}</b><br><span class="small muted">${esc(c.desc)}</span><br>
-      <span class="veredictos">${["bien", "mal", "no sé"].map(v => `<button type="button" data-v="${v}" data-k="${esc(c.clave)}">${v === "bien" ? "Sí, aplicar" : v === "mal" ? "No, dejar como está" : "No sé"}</button>`).join(" ")}</span></div></div>`).join("")
+      <span class="veredictos">${["bien", "mal", "no sé"].map(v => `<button type="button" data-v="${v}" data-k="${esc(c.clave)}">${v === "bien" ? "Sí, aplicar" : v === "mal" ? "No, dejar como está" : "No sé"}</button>`).join(" ")} <button type="button" data-anotarc="${esc(c.clave)}">Anotar</button></span><div data-cajac="${esc(c.clave)}"></div></div></div>`).join("")
       : `<p>No queda nada importante por revisar. 🎉</p>`}`;
   const responder = async (c, v, extra = "") => {
     try { localStorage.setItem("ver:" + c.clave, v); } catch {}
@@ -593,6 +598,13 @@ function vistaColi() {
       categoria: "veredicto", veredicto: v, regla_general: false, enlace: c.link, fecha: new Date().toISOString().slice(0, 19) });
     vistaColi();
   };
+  app.querySelectorAll("[data-anotarc]").forEach((b, i) => b.onclick = () => {
+    const c = hoy.find(x => x.clave === b.dataset.anotarc), id = "nota-coli-" + i;
+    const ctx = { numero: c.id, pagina: c.n, caso: c.grupo, titulo: `nº ${c.id}, pág. ${c.n}`, enlace: c.link };
+    const caja = app.querySelector(`[data-cajac="${CSS.escape(c.clave)}"]`);
+    caja.innerHTML = formNota(ctx, id);
+    activarNota(id, ctx);
+  });
   app.querySelectorAll("[data-v]").forEach(b => b.onclick = () => {
     const c = hoy.find(x => x.clave === b.dataset.k);
     if (b.dataset.v !== "mal") return responder(c, b.dataset.v);
