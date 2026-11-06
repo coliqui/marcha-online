@@ -184,6 +184,10 @@ addEventListener("scroll", ajustarPanel, { passive: true });
 addEventListener("resize", ajustarPanel);
 
 function gestos(v) {
+  // OpenSeadragon gira la página con las teclas R y F (girar, espejar): fácil de tocar sin querer escribiendo una nota
+  v.addHandler("canvas-key", e => {
+    if (/^[rRfF]$/.test(e.originalEvent.key)) { e.preventDefaultAction = true; e.preventDefault = true; }
+  });
   v.addHandler("canvas-scroll", e => {
     const ev = e.originalEvent;
     e.preventDefaultAction = true;
