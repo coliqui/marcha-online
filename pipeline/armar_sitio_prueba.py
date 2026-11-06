@@ -138,6 +138,8 @@ def caso(grupo, meta, n, descripcion, articulo=None, zona=None):
 
 
 # Números leídos con IA
+_prop = os.path.join(ia, "uniones-propuestas.json")
+PROPUESTAS = json.load(open(_prop)) if os.path.exists(_prop) else {}
 for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     carpeta_ia = os.path.dirname(art)
     nid = os.path.basename(carpeta_ia)
@@ -238,6 +240,15 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     ubicar_articulos(articulos, palabras)
     for n, desc, i in dudas_de_titulos(articulos, enfrentadas):
         caso("estructura", meta, n, desc, articulo=i)
+    # vista previa de las uniones propuestas para los pedazos sueltos (proponer_uniones.py); no se aplica nada
+    for x in PROPUESTAS.get(nid, []):
+        if x["clase"] == "sin_candidata":
+            continue
+        f, c0 = articulos[x["pedazo"]], x["candidatas"][0]
+        c = articulos[c0["articulo"]]
+        caso("union_" + x["clase"], meta, x["pagina"], f"«{f['titulo'][:50]}» («{f['texto'].strip()[:35]}…») seguiría a "
+             f"«{c['titulo'][:50]}» (pág. {', '.join(map(str, c['paginas']))}, termina «…{c['texto'].rstrip()[-35:]}»). "
+             f"Señales: {'; '.join(c0['senales'])}.", articulo=x["pedazo"])
     # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
     json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(sitio, "datos", f"{nid}-palabras.json"), "w"),
               ensure_ascii=False, separators=(",", ":"))
