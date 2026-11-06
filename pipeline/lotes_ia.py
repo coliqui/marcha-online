@@ -155,12 +155,15 @@ def elegir_lectura(num, n, con_bloques=True):
     siendo buscable. Si la versión final de una ronda anterior (carpeta _ronda1) tenía bastante más texto, queda
     esa. Después se le agregan los bloques en diagonal leídos enderezados."""
     x = _elegir(num, n)
-    anterior = sin_duplicados(cargar(f"{num.destino}/_ronda1/p{n:02d}.json", None), num.ocr[n])
-    if x and anterior and not anterior.get("bloqueada") and "articulos" in anterior and not x.get("bloqueada"):
-        nuevas = sum(palabras(a["texto"]) for a in x.get("articulos", []))
-        viejas = sum(palabras(a["texto"]) for a in anterior["articulos"])
-        if viejas >= 1.3 * nuevas and viejas - nuevas >= 100:
-            x = {**anterior, "de_ronda_anterior": True}
+    # versiones finales de rondas anteriores (etapa 1 en _ronda1, etapa 2 en _etapa2 si la página se releyó):
+    # si alguna tenía bastante más texto, queda esa
+    for carpeta in ("_ronda1", "_etapa2"):
+        anterior = sin_duplicados(cargar(f"{num.destino}/{carpeta}/p{n:02d}.json", None), num.ocr[n])
+        if x and anterior and not anterior.get("bloqueada") and "articulos" in anterior and not x.get("bloqueada"):
+            nuevas = sum(palabras(a["texto"]) for a in x.get("articulos", []))
+            viejas = sum(palabras(a["texto"]) for a in anterior["articulos"])
+            if viejas >= 1.3 * nuevas and viejas - nuevas >= 100:
+                x = {**anterior, "de_ronda_anterior": True}
     bloques = cargar(f"{num.destino}/p{n:02d}.bloques.json", [])
     if x and con_bloques and bloques and not x.get("bloqueada"):
         x = json.loads(json.dumps(x))  # copia: la lectura guardada no se toca
@@ -314,6 +317,8 @@ def seguir(rollos, ocr, lectura, tope):
     falla = lambda num, n, m: fallas.get(f"{num.id}__{n}__{m}", 0) >= 2
     curso = lambda num, n, m: any(i == num.id and p == n and x.startswith(m) for i, p, x in en_curso)
     faltan = {"haiku": [], "mitad": [], "sonnet": [], "bloque": []}
+    # páginas que se releen con Sonnet aunque Haiku no lo pida (etapa 3: pedazos sueltos y problemas de estructura)
+    forzar = {(x["id"], x["n"]) for x in cargar(os.path.join(lectura, "forzar-sonnet.json"), [])}
     for num in numeros.values():
         for n in range(1, num.total + 1):
             if os.path.exists(f"{num.destino}/p{n:02d}.json"):
@@ -324,6 +329,8 @@ def seguir(rollos, ocr, lectura, tope):
                     faltan["haiku"].append((num, n))
                 continue
             paso = siguiente_paso(h, num.ocr[n])
+            if (num.id, n) in forzar and not h.get("bloqueada"):
+                paso = "sonnet"
             if paso == "mitad" and falla(num, n, "haiku-sup") | falla(num, n, "haiku-inf"):
                 paso = "sonnet"
             juntar_mitades(num, n)
