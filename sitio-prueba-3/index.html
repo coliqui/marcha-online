@@ -65,14 +65,14 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 /* en pantallas anchas el visor queda quieto mientras se recorren los artículos de la columna de al lado */
 @media (min-width: 901px) {
   .viewer > div:first-child { position: sticky; top: 8px }
-  .viewer > .side { max-height: calc(100vh - 16px); overflow-y: auto; position: sticky; top: 8px; padding-right: 4px }
+  .viewer > .side { max-height: calc(100vh - 16px); overflow-y: auto; position: sticky; top: 8px; padding-right: 4px; overscroll-behavior: contain }
 }
 @media (max-width: 900px) { .viewer { grid-template-columns: minmax(0, 1fr) } }
 .vbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font: 600 13px var(--display); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px }
 .vbar button { font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 5px 12px; cursor: pointer }
 .vbar button:disabled { opacity: .35; cursor: default }
 .vbar label { text-transform: none; letter-spacing: 0; font-weight: 500; display: flex; gap: 4px; align-items: center }
-.osd { width: 100%; height: min(82vh, 1100px); background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
+.osd { width: 100%; height: min(82vh, 1100px); overscroll-behavior: contain; background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
 .box { background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
 .ibox { outline: 2px dashed var(--ilus); pointer-events: none }
 .thumbs { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 }
@@ -155,6 +155,25 @@ const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto"
 const fecha = f => { const [a, m, d] = f.split("-"); return `${+d} de ${MESES[m - 1]} de ${a}`; };
 const EJEMPLOS = ["Peloduro", "Mussolini", "Clemenceau", "teatro", "Cortázar", "caricatura", "Cuba"];
 const OSD_IMG = "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/";
+const GESTOS = { clickToZoom: false, dblClickToZoom: true, scrollToZoom: false };
+
+// Trackpad: desplazar con dos dedos mueve la página; pellizcar (que el navegador manda como rueda con Ctrl)
+// acerca o aleja. En el teléfono, pellizcar acerca y un dedo arrastra, como siempre.
+function gestos(v) {
+  v.addHandler("canvas-scroll", e => {
+    const ev = e.originalEvent;
+    e.preventDefaultAction = true;
+    e.preventDefault = true;
+    ev.preventDefault();
+    if (ev.ctrlKey || ev.metaKey) {
+      v.viewport.zoomBy(Math.exp(-ev.deltaY * 0.01), v.viewport.pointFromPixel(e.position, true));
+    } else {
+      v.viewport.panBy(v.viewport.deltaPointsFromPixels(new OpenSeadragon.Point(ev.deltaX, ev.deltaY)));
+    }
+    v.viewport.applyConstraints();
+  });
+  return v;
+}
 
 let NUMEROS = [], N = {}, ARTS = [], ILUS = [], PERSONAS = new Map(), ALIAS = new Map(), REVISAR = [], REVISAR_FALLO = false, REFS = [];
 let visor = null;
@@ -247,7 +266,7 @@ function abrirLightbox(src, pie) {
   lb.className = "lb";
   lb.innerHTML = `<button class="x" type="button">Cerrar ✕</button><div class="osd" id="lbosd"></div><p>${pie}</p>`;
   document.body.appendChild(lb);
-  const v = OpenSeadragon({ element: lb.querySelector("#lbosd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: src }, showNavigationControl: true, gestureSettingsMouse: { clickToZoom: false } });
+  const v = gestos(OpenSeadragon({ element: lb.querySelector("#lbosd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: src }, showNavigationControl: true, gestureSettingsMouse: GESTOS }));
   const cerrar = () => { v.destroy(); lb.remove(); removeEventListener("keydown", tecla); };
   const tecla = e => { if (e.key === "Escape") cerrar(); };
   lb.querySelector(".x").onclick = cerrar;
@@ -321,7 +340,7 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
       <div><div class="osd" id="osd" role="img" aria-label="Marcha nº ${esc(nid)}, ${vistas.length > 1 ? "páginas " + numeros.join(" y ") : "página " + n}"></div>
         <div class="vbar" style="margin-top:8px"><label><input type="checkbox" id="vd" ${doble ? "checked" : ""}> Doble página, como en el rollo</label>
           <label><input type="checkbox" id="vi" ${verIlus ? "checked" : ""}> Marcar archivo gráfico (${total(vistas, pp => pp.ilustraciones.length)})</label>
-          <span class="muted">Rueda o pellizco para acercar · doble clic para ampliar</span>${total(hits, h => h.length) ? `<span>${total(hits, h => h.length)} palabras marcadas</span>` : ""}</div>
+          <span class="muted">Dos dedos para moverte · pellizcar o doble clic para acercar</span>${total(hits, h => h.length) ? `<span>${total(hits, h => h.length)} palabras marcadas</span>` : ""}</div>
         <nav class="thumbs" aria-label="Páginas">${d.paginas.map(pp => `<a href="${link(pp.n)}" ${numeros.includes(pp.n) ? 'aria-current="true"' : ""}><img src="${pp.img}" alt="" loading="lazy"><span class="dot ${conHits.has(pp.n) ? "on" : ""}"></span>${pp.n}</a>`).join("")}</nav></div>
       <div class="side">
         ${formNota({ titulo: `nº ${nid}, pág. ${n}` }, "nota-pagina")}
@@ -338,8 +357,9 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
   activarNota("nota-pagina", { numero: nid, pagina: n, titulo: `nº ${nid}, pág. ${n}` });
   if (visor) visor.destroy();
   visor = OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, showNavigator: true, navigatorPosition: "TOP_RIGHT",
-    gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true },
+    gestureSettingsMouse: GESTOS,
     tileSources: vistas.map((pp, i) => ({ tileSource: { type: "image", url: pp.hd, buildPyramid: true }, x: desplazamiento(i), y: 0, width: 1 })) });
+  gestos(visor);
   // coordenadas: cada página mide 1 de ancho y "ar" de alto; la de la derecha empieza en 1 + SEPARACION
   const rect = (i, x, y, w, h) => new OpenSeadragon.Rect(desplazamiento(i) + x / 1000, y / 1000 * vistas[i].ar, w / 1000, h / 1000 * vistas[i].ar);
   const caja = (i, x, y, w, h, clase, tit) => {
@@ -387,7 +407,7 @@ function vistaTapa(id) {
     ${citadoEn(m.id)}
     <div class="osd" id="osd" role="img" aria-label="Tapa del nº ${esc(id)}"></div>`;
   if (visor) visor.destroy();
-  visor = OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: m.grande ? `tapas/grande/${m.id}.jpg` : `tapas/${m.id}.jpg`, buildPyramid: true }, showNavigator: true, navigatorPosition: "TOP_RIGHT", gestureSettingsMouse: { clickToZoom: false } });
+  visor = gestos(OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: m.grande ? `tapas/grande/${m.id}.jpg` : `tapas/${m.id}.jpg`, buildPyramid: true }, showNavigator: true, navigatorPosition: "TOP_RIGHT", gestureSettingsMouse: GESTOS }));
 }
 
 function vistaAutores() {
