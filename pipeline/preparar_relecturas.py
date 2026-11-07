@@ -10,6 +10,8 @@ import glob, json, os, re, shutil, sys
 
 ocr_dir, lectura = sys.argv[1:3]
 aplicar = "--aplicar" in sys.argv
+RESTO = "--resto" in sys.argv  # etapa 4: el resto de las páginas de los primeros 350 números, las más largas primero
+MAXIMO = int(sys.argv[sys.argv.index("--maximo") + 1]) if "--maximo" in sys.argv else None
 cor = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")))["correcciones"]
 protegidas = set()
 for c in cor:
@@ -30,7 +32,10 @@ def con_tablas(ocr):
 
 
 motivos = {}
+primeros = {x["id"] for x in json.load(open(os.path.join(lectura, "etapa.json")))["numeros"][:350]}
 for d in sorted(glob.glob(os.path.join(lectura, "*", "articulos.json"))):
+    if RESTO and os.path.basename(os.path.dirname(d)) not in primeros:
+        continue
     nid = os.path.basename(os.path.dirname(d))
     carp = os.path.dirname(d)
     arts = json.load(open(d))["articulos"]
@@ -41,21 +46,26 @@ for d in sorted(glob.glob(os.path.join(lectura, "*", "articulos.json"))):
         o = os.path.join(ocr_dir, nid, f"p{n:02d}.txt")
         ocr = open(o, encoding="utf-8").read() if os.path.exists(o) else ""
         m = []
-        if p.get("incompleta") and n != 1:
+        if RESTO:  # todas las que no se releyeron en la etapa 3
+            if not os.path.exists(os.path.join(carp, "_etapa2", f"p{n:02d}.json")):
+                m.append(("resto", len(ocr.split())))
+        elif p.get("incompleta") and n != 1:
             m.append("incompleta")
         if con_tablas(ocr):
             m.append("tablas")
         if n in cartel:
             m.append("cartelera")
+        if RESTO:
+            m = [x for x in m if isinstance(x, tuple)]
         if not m or p.get("bloqueada") or p.get("modelo") in ("sonnet", "tesseract") or (nid, n) in protegidas or (nid, n) in YA \
                 or os.path.exists(os.path.join(carp, f"p{n:02d}.sonnet.json")):
             continue
         motivos[(nid, n)] = m
 
-# Sonnet: las páginas con pedazos sueltos (proponer_uniones.py), salvo las protegidas o ya leídas por Sonnet
+# Sonnet: las páginas con pedazos sueltos (solo en la etapa 3) (proponer_uniones.py), salvo las protegidas o ya leídas por Sonnet
 sonnet = set()
 prop = os.path.join(lectura, "uniones-propuestas.json")
-for nid, lista in (json.load(open(prop)) if os.path.exists(prop) else {}).items():
+for nid, lista in (json.load(open(prop)) if os.path.exists(prop) and not RESTO else {}).items():
     for x in lista:
         k = (nid, x["pagina"]); carp = os.path.join(lectura, nid)
         f = os.path.join(carp, f"p{k[1]:02d}.json")
@@ -68,6 +78,13 @@ for nid, lista in (json.load(open(prop)) if os.path.exists(prop) else {}).items(
 for k in sonnet:
     motivos.pop(k, None)  # la relee Sonnet: no hace falta Haiku de nuevo
 print(f"{len(sonnet)} páginas para Sonnet (pedazos sueltos / estructura)")
+
+if RESTO:
+    sonnet = set()
+    orden = sorted(motivos, key=lambda k: -motivos[k][0][1])  # más texto primero
+    if MAXIMO is not None:
+        orden = orden[:MAXIMO]
+    motivos = {k: ["resto"] for k in orden}
 
 from collections import Counter
 c = Counter(x for m in motivos.values() for x in m)
@@ -94,6 +111,7 @@ if aplicar:
                 shutil.copy2(f, os.path.join(carp, "_etapa2", f"p{n:02d}.json"))
             os.remove(f)
         registro.append({"id": nid, "n": n, "motivos": ["sonnet"]})
-    json.dump([{"id": i, "n": n} for i, n in sorted(sonnet)], open(os.path.join(lectura, "forzar-sonnet.json"), "w"))
-    json.dump(registro, open(os.path.join(lectura, "relecturas-etapa3.json"), "w"), ensure_ascii=False, indent=1)
+    if not RESTO:
+        json.dump([{"id": i, "n": n} for i, n in sorted(sonnet)], open(os.path.join(lectura, "forzar-sonnet.json"), "w"))
+    json.dump(registro, open(os.path.join(lectura, "relecturas-etapa4.json" if RESTO else "relecturas-etapa3.json"), "w"), ensure_ascii=False, indent=1)
     print("movidas a _etapa2; lista en relecturas-etapa3.json")
