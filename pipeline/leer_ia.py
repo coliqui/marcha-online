@@ -527,7 +527,7 @@ def aplicar_correcciones(nid, articulos):
     parecido = lambda t: unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower()
     es = lambda a, c: (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
                        and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"]))
-                       and (not c.get("empieza") or parecido(a["texto"]).lstrip().startswith(parecido(c["empieza"]))))
+                       and (not c.get("empieza") or " ".join(parecido(a["texto"]).split()).startswith(" ".join(parecido(c["empieza"]).split()))))
     sacar = []
     for c in json.load(open(CORRECCIONES))["correcciones"]:
         if c["numero"] != nid:
@@ -574,7 +574,13 @@ def aplicar_correcciones(nid, articulos):
                     elif clave == "unir":
                         fin = a["texto"].rstrip()
                         if fin.endswith("-") and not pieza.get("antes"):  # palabra cortada: "porcenta-" + "je"
-                            a["texto"] = fin[:-1] + b["texto"].lstrip()
+                            corte = re.findall(r"[^\W\d_]+-$", fin)
+                            sigue = b["texto"].lstrip()
+                            if corte and parecido(sigue[:len(corte[0]) - 1]) == parecido(corte[0][:-1]):
+                                fin = fin[:-len(corte[0])]  # el pedazo repite la palabra entera ("só-" + "sólo")
+                                a["texto"] = fin + sigue
+                            else:
+                                a["texto"] = fin[:-1] + sigue
                         else:
                             a["texto"] = fin + "\n\n" + (pieza["antes"] + "\n\n" if pieza.get("antes") else "") + b["texto"].lstrip()
                         a["paginas"] = sorted(set(a["paginas"]) | set(b["paginas"]))

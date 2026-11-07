@@ -72,6 +72,8 @@ def evaluar(c):
         if any("palabra cortada" in m for m in motivos):
             return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
         return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
+    if c.get("manual"):
+        return None, c.get("prioridad", 60), c["mirar"]
     if g == "estructura" and c.get("carta_suelta"):
         return None, 52, f"¿«{entre_comillas(c['desc'])[0]}» es la continuación o el final de otra carta del pliego? Si es así, decime de cuál (en «No, dejar como está» podés escribirlo)."
     if g == "estructura":
@@ -116,6 +118,12 @@ for f in sorted(glob.glob(os.path.join(sitio, "datos", "*.json"))):
             casos.append({"grupo": "estructura", "id": d["id"], "fecha": d["fecha"], "n": n, "art": i, "zona": None,
                           "desc": f"«{a['titulo'][:60]}» no es un título impreso y su texto empieza «{t[:40]}…».",
                           "carta_suelta": True})
+
+# casos puestos a mano (lectura-ia/casos-manuales.json): van siempre a «Para Coli»
+_man = os.path.join(lectura, "casos-manuales.json")
+casos = [c for c in casos if not c.get("manual")]
+for m in (json.load(open(_man)) if os.path.exists(_man) else []):
+    casos.append({**m, "manual": True, "art": m.get("art"), "zona": None})
 
 auto = 0
 for c in casos:

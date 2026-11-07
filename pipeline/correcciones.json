@@ -1314,6 +1314,1604 @@
     }
    ],
    "motivo": "Indicado por Coli Quijano (6/11/2026): nota a dos páginas con subtítulos y recuadros que salían como notas aparte. Releída con Sonnet (pedido de Coli); el pedazo «Simpatía hacia la U.R.S.S.» empieza «reclamaciones a Turquía…», que sigue a «…aunque no plantea» (confirmado con el orden de Tesseract); el subtítulo queda dentro del texto."
+  },
+  {
+   "numero": "060",
+   "pagina": 18,
+   "tipo": "cuento",
+   "titulo_contiene": "Esclavo del Reglamento",
+   "empieza": "INCLINADO sobre su escritorio, Michel Fl",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "cuento",
+     "titulo_contiene": "Esclavo del Reglamento",
+     "empieza": "sea dicho entre nosotros. Es, como si di"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "077",
+   "pagina": 3,
+   "tipo": "nota",
+   "titulo_contiene": "Hombres chicos, el bacalao y la paz",
+   "empieza": "Un día tuve ocasión de hablar de este te",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "columna",
+     "titulo_contiene": "Hombres Chicos, el Bacalao y la Paz",
+     "empieza": "mente, un ejemplar de simpatía desbordan"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "084",
+   "pagina": 19,
+   "tipo": "cuento",
+   "titulo_contiene": "El desfile",
+   "empieza": "Hasta este momento, el padre no había re",
+   "unir": [
+    {
+     "pagina": 21,
+     "tipo": "cuento",
+     "titulo_contiene": "EL DESFILE",
+     "empieza": "hacia adelante; empieza a temblar cuando"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1013",
+   "pagina": 8,
+   "tipo": "columna",
+   "titulo_contiene": "El Pulga: Gotha, Nuevos horizontes, Almidón, Gran León",
+   "empieza": "GOTHA.- En la amena sección \"46. - PERSO",
+   "unir": [
+    {
+     "pagina": 8,
+     "tipo": "nota",
+     "titulo_contiene": "La Mar en Coche",
+     "empieza": "pública el presidente saliente don Adolf"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «Re-publica»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1022",
+   "pagina": 7,
+   "tipo": "nota",
+   "titulo_contiene": "LA VISITA DEL MINISTRO LIPSCHITZ: Un rostro optimista de la ciudad-estado",
+   "empieza": "LOS MOTOCICLISTAS con sus sirenas, y las",
+   "unir": [
+    {
+     "pagina": 14,
+     "tipo": "columna",
+     "titulo_contiene": "Optimista...",
+     "empieza": "efectiva sola la guerra total, nosotros "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1029",
+   "pagina": 2,
+   "tipo": "carta",
+   "titulo_contiene": "GRAVE DENUNCIA EL AUTOR DEL HIMNO",
+   "empieza": "Estimado Doctor:\n\nMás que al periodista,",
+   "unir": [
+    {
+     "pagina": 2,
+     "tipo": "carta",
+     "titulo_contiene": "GRAVE DENUNCIA",
+     "empieza": "pues, para todos los estudiantes de cual"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1030",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "GRAND HOTEL",
+   "empieza": "(Menschen im Hotel, Alemania, 1959. 18 d",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "crítica",
+     "titulo_contiene": "GRAND HOTEL",
+     "empieza": "rias), y sobre todo de banalización de e"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «se-rias»; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "106",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "¿PODRA HITLER LLEVAR A CABO ESTOS PLANES?",
+   "empieza": "ES lo cierto que Europa está pasando por",
+   "unir": [
+    {
+     "pagina": 11,
+     "tipo": "nota",
+     "titulo_contiene": "Los planes de Hitler en el Este de Europa",
+     "empieza": "de espantos y calamidades es la tentativ"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1065",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "Loas a Jorge Washington y a los Estados Unidos",
+   "empieza": "Lo que he advertido de nuevo en Esteban ",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "entrevista",
+     "titulo_contiene": "Estados Unidos y la Nueva Crisis",
+     "empieza": "po expedicionario hubieran podido aferra"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1070",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "EL ACUSADOR Y EL ACUSADO",
+   "empieza": "(Viene de Pág. Centrales)\n\nPor los produ",
+   "unir": [
+    {
+     "pagina": 30,
+     "tipo": "nota",
+     "titulo_contiene": "EL ACUSADOR Y EL ACUSADO",
+     "empieza": "hay aquí representantes de oligarquías n"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1079",
+   "pagina": 4,
+   "tipo": "nota",
+   "titulo_contiene": "EL MUNDO TAL CUAL ES. LA SIMIENTE SUBVERSIVA",
+   "empieza": "La derrota del Partido Colorado, se debi",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "editorial",
+     "titulo_contiene": "LA SIMIENTE SUBVERSIVA",
+     "empieza": "presentes, sin interferir con cuestiones"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; el pedazo empieza con media palabra que no completa el final de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "108",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "EL PRESUPUESTO DEL INSTITUTO DE JUBILACIONES",
+   "empieza": "Uno de los diputados católicos, el Sr. B",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "editorial",
+     "titulo_contiene": "EL PRESUPUESTO DEL INSTITUTO DE JUBILACIONES",
+     "empieza": "peores, hemos visto y veremos. Después d"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1088",
+   "pagina": 7,
+   "tipo": "nota",
+   "titulo_contiene": "INVESTIGACION CIENTIFICA",
+   "empieza": "★ La investigación científica en nuestro",
+   "unir": [
+    {
+     "pagina": 8,
+     "tipo": "nota",
+     "titulo_contiene": "INVESTIGACION CIENTIFICA",
+     "empieza": "la finalidad básica de formar profesiona"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "110",
+   "pagina": 11,
+   "tipo": "otro",
+   "titulo_contiene": "Texto de los 14 puntos del Presidente Wilson",
+   "empieza": "I. — Convenios públicos de paz, públicam",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "otro",
+     "titulo_contiene": "Texto de los 14 puntos del presidente Wilson",
+     "empieza": "política y económica y de la integridad "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1150",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Bancarrota de las jubilaciones",
+   "empieza": "Sin embargo, para los fines del presente",
+   "unir": [
+    {
+     "pagina": 6,
+     "tipo": "nota",
+     "titulo_contiene": "Bancarrota de las jubilaciones",
+     "empieza": "día a la suma de $ 757:965.000 en cifras"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1164",
+   "pagina": 6,
+   "tipo": "carta",
+   "titulo_contiene": "Del Sr. Enrique Erro",
+   "empieza": "Montevideo, 9 de julio de 1963.\n\nSeñor D",
+   "unir": [
+    {
+     "pagina": 10,
+     "tipo": "carta",
+     "titulo_contiene": "Del Sr. Enrique Erro",
+     "empieza": "la Constitución de la República, donde h"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1166",
+   "pagina": 18,
+   "tipo": "editorial",
+   "titulo_contiene": "¿Coexistencia o revolución?",
+   "empieza": "El Partido Comunista de China siempre se",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "editorial",
+     "titulo_contiene": "O REVOLUCION?",
+     "empieza": "tedes atacando a los camaradas albaneses"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «us-tedes»; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1167",
+   "pagina": 2,
+   "tipo": "carta",
+   "titulo_contiene": "Cartas de los lectores: Hacia la URSS, solamente hacia la URSS",
+   "empieza": "[ilegible]. Nuestro amigo Novello discul",
+   "unir": [
+    {
+     "pagina": 3,
+     "tipo": "carta",
+     "titulo_contiene": "Por algo será",
+     "empieza": "a) Dice el Sr. Moreno ¿Qué hizo Gardel, "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «co-a»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1185",
+   "pagina": 21,
+   "tipo": "nota",
+   "titulo_contiene": "ADONDE VA EL BALLET DEL SODRE",
+   "empieza": "Las actividades actuales del SODRE sobre",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "editorial",
+     "titulo_contiene": "Adonde va el ballet del Sodre",
+     "empieza": "ción. Pero ahora es tiempo ya de asumir "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1197",
+   "pagina": 11,
+   "tipo": "nota",
+   "titulo_contiene": "DE LA REBELDIA EN ADELANTE",
+   "empieza": "Ellos dicen que vienen \"desde el copete ",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "nota",
+     "titulo_contiene": "DE LA REBELDIA EN ADELANTE",
+     "empieza": "que los trabajadores del litoral levanta"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1197",
+   "pagina": 21,
+   "tipo": "nota",
+   "titulo_contiene": "San Pablo",
+   "empieza": "La Livraria Duas Cidades vende muchos li",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "La Iglesia en Brasil",
+     "empieza": "den de familias burguesas, cuyos padres "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «proce-den»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1199",
+   "pagina": 12,
+   "tipo": "nota",
+   "titulo_contiene": "PARA NOSOTROS Y PARA NUESTROS HIJOS",
+   "empieza": "CUANDO se pregunta a algunos senadores s",
+   "unir": [
+    {
+     "pagina": 24,
+     "tipo": "nota",
+     "titulo_contiene": "Para nosotros y para...",
+     "empieza": "ideólogos principales de la maniobra se "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1204",
+   "pagina": 14,
+   "tipo": "nota",
+   "titulo_contiene": "LA CRISIS DE LA LEY 12.670",
+   "empieza": "Constituye un hecho curioso —seguramente",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "editorial",
+     "titulo_contiene": "La crisis...",
+     "empieza": "mercadería a quien se le antoje en el ex"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1222",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "Los límites internacionales",
+   "empieza": "NUESTRO PARLAMENTO está abocado a pronun",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "Los límites internacionales",
+     "empieza": "ha dicho que se ignoraba, en esas circun"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1232",
+   "pagina": 1,
+   "tipo": "nota",
+   "titulo_contiene": "La larga crisis de la industria textil",
+   "empieza": "[ilegible]",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "nota",
+     "titulo_contiene": "CRISIS TEXTIL",
+     "empieza": "ción de impuestos a las empresas exporta"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1241",
+   "pagina": 11,
+   "tipo": "nota",
+   "titulo_contiene": "Las elecciones Nacionales",
+   "empieza": "El turista quedó desorientado. Pensó que",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "Elecciones...",
+     "empieza": "cosas. El fútbol es una válvula de escap"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1241",
+   "pagina": 23,
+   "tipo": "crítica",
+   "titulo_contiene": "REFLEXION SOBRE EL APOCALIPSIS",
+   "empieza": "ROGOPAG (Rogopag, Italia 1963. Trocadero",
+   "unir": [
+    {
+     "pagina": 24,
+     "tipo": "crítica",
+     "titulo_contiene": "Reflexión sobre...",
+     "empieza": "romántica. Maneja la repulsión, la feald"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1250",
+   "pagina": 19,
+   "tipo": "nota",
+   "titulo_contiene": "Reunión secreta",
+   "empieza": "La Iglesia en Brasil (II)\n\nEn los suburb",
+   "unir": [
+    {
+     "pagina": 20,
+     "tipo": "nota",
+     "titulo_contiene": "Reunión secreta",
+     "empieza": "lo. entre la AP y la Juventud Demócrata "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1261",
+   "pagina": 29,
+   "tipo": "editorial",
+   "titulo_contiene": "DEL PROVINCIANISMO CULTURAL",
+   "empieza": "UNO de los rasgos que ostenta la cultura",
+   "unir": [
+    {
+     "pagina": 30,
+     "tipo": "nota",
+     "titulo_contiene": "Del provincianismo cultural",
+     "empieza": "consiste en el establecimiento, por enci"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1267",
+   "pagina": 6,
+   "tipo": "nota",
+   "titulo_contiene": "Congreso del Pueblo",
+   "empieza": "COMO “no hay mal que por bien no venga”,",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "nota",
+     "titulo_contiene": "del Pueblo",
+     "empieza": "primer punto del temario y otras cinco c"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1281",
+   "pagina": 13,
+   "tipo": "nota",
+   "titulo_contiene": "la hojarasca",
+   "empieza": "la Embajada norteamericana, a principios",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "nota",
+     "titulo_contiene": "...a Fuerza...",
+     "empieza": "peles claves en el restablecimiento de l"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «pa-peles»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1282",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "Unidad quincista - Por Luis Batlle",
+   "empieza": "El sector agrupado bajo el sublema \"Unid",
+   "unir": [
+    {
+     "pagina": 11,
+     "tipo": "nota",
+     "titulo_contiene": "Lealtad a Luis Batlle - Unidad y Reforma",
+     "empieza": "con las oligarquías, únicamente al servi"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1282",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "Unidad quincista - Por Luis Batlle",
+   "empieza": "El sector agrupado bajo el sublema \"Unid",
+   "unir": [
+    {
+     "pagina": 14,
+     "tipo": "nota",
+     "titulo_contiene": "“Unidad quincista...”",
+     "empieza": "allá por 1947, en que tuve la audacia de"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1282",
+   "pagina": 6,
+   "tipo": "nota",
+   "titulo_contiene": "Mucho ruido y pocas nueces",
+   "empieza": "Las gracias siguen destacándose [ilegibl",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "Mucho ruido...",
+     "empieza": "nado de los ablandamientos, algunos sent"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1297",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "Gordon: el que vino a hacer tragar la píldora",
+   "empieza": "MIENTRAS fue embajador en el Brasil —don",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "GORDON...",
+     "empieza": "más adelante: \"21. Los Estados miembros "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1321",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "LA CHINA DE LOS «GUARDIAS ROJOS»",
+   "empieza": "PARIS.\n\nCHINA está consagrada a revivir ",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "LA CHINA...",
+     "empieza": "a los 500.000 “guardias rojos” llegados "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1327",
+   "pagina": 30,
+   "tipo": "cuento",
+   "titulo_contiene": "Las protectoras",
+   "empieza": "Las amigas nuevas, las que sustituían a ",
+   "unir": [
+    {
+     "pagina": 31,
+     "tipo": "otro",
+     "titulo_contiene": "Las protectoras",
+     "empieza": "amigas, comentó, tentada de risa y un po"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1349",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "Brasil en Punta del Este",
+   "empieza": "EN 1961, gobernaba en el Brasil Jânio Qu",
+   "unir": [
+    {
+     "pagina": 20,
+     "tipo": "nota",
+     "titulo_contiene": "BRASIL EN PUNTA DEL ESTE",
+     "empieza": "previo conocimiento de los estudios y de"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1350",
+   "pagina": 23,
+   "tipo": "nota",
+   "titulo_contiene": "\"US\" conmueve al Imperio",
+   "empieza": "LONDRES\n\nUn jueves de octubre de 1966, e",
+   "unir": [
+    {
+     "pagina": 24,
+     "tipo": "crítica",
+     "titulo_contiene": "“US” conmueve...",
+     "empieza": "platea mientras un reflector iluminaba a"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1358",
+   "pagina": 17,
+   "tipo": "nota",
+   "titulo_contiene": "Coexistencia en quiebra",
+   "empieza": "MOSCU\n\nDIECIOCHO hombres indignados se r",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "Coexistencia...",
+     "empieza": "sos que eran los grandes perdedores en e"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1358",
+   "pagina": 14,
+   "tipo": "nota",
+   "titulo_contiene": "EE. UU. Y LA GUERRA BACTERIOLOGICA: LA CORRUPCION DE LOS CIENTIFICOS",
+   "empieza": "Es noticia corriente que los Estados Uni",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "La corrupción...",
+     "empieza": "centros de investigación sobre guerra bi"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1367",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "Regis Debray y la insurgencia en Bolivia",
+   "empieza": "CARACAS\n\n\"El soldado que con tanta audac",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "Régis Debray...",
+     "empieza": "no lo sustituyeron por otro. Ese vacío d"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1378",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "MODOS DE DINAMITAR EL PAIS",
+   "empieza": "Al día siguiente de la entrevista con el",
+   "unir": [
+    {
+     "pagina": 27,
+     "tipo": "crítica",
+     "titulo_contiene": "[sin título visible]",
+     "empieza": "de paso por el ciclo de Coventry, el ext"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «en-de»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1384",
+   "pagina": 6,
+   "tipo": "nota",
+   "titulo_contiene": "EL URUGUAY Y SU DESTINO (IV)",
+   "empieza": "“El mundo pasa y su figura”. Pasan tambi",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "otro",
+     "titulo_contiene": "El Uruguay y su destino (IV)",
+     "empieza": "precedente. Mal puede pensarse entonces "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; el pedazo empieza con media palabra que no completa el final de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1384",
+   "pagina": 6,
+   "tipo": "nota",
+   "titulo_contiene": "MEDIACIÓN POCO EQUITATIVA",
+   "empieza": "La realidad suele anticipar ejemplos de ",
+   "unir": [
+    {
+     "pagina": 24,
+     "tipo": "editorial",
+     "titulo_contiene": "Mediación",
+     "empieza": "se obtuvo el concurso de la fuerza públi"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1396",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "LA EJECUCION DEL CHE POR LA CIA",
+   "empieza": "Michèle Ráy, antes modelo de Chanel y co",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "LA EJECUCION...",
+     "empieza": "más los derechos. No obstante, no nos co"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1398",
+   "pagina": 26,
+   "tipo": "crítica",
+   "titulo_contiene": "Sin título visible (cine mudo y Griffith)",
+   "empieza": "SERÍA difícil calcular con precisión, en",
+   "unir": [
+    {
+     "pagina": 26,
+     "tipo": "crítica",
+     "titulo_contiene": "Cine de David Griffith (sin título visible en la mitad inferior)",
+     "empieza": "tras veremos expoliada por especuladores"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1432",
+   "pagina": 14,
+   "tipo": "nota",
+   "titulo_contiene": "DOS RAZAS: CIVILES Y MILITARES",
+   "empieza": "A casi un mes del último golpe ocurrido ",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "DOS RAZAS...",
+     "empieza": "palmente. Porque, acabando con las fuerz"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «princi-palmente»; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1447",
+   "pagina": 6,
+   "tipo": "nota",
+   "titulo_contiene": "PREGUNTAS Y RESPUESTAS",
+   "empieza": "Varios militantes sindicales me han plan",
+   "unir": [
+    {
+     "pagina": 14,
+     "tipo": "otro",
+     "titulo_contiene": "PREGUNTAS...",
+     "empieza": "de los delegados seguirán luego hasta el"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1484",
+   "pagina": 28,
+   "tipo": "crítica",
+   "titulo_contiene": "Discos: Historic Jazz Concert at Music Inn",
+   "empieza": "Historic Jazz Concert at Music Inn: (1) ",
+   "unir": [
+    {
+     "pagina": 28,
+     "tipo": "crítica",
+     "titulo_contiene": "Historic Jazz Concert at Music Inn",
+     "empieza": "mos latinoamericanos, tímidos e intermit"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1492",
+   "pagina": 14,
+   "tipo": "nota",
+   "titulo_contiene": "Campeones mundiales",
+   "empieza": "No sin cierta dosis de amargura, un humo",
+   "unir": [
+    {
+     "pagina": 16,
+     "tipo": "nota",
+     "titulo_contiene": "CAMPEONES...",
+     "empieza": "vía de comunicación, extensión limitada,"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1492",
+   "pagina": 25,
+   "tipo": "entrevista",
+   "titulo_contiene": "Vietnam, o la niña que sólo le teme a los tigres",
+   "empieza": "Durante dos meses, una delegación de sei",
+   "unir": [
+    {
+     "pagina": 27,
+     "tipo": "nota",
+     "titulo_contiene": "VIETNAM, O LA NIÑA QUE SOLO...",
+     "empieza": "posible cuando pensamos que Vietnam está"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1499",
+   "pagina": 12,
+   "tipo": "nota",
+   "titulo_contiene": "Encuesta nacional sobre el proyecto represivo (cont. A. Del Cioppo)",
+   "empieza": "casi tan fascistas como \"inteligentes\", ",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "nota",
+     "titulo_contiene": "Encuesta nacional sobre el proyecto represivo (cont.)",
+     "empieza": "tienen siempre tanta trascendencia en la"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1510",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "CHILE: lo que pasó, lo que vendrá",
+   "empieza": "SANTIAGO\n\nEl viernes 4, poco antes de la",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "nota",
+     "titulo_contiene": "chile: lo que pasó, lo que vendrá",
+     "empieza": "esa tarde, en conferencia de prensa, el "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1524",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "ATMA: “SOLO LA LUCHA”",
+   "empieza": "“Todos o ninguno”: mientras los gruesos ",
+   "unir": [
+    {
+     "pagina": 10,
+     "tipo": "nota",
+     "titulo_contiene": "ATMA: Solo la lucha",
+     "empieza": "días de conflicto, el retorno al trabajo"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1528",
+   "pagina": 3,
+   "tipo": "nota",
+   "titulo_contiene": "LA MUSA DEL F.M.I.",
+   "empieza": "Indudable, y ya hay perfecto acuerdo ent",
+   "unir": [
+    {
+     "pagina": 3,
+     "tipo": "columna",
+     "titulo_contiene": "(Mirador económico, continuación)",
+     "empieza": "siste la “decisión del señor Pacheco Are"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «per-siste»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1547",
+   "pagina": 12,
+   "tipo": "nota",
+   "titulo_contiene": "REFLEXIONES DE UN CURA PARROCO SOBRE LA CARTA APOSTOLICA",
+   "empieza": "SON éstas las reflexiones de un cura pár",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "editorial",
+     "titulo_contiene": "Reflexiones...",
+     "empieza": "qué este documento del papa es una carta"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1591",
+   "pagina": 2,
+   "tipo": "nota",
+   "titulo_contiene": "Encuentro de organismos de base sindicales",
+   "empieza": "La Mesa Representativa de la C.N.T. se d",
+   "unir": [
+    {
+     "pagina": 2,
+     "tipo": "editorial",
+     "titulo_contiene": "Sin título (continuación del editorial sobre el Frente Amplio y la movilización ",
+     "empieza": "dio de las más grandes movilizaciones qu"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «me-dio»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1591",
+   "pagina": 2,
+   "tipo": "nota",
+   "titulo_contiene": "Encuentro de organismos de base sindicales",
+   "empieza": "La Mesa Representativa de la C.N.T. se d",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "entrevista",
+     "titulo_contiene": "TECHOS...",
+     "empieza": "la que antes también hubo médicos políti"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «me-la»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1632",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "En las prisiones de Vietnam del Sur",
+   "empieza": "pues los aliados de Estados Unidos temen",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "entrevista",
+     "titulo_contiene": "EN LAS PRISIONES...",
+     "empieza": "pueda funcionar más. Phuong se desplazab"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1648",
+   "pagina": 22,
+   "tipo": "nota",
+   "titulo_contiene": "La sangre se acerca al río",
+   "empieza": "Es cierto que muchas veces hemos estado ",
+   "unir": [
+    {
+     "pagina": 23,
+     "tipo": "columna",
+     "titulo_contiene": "acerca al río",
+     "empieza": "con ramificaciones internacionales: se c"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1651",
+   "pagina": 27,
+   "tipo": "entrevista",
+   "titulo_contiene": "DR. HELIOS SARTHOU: “CASI NO HAY CUESTION SINDICAL QUE NO TENGA VINCULACION CON ",
+   "empieza": "El Dr. Helios Sarthou, Profesor Adjunto ",
+   "unir": [
+    {
+     "pagina": 27,
+     "tipo": "entrevista",
+     "titulo_contiene": "DR. HELIOS SARTHOU: \"CASI NO HAY CUESTION SINDICAL QUE NO TENGA VINCULACION CON ",
+     "empieza": "los sindicatos o economismo reivindicado"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "25",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "Las Relaciones de Finlandia con Rusia",
+   "empieza": "De un artículo aparecido en \"Europe Nouv",
+   "unir": [
+    {
+     "pagina": 11,
+     "tipo": "nota",
+     "titulo_contiene": "Relaciones de Finlandia con Rusia",
+     "empieza": "países vecinos, que tienen una frontera "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "276",
+   "pagina": 8,
+   "tipo": "nota",
+   "titulo_contiene": "Las Américas Adquieren un Nuevo Miembro o “Business” y Clericalismo",
+   "empieza": "Fascismo o democracia según longitud geo",
+   "unir": [
+    {
+     "pagina": 9,
+     "tipo": "editorial",
+     "titulo_contiene": "Nuevo Miembro o \"Business\" Falangismo",
+     "empieza": "banda de delincuentes falangistas ante e"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "327",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "La máscara de Dimitrios",
+   "empieza": "(The Mask of Dimitrios) Warner Brothers.",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "\"LA MASCARA DE DIMITRIOS\"",
+     "empieza": "pretexto a este film policial: lamentabl"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "426",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "Satisfactoria Revisión de “El Ciudadano”",
+   "empieza": "La nueva exhibición de “El Ciudadano” (C",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "Satisfactoria Revisión de \"El Ciudadano\"",
+     "empieza": "ta cuentan lo que no vieron, omiten su p"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "443",
+   "pagina": 2,
+   "tipo": "columna",
+   "titulo_contiene": "EL ESTADO Y LOS VICIOS POPULARES",
+   "empieza": "No está afectado mi ánimo por estúpido p",
+   "unir": [
+    {
+     "pagina": 2,
+     "tipo": "columna",
+     "titulo_contiene": "[sin título visible]",
+     "empieza": "probar que nuestros \"gigantes padres\", l"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «com-probar»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "453",
+   "pagina": 4,
+   "tipo": "carta",
+   "titulo_contiene": "Del Dr. Eugenio Petit Muñoz",
+   "empieza": "Señor Director de “MARCHA”. Dr. Carlos Q",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "carta",
+     "titulo_contiene": "Del Dr. Eugenio Petit Muñoz",
+     "empieza": "de mi conciencia y la fe de mi palabra. "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "493",
+   "pagina": 15,
+   "tipo": "otro",
+   "titulo_contiene": "Edicto.—Horacio Torrendell S. A.",
+   "empieza": "Por disposición del Señor Juez Letrado d",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "otro",
+     "titulo_contiene": "Edicto.—Horacio Torrendell S. A.",
+     "empieza": "zo de 1949. Sr. Ministro de Hacienda: Es"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "494",
+   "pagina": 8,
+   "tipo": "nota",
+   "titulo_contiene": "La paz de Abril y los partidos de principios",
+   "empieza": "La paz de abril de 1872 que cerraba una ",
+   "unir": [
+    {
+     "pagina": 9,
+     "tipo": "nota",
+     "titulo_contiene": "LA OBRA DEL PRINCIPISMO",
+     "empieza": "tar con penetración el significado de la"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «comen-tar»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "505",
+   "pagina": 14,
+   "tipo": "nota",
+   "titulo_contiene": "CONDUCTA CENSURABLE DE UN JURADO",
+   "empieza": "En medio de la indiferencia, la indignac",
+   "unir": [
+    {
+     "pagina": 15,
+     "tipo": "crítica",
+     "titulo_contiene": "DE UN JURADO",
+     "empieza": "ratura y a la poesía —uno de los tantos "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "560",
+   "pagina": 17,
+   "tipo": "crítica",
+   "titulo_contiene": "\"LOS ARBOLES MUEREN DE PIE\"",
+   "empieza": "Así como lo previó Casona hace muchos añ",
+   "unir": [
+    {
+     "pagina": 17,
+     "tipo": "crítica",
+     "titulo_contiene": "Los arboles mueren de pie",
+     "empieza": "sión en la carte. El principio se le qui"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "577",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "EL SILENCIO DE ACEVEDO DIAZ",
+   "empieza": "En estos momentos de recordación del aut",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "El silencio de Acevedo Díaz",
+     "empieza": "estaba nuestro tiempo, para la revisión "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "605",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "El Bevanismo se Extiende a los Estados Unidos",
+   "empieza": "NUEVA YORK, (APLA) — Reconociendo que An",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "nota",
+     "titulo_contiene": "Pero a la vez, la tensión existe",
+     "empieza": "la tensión existente y del no. Cualquier"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «pa-la»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "605",
+   "pagina": 9,
+   "tipo": "nota",
+   "titulo_contiene": "El Bevanismo se Extiende a los Estados Unidos",
+   "empieza": "NUEVA YORK, (APLA) — Reconociendo que An",
+   "unir": [
+    {
+     "pagina": 30,
+     "tipo": "crítica",
+     "titulo_contiene": "[Continuación de nota de la pág. 29, sin título visible]",
+     "empieza": "la gracia de Gerard Philipe y Micheline "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «pa-la»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "646",
+   "pagina": 14,
+   "tipo": "crítica",
+   "titulo_contiene": "ROMAIN GARY: El gran guardarropa (Le grand vestiaire). Traducción de Manuel Guti",
+   "empieza": "—Yo, si fuera el gobierno, —añadió—, pro",
+   "unir": [
+    {
+     "pagina": 14,
+     "tipo": "crítica",
+     "titulo_contiene": "ROMAIN GARY: El gran guardarropa",
+     "empieza": "bía escrito: No hay épocas negras, sólo "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "653",
+   "pagina": 31,
+   "tipo": "crítica",
+   "titulo_contiene": "Latorre y la Unidad Naciona",
+   "empieza": "EXAMEN DE UN LIBRO POLEMICO\n\nEDUARDO DE ",
+   "unir": [
+    {
+     "pagina": 33,
+     "tipo": "nota",
+     "titulo_contiene": "Latorre y la unidad nacional",
+     "empieza": "entiende por \"hacer las elecciones\", gir"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "661",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "PELICULAS DE LA MUESTRA",
+   "empieza": "JUEGOS PROHIBIDOS (JEUX INTERDITS). Prod",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "crítica",
+     "titulo_contiene": "Películas de la muestra",
+     "empieza": "niña, las escenas en la gran explotando "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "677",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "“EL CASTILLO NEGRO”",
+   "empieza": "(The Black Castle, 1952. Central, lunes ",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "EL CASTILLO NEGRO",
+     "empieza": "no la mentalidad enana de sus productore"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «si-no»; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "677",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "“EL CASTILLO NEGRO”",
+   "empieza": "(The Black Castle, 1952. Central, lunes ",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "“ODIO EN EL ALMA”",
+     "empieza": "de"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «si-de»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "677",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "NO QUIERO DECIR TE ADIOS",
+   "empieza": "(I Want You, 1951. Trocadero, lunes 29) ",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "“NO QUIERO DECIRTE ADIOS”",
+     "empieza": "ajustes de detalle, también podrían vend"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "677",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "DOÑA FRANCISQUITA",
+   "empieza": "(1953, martes 30 de junio), es otra vers",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "“DOÑA FRANCISQUITA”",
+     "empieza": "sólo es muy mediocre la intervención de "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "762",
+   "pagina": 7,
+   "tipo": "nota",
+   "titulo_contiene": "¿TENDREMOS MAS CARNE?",
+   "empieza": "El Poder Ejecutivo acaba de elevar al Pa",
+   "unir": [
+    {
+     "pagina": 8,
+     "tipo": "nota",
+     "titulo_contiene": "¿TENDREMOS MAS CARNE?",
+     "empieza": "es de opción y de urgencia. O se sigue d"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "778",
+   "pagina": 17,
+   "tipo": "nota",
+   "titulo_contiene": "DIECINUEVE ARTISTAS DE HOY",
+   "empieza": "No es estrictamente exacto que los plást",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "crítica",
+     "titulo_contiene": "Diecinueve Artistas de Hoy...",
+     "empieza": "tiene relaciones entre sí. Julio Verdié "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "780",
+   "pagina": 12,
+   "tipo": "nota",
+   "titulo_contiene": "La crisis del régimen peronista vista desde Europa",
+   "empieza": "Los diarios ingleses han dado la consign",
+   "unir": [
+    {
+     "pagina": 18,
+     "tipo": "crítica",
+     "titulo_contiene": "“LOS FRUTOS SALVAJES” (1953. California, jueves 3)",
+     "empieza": "presenta un drama de la niñez y la juven"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «re-presenta»; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "801",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "En defensa del concurso",
+   "empieza": "La semana pasada nos referíamos a los so",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "En Defensa del Concurso",
+     "empieza": "des —como parece necesario— las pruebas "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "801",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Conservación de Carreteras",
+   "empieza": "La red de carreteras y caminos nacionale",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Conservación de Carreteras",
+     "empieza": "según reciente decreto del ministerio re"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "801",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Procesamiento por el Negocio de las Divisas",
+   "empieza": "El asunto de la negociación de divisas h",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Procesamiento por el Negocio de las Divisas",
+     "empieza": "inducir, mediante actos externos, a enga"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; el pedazo empieza con media palabra que no completa el final de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "847",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Otra vez la emergencia en alquileres",
+   "empieza": "* La Cámara de Representantes aceptó las",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Otra Vez la Emergencia en Alquileres",
+     "empieza": "nía dimensiones más modestas de lo que e"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «te-nia»; dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "914",
+   "pagina": 21,
+   "tipo": "otro",
+   "titulo_contiene": "Las Carteleras. Guía cinematográfica",
+   "empieza": "La Guía incluye todas las películas pres",
+   "unir": [
+    {
+     "pagina": 21,
+     "tipo": "otro",
+     "titulo_contiene": "Carteleras - Guía cinematográfica",
+     "empieza": "mucho muy bien narrado. Con un elenco pa"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "915",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Situación del Frigorífico Nacional",
+   "empieza": "Una vez más los problemas financieros ah",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Situación del Frigorífico Nacional",
+     "empieza": "dante humedad. No creo que se pueda enfr"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "941",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Una Palabra de Moda",
+   "empieza": "Se vino la austeridad. Hay bozas que son",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "columna",
+     "titulo_contiene": "Una Palabra de Moda",
+     "empieza": "singular, la renuncia se mantiene y hace"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "945",
+   "pagina": 4,
+   "tipo": "nota",
+   "titulo_contiene": "El carnaval y las letras",
+   "empieza": "★ Este carnaval que se avecina (otro de ",
+   "unir": [
+    {
+     "pagina": 16,
+     "tipo": "columna",
+     "titulo_contiene": "El Carnaval y las Letras",
+     "empieza": "estas latitudes se le acuerda al vocablo"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "982",
+   "pagina": 1,
+   "tipo": "nota",
+   "titulo_contiene": "El \"asunto\" de Aerolíneas Argentinas",
+   "empieza": "★ EL DÍA 2 DE OCTUBRE presentó su renunc",
+   "unir": [
+    {
+     "pagina": 23,
+     "tipo": "nota",
+     "titulo_contiene": "El “asunto” de Aerolíneas Argentinas",
+     "empieza": "por la falta de respuesta de quienes deb"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
   }
  ]
 }
