@@ -98,6 +98,23 @@ Requiere Python 3.10 o más y `pip install anthropic pydantic Pillow opencv-pyth
 
 Resultado: 28.287 textos, 716 artículos unidos a través del pliego, 33 páginas de costado enderezadas, 348 referencias entre números. En los 100 números releídos hay 6 % más texto que en la etapa 1. Quedan 202 páginas marcadas como incompletas y 59 bloqueadas por derechos de autor (con el texto de Tesseract). Al mismo ritmo, el resto de la colección costaría unos US$ 100.
 
+## Etapa 3 (7/11/2026)
+
+Relectura de páginas de los 350 números con las reglas nuevas (tablas celda por celda en Markdown, carteleras con título, director y reparto, bajada/copete, citas destacadas, firma como autor, intertítulos dentro del texto, leer siempre de la imagen) y 299 números nuevos repartidos entre todos los años. Total leído: 649 de 1.676 números (16.322 páginas, 52.385 textos).
+
+| Paso | Páginas | Costo (lotes) |
+|---|---|---|
+| Relectura Haiku (tablas, incompletas, carteleras) | 2.382 | US$ 6,76 |
+| Relectura en dos mitades | 136 | US$ 0,78 |
+| Relectura Sonnet (pedazos sueltos y estructura) | 360 | US$ 13,08 |
+| Números nuevos: Haiku | 7.456 | US$ 20,35 |
+| Números nuevos: dos mitades | 231 | US$ 1,33 |
+| Números nuevos: Sonnet (poco legibles) | 50 | US$ 1,46 |
+| Números nuevos: bloques en diagonal | 7 | US$ 0,06 |
+| **Total** | | **US$ 43,82** |
+
+Relecturas: 497 páginas con más texto (+80.000 palabras), 414 con tablas, incompletas de 159 a 68; Sonnet abrevió 113 de 347 páginas y quedó la lectura de Haiku; en 65 quedó la lectura anterior por tener bastante más texto. Números nuevos: US$ 0,077 por número, igual que la etapa 2. Gasto acumulado del proyecto: US$ 93,71. Faltan 1.027 números (≈ US$ 80).
+
 ## Decisiones de diseño
 
 - **Doble página por defecto** (Coli Quijano, 5/11/2026): el visor muestra cada número como en los rollos de microfilm, de a pliego (página izquierda y derecha enfrentadas), porque muchos artículos y títulos cruzan las dos páginas. La tapa y la contratapa se ven solas. Una casilla permite ver de a una página. Vale para el sitio de prueba, las próximas etapas y el sitio definitivo.
