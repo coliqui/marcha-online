@@ -246,8 +246,9 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
         caso("estructura", meta, n, desc, articulo=i)
     # vista previa de las uniones propuestas para los pedazos sueltos (proponer_uniones.py); no se aplica nada
     for x in PROPUESTAS.get(nid, []):
-        if x["clase"] == "sin_candidata":
-            continue
+        if x["clase"] == "sin_candidata" or x["pedazo"] >= len(articulos) or \
+                x["candidatas"][0]["articulo"] >= len(articulos):
+            continue  # propuesta vieja (los artículos cambiaron): se recalcula con proponer_uniones.py
         f, c0 = articulos[x["pedazo"]], x["candidatas"][0]
         c = articulos[c0["articulo"]]
         caso("union_" + x["clase"], meta, x["pagina"], f"«{f['titulo'][:50]}» («{f['texto'].strip()[:35]}…») seguiría a "
