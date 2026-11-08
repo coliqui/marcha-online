@@ -114,4 +114,4 @@ if aplicar:
     if not RESTO:
         json.dump([{"id": i, "n": n} for i, n in sorted(sonnet)], open(os.path.join(lectura, "forzar-sonnet.json"), "w"))
     json.dump(registro, open(os.path.join(lectura, "relecturas-etapa4.json" if RESTO else "relecturas-etapa3.json"), "w"), ensure_ascii=False, indent=1)
-    print("movidas a _etapa2; lista en relecturas-etapa3.json")
+    print("movidas a _etapa2; lista en " + ("relecturas-etapa4.json" if RESTO else "relecturas-etapa3.json"))
