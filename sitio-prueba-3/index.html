@@ -237,11 +237,14 @@ async function cargar() {
   await Promise.all(Array.from({ length: 8 }, async () => {
     while (siguiente < conIA.length) {
       const i = siguiente++;
-      datos[i] = await (await fetch(`datos/${conIA[i].id}.json`)).json();
+      // si un número no está (por ejemplo, un armado a medias), se saltea y se muestra solo su tapa
+      try { const r = await fetch(`datos/${conIA[i].id}.json`); if (!r.ok) throw r.status; datos[i] = await r.json(); }
+      catch { conIA[i].ia = false; datos[i] = null; }
       if (++listos % 10 === 0) app.innerHTML = `<p class="muted">Cargando los números leídos… ${listos} de ${conIA.length}</p>`;
     }
   }));
   for (const d of datos) {
+    if (!d) continue;
     N[d.id] = d;
     d.articulos.forEach((a, i) => {
       Object.assign(a, { nid: d.id, fecha: d.fecha, i });

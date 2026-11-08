@@ -31,9 +31,14 @@ def va_al_archivo_grafico(il):
 
 
 rollos, ocr, ia, sitio = sys.argv[1:5]
+# los datos se arman en una carpeta aparte y recién al final reemplazan a los anteriores: si el armado se corta,
+# el sitio sigue con la última versión completa
+DATOS = os.path.join(sitio, "datos.nuevo")
+shutil.rmtree(DATOS, ignore_errors=True)
+os.makedirs(DATOS, exist_ok=True)
 for d in ("tapas", "paginas", "ilustraciones", "datos"):
     os.makedirs(os.path.join(sitio, d), exist_ok=True)
-shutil.copy(os.path.join(AQUI, "autores_alias.json"), os.path.join(sitio, "datos", "alias.json"))
+shutil.copy(os.path.join(AQUI, "autores_alias.json"), os.path.join(DATOS, "alias.json"))
 
 # Tapas de toda la colección
 numeros = []
@@ -48,7 +53,7 @@ for f in sorted(glob.glob(os.path.join(ocr, "*", "numero.json"))):
                     "ia": os.path.exists(os.path.join(ia, meta["id"], "articulos.json")),
                     "grande": os.path.exists(os.path.join(sitio, "tapas", "grande", f"{meta['id']}.jpg"))})
 numeros.sort(key=lambda m: (m["fecha"], m["id"]))
-json.dump(numeros, open(os.path.join(sitio, "datos", "numeros.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump(numeros, open(os.path.join(DATOS, "numeros.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"{len(numeros)} tapas")
 
 def caja_en_pagina(bloque, margen=0.0):
@@ -255,16 +260,25 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
              f"«{c['titulo'][:50]}» (pág. {', '.join(map(str, c['paginas']))}, termina «…{c['texto'].rstrip()[-35:]}»). "
              f"Señales: {'; '.join(c0['senales'])}.", articulo=x["pedazo"])
     # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
-    json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(sitio, "datos", f"{nid}-palabras.json"), "w"),
+    json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(DATOS, f"{nid}-palabras.json"), "w"),
               ensure_ascii=False, separators=(",", ":"))
     json.dump({"id": nid, "numero": meta["numero"], "fecha": meta["fecha"], "rollo": meta.get("rollo"),
                "paginas": paginas, "articulos": articulos},
-              open(os.path.join(sitio, "datos", f"{nid}.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+              open(os.path.join(DATOS, f"{nid}.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     print(f"{nid}: {len(paginas)} páginas, {len(articulos)} artículos, ilustraciones {total_ilus} detectadas -> "
           f"{sum(len(p['ilustraciones']) for p in paginas)} en el archivo gráfico")
 
-json.dump(revisar, open(os.path.join(sitio, "datos", "revisar.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump(revisar, open(os.path.join(DATOS, "revisar.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 # referencias entre números (las detecta referencias.py)
 if os.path.exists(os.path.join(ia, "referencias.json")):
-    shutil.copy(os.path.join(ia, "referencias.json"), os.path.join(sitio, "datos", "referencias.json"))
+    shutil.copy(os.path.join(ia, "referencias.json"), os.path.join(DATOS, "referencias.json"))
 print(f"{len(revisar)} casos para revisar")
+
+# cambio de golpe: la versión nueva de los datos reemplaza a la anterior
+viejo = os.path.join(sitio, "datos.viejo")
+shutil.rmtree(viejo, ignore_errors=True)
+if os.path.exists(os.path.join(sitio, "datos")):
+    os.rename(os.path.join(sitio, "datos"), viejo)
+os.rename(DATOS, os.path.join(sitio, "datos"))
+shutil.rmtree(viejo, ignore_errors=True)
+print("datos del sitio reemplazados")
