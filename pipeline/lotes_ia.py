@@ -19,7 +19,7 @@ Todo el estado queda en CARPETA_LECTURA: etapa.json (números elegidos), lotes.j
 mandados y su estado), gasto.json (gasto acumulado, que no puede pasar el tope) y, por número,
 las mismas lecturas que deja leer_ia.py (pNN.haiku.json, pNN.sonnet.json, pNN.json, articulos.json).
 """
-import argparse, glob, json, os, re, sys, tempfile, time
+import argparse, glob, json, os, re, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
@@ -81,9 +81,14 @@ class Numero:
             f = os.path.join(ocr, self.id, f"p{n:02d}.txt")
             self.ocr[n] = open(f, encoding="utf-8").read() if os.path.exists(f) else ""
         self._imagenes = None
+        self._candado = threading.RLock()  # las imágenes se pueden preparar en otro hilo (precarga del lote siguiente)
         self.pliegos = pliegos(self.pdf)  # página -> página enfrentada en el escaneo de a dos
 
     def imagenes(self):
+        with self._candado:
+            return self._imagenes_()
+
+    def _imagenes_(self):
         if self._imagenes is None:
             with tempfile.TemporaryDirectory() as tmp:
                 self._imagenes = list(paginas_de(self.pdf, tmp))
@@ -97,14 +102,18 @@ class Numero:
 
     def giro(self, n):
         """Grados para enderezar la página si está impresa de costado (Tesseract); se mide una sola vez."""
+        with self._candado:
+            return self._giro_(n)
+
+    def _giro_(self, n):
         archivo = f"{self.destino}/giros.json"
         giros = cargar(archivo, {})
         if str(n) not in giros:
             # todas las páginas del número de una vez, en paralelo (Tesseract tarda un segundo por página)
             faltan = [k for k in range(1, self.total + 1) if str(k) not in giros]
-            self.imagenes()  # extraer las páginas antes de repartir el trabajo
+            imgs = self.imagenes()  # extraer las páginas antes de repartir el trabajo (los hilos no piden el candado)
             with ThreadPoolExecutor(10) as ex:
-                for k, g in zip(faltan, ex.map(lambda k: orientacion(self.imagenes()[k - 1]), faltan)):
+                for k, g in zip(faltan, ex.map(lambda k: orientacion(imgs[k - 1]), faltan)):
                     giros[str(k)] = g
             guardar(archivo, giros)
         return giros[str(n)]
@@ -350,11 +359,18 @@ def seguir(rollos, ocr, lectura, tope):
     # 3. Mandar lotes nuevos, sin pasar el tope
     comprometido = gasto["usd"] + sum(COSTO_ESTIMADO.get(l["modelo"], 0.04) * l["paginas"] for l in lotes
                                       if l["estado"] != "recogido")
+    # mientras se arma y manda un lote, otros hilos van sacando del PDF las imágenes de los números del lote
+    # siguiente (sacarlas es lo más lento); pocos hilos, para que la Mac siga usable
+    precarga = ThreadPoolExecutor(3)
+    def precargar(parte):
+        for num in {num.id: num for num, _ in parte}.values():
+            precarga.submit(lambda x=num: (x.imagenes(), x.giro(1)))
     for modelo in ("haiku", "mitad", "sonnet", "bloque"):
         cola = faltan[modelo]
         por_lote = PEDIDOS_POR_LOTE // 2 if modelo in ("mitad", "bloque") else PEDIDOS_POR_LOTE
         for i in range(0, len(cola), por_lote):
             parte = cola[i:i + por_lote]
+            precargar(cola[i + por_lote:i + 2 * por_lote])
             estimado = COSTO_ESTIMADO[modelo] * len(parte) * (2 if modelo == "bloque" else 1)
             if comprometido + estimado > tope:
                 print(f"Tope de US$ {tope:.2f}: no mando {len(cola) - i} páginas de {modelo} "
