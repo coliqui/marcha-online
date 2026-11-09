@@ -492,6 +492,27 @@ def dudas(pag, ocr):
 CORRECCIONES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "correcciones.json")
 
 
+# Comentarios que la IA mete a veces dentro de la transcripción (no están impresos): se sacan al armar la versión
+# final. Son patrones muy específicos; las «NOTA:» impresas en Marcha y los [ilegible] no se tocan.
+COMENTARIOS_IA = [
+    re.compile(r"\[(?!ilegible\]|cortado\])[^\]\n]{0,160}?(contin[uú]a|sigue en|transcrib|columna|p[aá]gina enfrentada|orden de lectura)[^\]\n]{0,160}\]", re.I),
+    re.compile(r"\((?:nota|n\. de la t\.?)[^)\n]{0,200}?(transcrib|columna|orden de lectura|imagen|escaneo|digitaliz)[^)\n]{0,200}\)", re.I),
+    re.compile(r"(?:^|(?<=[.!?\s]))Estas notas son parte del mismo art[ií]culo\.?", re.I),
+    re.compile(r"\(?(?:El texto |La nota )?[Cc]ontin[uú]a en la p[aá]gina enfrentada\.?\)?"),
+]
+
+
+def sin_comentarios_ia(texto):
+    """-> (texto limpio, cuántos comentarios se sacaron)"""
+    n = 0
+    for p in COMENTARIOS_IA:
+        texto, k = p.subn("", texto)
+        n += k
+    if n:
+        texto = re.sub(r"[ \t]+\n", "\n", re.sub(r"\n{3,}", "\n\n", texto)).strip()
+    return texto, n
+
+
 def adjuntar_destacados(articulos):
     """Las citas destacadas (tipo "destacado") pasan a ser parte del artículo del que salen: se busca por el título
     que dio la IA (destacado_de) entre los artículos de la misma página o la de al lado. Si no se encuentra, queda
@@ -932,6 +953,10 @@ def finalizar(meta, destino, total, ocr, lecturas):
         json.dump(pag, open(f"{destino}/p{n:02d}.json", "w"), ensure_ascii=False, indent=1)
         paginas.append((n, pag))
     articulos = adjuntar_destacados(aplicar_correcciones(meta["id"], unir_continuaciones(paginas)))
+    for a in articulos:
+        a["texto"], quitados = sin_comentarios_ia(a["texto"])
+        if quitados:
+            a["comentarios_ia_quitados"] = quitados
     json.dump({**meta, "articulos": articulos}, open(f"{destino}/articulos.json", "w"), ensure_ascii=False, indent=1)
     return paginas, articulos
 

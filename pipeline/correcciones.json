@@ -7373,6 +7373,1162 @@
     "seccion": "Uruguay, hoy"
    },
    "motivo": "Pedido de Coli Quijano (9/11/2026), verificado contra el escaneo: «El infierno tan temido» (Colonia Etchepare), de María Ester Gilio, es un solo reportaje a dos páginas (el título cruza el pliego). Páginas releídas con Sonnet; «Miguelete» era el nombre de un internado, no el autor, y se sacó un comentario que la IA había metido en el texto."
+  },
+  {
+   "numero": "1008",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "¿Fué un Acuerdo Nacionalista?",
+   "empieza": "EL ACUERDO POLITICO del 1º de marzo de 1",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "¿Fué un Acuerdo Nacionalista?",
+     "empieza": "(Viene de pág. 5)\n\n4º) Faustino Harrison"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Alonso, Anómalas, Beltrán); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1011",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "DE LA VACA AL BIBERON",
+   "empieza": "EL GOBIERNO batllista legó a su sucesor ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "DE LA VACA AL BIBERON",
+     "empieza": "(Viene de la Pág. 5)\n\nEn doctrina: conde"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Agencieros, Conaprole, Costo); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1024",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "LOS AUMENTOS Y SU FINANCIACION",
+   "empieza": "★ EL MARTES PASADO se promulgó la ley de",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "LOS AUMENTOS Y SU FINANCIACIÓN",
+     "empieza": "(Viene de la pág. 5)\n\nque afrontar los d"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Cajas, Comisión, Senado); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1030",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Nuevas Cifras Para Divertirse",
+   "empieza": "☆ AL 31 DE AGOSTO próximo pasado los pag",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Nuevas Cifras Para Divertirse",
+     "empieza": "(Viene de la pág. 5)\n\n—Inc. E (10%)\n\n| C"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Conaprole, Concepto, Monto); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1030",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "De San Carlos a la Casa Rosada",
+   "empieza": "★ EL 10 DE MAYO DE 1957, fue derrocado e",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "De San Carlos a la Casa Rosada",
+     "empieza": "(Viene de pág. 5.)\n\ntido inmovilizar ins"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Junta, Militar); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1038",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "OPTIMISMO DE LENTES VERDES",
+   "empieza": "La Dirección de Estadística y Censos ha ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "OPTIMISMO DE LENTES VERDES",
+     "empieza": "(Viene de la pág. 5)\n\nplicado su precio."
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Médico, Prácticamente, Serie); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1041",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "BOGOTA NO ESTA LEJOS DE QUITO",
+   "empieza": "★ HACE ALGO MAS de doce años, el 9 de ab",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Bogotá no está lejos de Quito",
+     "empieza": "(Viene de la pág. 5) según la misma vers"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Canciller, Quito, Welles); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1052",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "El Difícil Camino",
+   "empieza": "Como siempre al correr de las horas y de",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "EL DIFICIL CAMINO",
+     "empieza": "(Viene de Pág. 5)\n\nvicios nacionalizados"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Colonización, Entes); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1055",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Dos palabras en un bando, metidas de contrabando",
+   "empieza": "* El \"nuevo tiempo\" va haciendo su propi",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Dos palabras en...",
+     "empieza": "(Viene de Pág. 5) de \"20 de octubre de 1"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Arroyo, Consejero, Giro); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1066",
+   "pagina": 20,
+   "tipo": "otro",
+   "titulo_contiene": "Guía. Cines de estreno",
+   "empieza": "CINES DE ESTRENO\n\nATLANTIDA, EL CONTINEN",
+   "unir": [
+    {
+     "pagina": 20,
+     "tipo": "otro",
+     "titulo_contiene": "Guía. Cines de estreno y otros cines",
+     "empieza": "movedora Tatiána Samolova y otras bellas"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; empieza a mitad de frase; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Aumont, Ferrer, Gabor); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "110",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "PANORAMA ELECTORAL",
+   "empieza": "Algunos diarios publican esta noticia: \"",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "otro",
+     "titulo_contiene": "Panorama electoral",
+     "empieza": "(Viene de la Pág. 5)\n\n| Año | Concepto |"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Mdeo, Votantes); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1118",
+   "pagina": 23,
+   "tipo": "crítica",
+   "titulo_contiene": "FUGAZ ENCUENTRO CON LA EPOCA",
+   "empieza": "El apasionante concierto del sábado exig",
+   "unir": [
+    {
+     "pagina": 29,
+     "tipo": "crítica",
+     "titulo_contiene": "Fugaz encuentro",
+     "empieza": "(Viene de pág 23) que los seguidores del"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Andrés, Apenas, Bartok); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1118",
+   "pagina": 25,
+   "tipo": "nota",
+   "titulo_contiene": "Entre dos mundos",
+   "empieza": "★ El miércoles, luego de un atraso de ve",
+   "unir": [
+    {
+     "pagina": 29,
+     "tipo": "crítica",
+     "titulo_contiene": "Entre dos mundos",
+     "empieza": "(Viene de la pág. 25) varios conceptos. "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Apunto, Paulo); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1146",
+   "pagina": 21,
+   "tipo": "crítica",
+   "titulo_contiene": "Sin mito pero con Melina",
+   "empieza": "FEDRA (Phaedra EE. UU., 1962). En la tra",
+   "unir": [
+    {
+     "pagina": 20,
+     "tipo": "crítica",
+     "titulo_contiene": "Sin mito...",
+     "empieza": "(Viene de la pág. 21)\n\ny dar por eso cie"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Cacoyannis, Dassin, Eurípides); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "185",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "SIEMPRE TRANQUILO",
+   "empieza": "El Instituto de Jubilaciones y Pensiones",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "SIEMPRE TRANQUILO",
+     "empieza": "(Viene de la Pág. 5)\n\n\"Facúltese al mism"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Bolsa, Instituto, Jubilaciones); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "211",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "BASTA DE MASCARADAS",
+   "empieza": "DAMOS hoy en primera página algunas cifr",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "BASTA DE MASCARADAS",
+     "empieza": "(Viene de la Página 5)\n\nlo que hubo que "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Aeronáutica, Ejército, Guerra); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "211",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El Banco Hipotecario y la Colonización",
+   "empieza": "Se ha anunciado que como resultado de lo",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "El Banco Hipotecario y la Colonización",
+     "empieza": "(Viene de la Página 5)\n\n«mar la posesión"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Bentos, Fray); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "247",
+   "pagina": 1,
+   "tipo": "editorial",
+   "titulo_contiene": "El negocio del azúcar",
+   "empieza": "Comentando el reciente decreto que pone ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "EL EXCELENTE NEGOCIO DEL AZUCAR",
+     "empieza": "(Viene de Pág. 5)\n\nimportar una cuota ex"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Agregamos, Amortización, Asuntos); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "278",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "¡Qué personaje macanudo!",
+   "empieza": "Dejemos hablar a los papeles. 1° Ayer 19",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "¡Qué personaje macanudo!",
+     "empieza": "zas del mal prevalecieron, ha llegado el"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Española, Franco, Ministros); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "278",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Leyenda del General Rivera y la Princesa Bragantina",
+   "empieza": "La historia oficial tuvo siempre una bue",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Leyenda del General Rivera y la Princesa Bragantina",
+     "empieza": "que este título correspondió al Jefe bra"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Emperador, Gral, Marqués); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "297",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "FLOR DE UN DIA",
+   "empieza": "HE aquí los hechos expuestos con toda ob",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "columna",
+     "titulo_contiene": "FLOR DE UN DIA",
+     "empieza": "(Viene de la pág. 5ª)\n\ndavía el impuesto"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Conaprole, Ejecutivo, Parecería); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "347",
+   "pagina": 1,
+   "tipo": "editorial",
+   "titulo_contiene": "Filosofía de un episodio",
+   "empieza": "EL Sr. Diputado Don Oscar Secco Ellauri,",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "La filosofía de un episodio",
+     "empieza": "...ración hay un lapso de horas, acaso d"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; empieza a mitad de frase; no tienen firmas distintas; mismos nombres (Constituyente, Ellauri, Secco); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "350",
+   "pagina": 19,
+   "tipo": "cuento",
+   "titulo_contiene": "MUSICA EN EL VIENTO",
+   "empieza": "Este cuento fué distinguido con una Menc",
+   "unir": [
+    {
+     "pagina": 20,
+     "tipo": "cuento",
+     "titulo_contiene": "Música en el viento",
+     "empieza": "(Viene de la página 19)\n\ny al entrar oyó"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; el primero termina sin punto ni firma; no tienen firmas distintas; orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "368",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "POLITICA CAMBIARIA Y COMERCIO INTERNACIONAL",
+   "empieza": "ECHAMOS UNA MIRADA, el otro día, a las p",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Política cambiaria y comercio internacional",
+     "empieza": "(Viene de página 5)\n\n—Ya lo hemos visto—"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Barrera, Bretton, Woods); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "379",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El \"destino manifiesto\" de Panamá",
+   "empieza": "LA HISTORIA DE PANAMÁ es la historia del",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "El \"destino manifiesto\" de Panamá",
+     "empieza": "(Viene de página 5)\n\nEste tratado tuvo s"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Canal, Panamá); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "408",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "MIENTRAS LOS BOVINOS SE AMAN",
+   "empieza": "LA CARTA ORGANICA del Banco de la Repúbl",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "columna",
+     "titulo_contiene": "Mientras los bovinos se aman",
+     "empieza": "(Viene de la pág. 5)\n\nnal que real, porq"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Bancario, Bancos, Departamento); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "411",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "USO Y ABUSO DE LOS PASAPORTES DIPLOMATICOS",
+   "empieza": "El señor Director de MARCHA, en un elocu",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Uso y abuso de los pasaportes diplomáticos",
+     "empieza": "(Viene de la pág. 5)\n\nLos portadores de "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Cancillería, Misión); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "418",
+   "pagina": 14,
+   "tipo": "crítica",
+   "titulo_contiene": "Los sonámbulos",
+   "empieza": "HERMANN BROCH parece haber querido demos",
+   "unir": [
+    {
+     "pagina": 14,
+     "tipo": "crítica",
+     "titulo_contiene": "LOS SONAMBULOS",
+     "empieza": "convicción, su fuí tampoco, aunque a muc"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; empieza a mitad de frase; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Aparentemente, Broch, Hermann); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "425",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "Empezaron los Conciertos",
+   "empieza": "El sábado se inauguró la temporada de co",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "crítica",
+     "titulo_contiene": "Empezaron los Conciertos",
+     "empieza": "(Viene de pág. 12) mente poco inspirado."
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Kraus, Muerte, Obertura); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "431",
+   "pagina": 1,
+   "tipo": "editorial",
+   "titulo_contiene": "¡POBRE AUTONOMIA!",
+   "empieza": "EL PARLAMENTO discute en estos momentos ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "¡POBRE AUTONOMÍA!",
+     "empieza": "(Viene de la pág. 5ª)\n\nmente sancionada,"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Constitución, Constituyente, Cuentas); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "449",
+   "pagina": 1,
+   "tipo": "nota",
+   "titulo_contiene": "\"LOS DE ABAJO\"",
+   "empieza": "Ya estoy próximo a partir rumbo a mi tie",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "\"LOS DE ABAJO\"",
+     "empieza": "que sea para cambiar un desierto por un "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; empieza a mitad de frase; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Allí, Entonces, Jalisco); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "449",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "ESTATUTOS DE LICORES - VINOS S. A. (LIVISA)",
+   "empieza": "EDICTO. — Por disposición del señor Juez",
+   "unir": [
+    {
+     "pagina": 13,
+     "tipo": "nota",
+     "titulo_contiene": "ESTATUTOS DE LICORES - VINOS S. A. (LIVISA)",
+     "empieza": "(Viene de la pág. 10)\n\nsu criterio anter"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Angelis, Anónima, Anónimas); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "470",
+   "pagina": 1,
+   "tipo": "editorial",
+   "titulo_contiene": "Las enseñanzas del 37",
+   "empieza": "Qué pasó el 37?, nos preguntábamos en nu",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "LAS ENSEÑANZAS DEL 37",
+     "empieza": "(Viene de página 5)\n\nración general a qu"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Banco, Memoria); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "505",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "DON QUIJOTE DE LOJENDIO",
+   "empieza": "O LAS señoras, cuando se ven obligadas a",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "columna",
+     "titulo_contiene": "DON QUIJOTE DE LOJENDIO",
+     "empieza": "(Viene de página 5) como Ministro de Esp"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Caballero, España, Jefe); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "518",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Después del Uruguay, la Guayana",
+   "empieza": "EL PLAN TRUMAN para ayuda a los países p",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "DESPUES DEL URUGUAY, LA GUAYANA",
+     "empieza": "(Viene de la Pág. 5) se lo reprochamos. "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Belice, Geografía, Guayana); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "529",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El presupuesto del Poder Judicial",
+   "empieza": "EL PRESUPUESTO JUDICIAL sigue estando ha",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "EL PRESUPUESTO DEL PODER JUDICIAL",
+     "empieza": "(Viene de la pág. 5.)\n\nsionándola con la"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Criminal, Instrucción); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "683",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "POR LOS CINE-CLUBES",
+   "empieza": "El domingo 16 CINE UNIVERSITARIO present",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "crítica",
+     "titulo_contiene": "Los Films: Por los cine-clubes",
+     "empieza": "sión del segundo Festival. Elnada entre "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; empieza a mitad de frase; el primero termina sin punto ni firma; no tienen firmas distintas; orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "710",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "Caracas, nosotros y Costa Rica",
+   "empieza": "EL GOBIERNO decidió el viernes, por unan",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Caracas, Nosotros y Costa Rica",
+     "empieza": "(Viene de la pág. 5)\n\nLo ingrato de la s"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Caracas, Departamento, Guatemala); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "711",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Nuevos Caminos",
+   "empieza": "Acaba de firmarse en estos días el conve",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Nuevos Caminos",
+     "empieza": "(Viene de pág. 5)\n\nfactor político en la"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Consejos, Salarios); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "723",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "Penélope en las Cortes",
+   "empieza": "AYER —por enésima vez— fracasó en la Asa",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Penélope en las Cortes",
+     "empieza": "(Viene de pág. 5)\n\npensadas conexiones, "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Asamblea, Corte); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "740",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El laborioso acuerdo de los nueve",
+   "empieza": "LA CONFERENCIA de los nueve en Londres, ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "El Laborioso Acuerdo de los Nueve",
+     "empieza": "(Viene de pág. 5) Francia consigue lleva"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Adenauer, Asamblea, Dulles); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "756",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Purga de Bevan",
+   "empieza": "El bloque parlamentario laborista expuls",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Purga de Bevan",
+     "empieza": "(Viene de la Pág. 5) En el congreso de o"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Attlee, Bevan, Driberg); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "758",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Más Vale Así",
+   "empieza": "En nuestro número anterior, refiriéndono",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Más Vale Así",
+     "empieza": "(Viene de la Pág. 5)\n\nlud y por los inte"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Paraguay, Paraná); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "765",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El rabo de las moscas",
+   "empieza": "En dos sesiones consecutivas, la semana ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "El Rabo de las Moscas",
+     "empieza": "(Viene de la Pág. 5)\n\nCon respecto al Pa"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Bogotá, Consejero, Pacto); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "779",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "EL PROYECTO BADO",
+   "empieza": "El Consejo Nacional de Gobierno resolvió",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "El Proyecto Bado",
+     "empieza": "(Viene de la pág. 5)\n\nen realidad, el ac"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Bado, Conaprole); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "779",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "LA LEY DE CONVENIOS",
+   "empieza": "ACABA DE APROBAR el Senado, el proyecto ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Ley de Convenios",
+     "empieza": "(Viene de la pág. 5)\n\nLa Comisión del Se"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; el primero termina sin punto ni firma; no tienen firmas distintas; mismos nombres (Ministerio, Obras, Senado); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "790",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "PRODUCCION Y REFINACION DE AZUCAR",
+   "empieza": "El \"problema del azúcar\" se desdobla en ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Producción y Refinación de Azúcar",
+     "empieza": "(Viene de la pág. 5)\n\n—A entregar a la m"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Artigas, Azucarera, Compañía); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "841",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "El presupuesto en la Asamblea General",
+   "empieza": "* Algunos órganos de prensa han refutado",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "El Presupuesto en la Asamblea General",
+     "empieza": "(Viene de la pág. 5)\n\nTratándose de regí"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Cámaras, Plata, Presupuestal); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "841",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Instituto de Química Industrial y Ancap",
+   "empieza": "* La incorporación del Instituto de Quím",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Instituto de Química Industrial y Ancap",
+     "empieza": "(Viene de la pág. 5)\n\ncomo medio adecuad"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Ancap, Industrial); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "841",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El Representante de Castillo Armas",
+   "empieza": "* Los comentarios promovidos en torno al",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "El Representante de Castillo Armas",
+     "empieza": "(Viene de la pág. 5)\n\nde la prensa y que"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Chalaleu, Guatemala, Gálvez); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "843",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Protección a Mitad del Camino",
+   "empieza": "* En una reclamación promovida por un fu",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Protección a Mitad del Camino",
+     "empieza": "(Viene de la pág. 5)\n\ngalidad de los act"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Administración, Contencioso, Cuentas); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "843",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "NO FALTAN PROYECTOS",
+   "empieza": "* En varias oportunidades anteriores, he",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "No Faltan Proyectos",
+     "empieza": "(Viene de la pág. 5)\n\nAún cabría mencion"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Abogados, Colegio); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "861",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Menos Petróleo que Rocas",
+   "empieza": "* Un cable fechado en Washington, y que ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Menos Petróleo que Rocas",
+     "empieza": "(Viene de la pág. 5)\n\ntar unos cuantos m"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Ancap, Artigas, Creemos); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "889",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Miseria en Secundaria",
+   "empieza": "* Los profesores de enseñanza secundaria",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Miseria en Secundaria",
+     "empieza": "(Viene de la pág. 5)\n\nles con alguna sol"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Entretanto, Hablan); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "901",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Lección de los Maestros Rurales",
+   "empieza": "* Aprovechando una de sus últimas semana",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Lección de los Maestros Rurales",
+     "empieza": "(Viene de la pág. 5) destinada a la \"Ayu"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Ayuda, Consejo, Invierno); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "901",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Otra Manzana de Discordia",
+   "empieza": "* La vasta y helada extensión de la Antá",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Otra Manzana de Discordia",
+     "empieza": "(Viene de la pág. 5) pectativa de los de"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Antártida, Bretaña, Chile); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "901",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Oferta de los Frigoríficos",
+   "empieza": "* Estudiamos en el artículo anterior las",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Oferta de los Frigoríficos",
+     "empieza": "(Viene de la pág. 5) ACTIVO FIJO AL 15-1"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Edificios, Frigorífico, Lanchas); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "937",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "BOLIVIA, O EL GOLPECITO SEMANAL",
+   "empieza": "CASI SEMANALMENTE, el gobierno de Siles ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Bolivia, o el Golpecito Semanal",
+     "empieza": "(Viene de la pág. 5)\n\nlución, en sus pro"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Falange, Revolución, Siles); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "937",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "El Techo Caliente",
+   "empieza": "Con una exaltación a ocho columnas, la p",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "El Techo Caliente",
+     "empieza": "(Viene de la Pág. 5)\n\ndictamen del Juez "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Cacho, Código, Penal); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "942",
+   "pagina": 23,
+   "tipo": "nota",
+   "titulo_contiene": "Un Río, un Castillo y Saint-Exupéry",
+   "empieza": "LOS numerosos lectores, y más que lector",
+   "unir": [
+    {
+     "pagina": 22,
+     "tipo": "nota",
+     "titulo_contiene": "Un Río, un Castillo y Saint-Exupéry",
+     "empieza": "torias de la casa y del río. Porque para"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Exupéry, Fuchs, Saint); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "948",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La carne una vez más",
+   "empieza": "Hechos recientes entre los que merecen c",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Carne una vez más",
+     "empieza": "(Viene de la pág. 5)\n\nreapertura del Nac"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Establecimientos, Frigoríficos); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "949",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Condena de un inocente",
+   "empieza": "★ El 19 del corriente obtuvo de la Supre",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Condena de un Inocente",
+     "empieza": "ta Fe, aparte de otros delitos cometidos"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Aquino, Brutta, Domingo); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "954",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Tres Consultas: Tres Veces, no",
+   "empieza": "Recién el domingo se dio a conocer el re",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Tres Consultas: Tres Veces, no",
+     "empieza": "(Viene de la pág. 5ª) —El 8 de marzo en "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Catamarca, Corrientes); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "962",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Una dinastía que tambalea",
+   "empieza": "★ SI LAS NOTICIAS que llegan de Centro A",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Una dinastía que tambalea",
+     "empieza": "(Viene de la pág. 5)\n\nres de la familia "
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Anastasio, Guardia, Nicaragua); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "963",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "LA SOMBRA DE GUATEMALA",
+   "empieza": "Hasta ahora la Comisión designada — pres",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Sombra de Guatemala",
+     "empieza": "(Viene de la Pág. 5)\n\n—Los embajadores c"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Caribe, Costa, Cuba); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "971",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Las universidades y el panamericanismo",
+   "empieza": "* La Conferencia Panamericana se aproxim",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Las Universidades y el Panamericanismo",
+     "empieza": "(Viene de la Pág. 5)\n\npugnan, es que est"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Grullón, Panamericana); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "974",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "Seguro Integral de Cosecha Mínima",
+   "empieza": "* Despotricamos contra el intervencionis",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Seguro Integral de Cosecha Mínima",
+     "empieza": "indemnizable y la viabilidad de la cuota"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Banco, Parlamento); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "986",
+   "pagina": 5,
+   "tipo": "editorial",
+   "titulo_contiene": "Ley sobre proxenetismo",
+   "empieza": "* EN ESTOS MISMOS DIAS, en las dos Cámar",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "editorial",
+     "titulo_contiene": "Ley Sobre Proxenetismo",
+     "empieza": "(Viene de la Pág. 5)\n\ngios en su caso. E"
+    }
+   ],
+   "automatica": true,
+   "motivo": "Nota partida en varias (detectar_partidas.py + aplicables_partidas.py, 9/11/2026): título partido o repetido; no tienen firmas distintas; mismos nombres (Beltrán, Cámaras, Gamarra); orden por «Pasa a / Viene de» o palabra cortada. Para deshacerla, borrar esta entrada."
   }
  ]
 }
