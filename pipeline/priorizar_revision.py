@@ -73,7 +73,7 @@ def evaluar(c):
             return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
         return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
     if g in ("partida", "partida_fuerte"):
-        return None, 40 if c.get("partida_fuerte") else 18, c["mirar_partida"]
+        return None, 53 if c.get("partida_fuerte") else 18, c["mirar_partida"]
     if c.get("manual"):
         return None, c.get("prioridad", 60), c["mirar"]
     if g == "estructura" and c.get("carta_suelta"):
