@@ -80,6 +80,8 @@ def evaluar(c):
             c["desc"] += f" Juez: {v['misma_nota']} ({v['confianza']:.0%}): {v['razon'][:160]}"
     if g in ("partida", "partida_fuerte"):
         return None, 53 if c.get("partida_fuerte") else 18, c["mirar_partida"]
+    if g == "union_cuestionada":
+        return None, 45, c["mirar_cq"]
     if g == "autor_dudoso":
         return None, 15, c["mirar_autor"]
     if c.get("manual"):
@@ -158,6 +160,15 @@ for d in (json.load(open(_aut)) if os.path.exists(_aut) else []):
     casos.append({"grupo": "autor_dudoso", "id": ej["id"], "fecha": fecha, "n": ej["n"], "art": ej["art"], "zona": None,
                   "desc": f"«{d['forma']}» ({d['tipo']}); posibles: {', '.join('«' + x + '»' for x in d['candidatos'][:5])}.",
                   "mirar_autor": f"¿«{d['forma']}» es la misma persona que «{d['candidatos'][0]}»?"})
+
+# uniones sin «pasa a» que el juez cree equivocadas pero tienen alguna prueba (palabra cortada, «pasa a»)
+casos = [c for c in casos if c.get("grupo") != "union_cuestionada"]
+_cq = os.path.join(lectura, "juez", "uniones-cuestionadas.json")
+for d in (json.load(open(_cq)) if os.path.exists(_cq) else []):
+    fecha = json.load(open(os.path.join(sitio, "datos", f"{d['id']}.json")))["fecha"] if os.path.exists(os.path.join(sitio, "datos", f"{d['id']}.json")) else ""
+    casos.append({"grupo": "union_cuestionada", "id": d["id"], "fecha": fecha, "n": d["n"], "art": None, "zona": None,
+                  "desc": f"«{d['titulo'][:60]}» incluye un pedazo que el juez cree de otra nota («{d['otra'][:50]}»): {d['razon']}",
+                  "mirar_cq": f"¿«{d['titulo'][:50]}» y «{d['otra'][:40]}» son notas distintas? (si sí, se separan)"})
 
 # casos puestos a mano (lectura-ia/casos-manuales.json): van siempre a «Para Coli»
 _man = os.path.join(lectura, "casos-manuales.json")
