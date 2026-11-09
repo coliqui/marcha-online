@@ -643,8 +643,10 @@ def aplicar_correcciones(nid, articulos):
                     a["texto"] = a["texto"].replace(viejo, nuevo, 1)
                 else:
                     print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {viejo!r}")
-            if c.get("automatica"):  # unión automática (proponer_uniones.py): se puede deshacer borrando la entrada
+            if c.get("automatica") and c.get("unir"):  # unión automática: se puede deshacer borrando la entrada
                 a.setdefault("uniones_automaticas", []).append(c["unir"][0]["pagina"])
+            elif c.get("automatica"):
+                a["separada_por_juez"] = True
             else:
                 a["corregido_a_mano"] = True
             break
