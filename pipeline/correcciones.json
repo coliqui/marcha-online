@@ -7355,6 +7355,24 @@
    ],
    "automatica": true,
    "motivo": "Unión automática segura (proponer_uniones.py, 9/11/2026, etapa 4): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1260",
+   "pagina": 22,
+   "titulo_contiene": "infierno tan temido",
+   "empieza": "LLEGUé a la colonia al atardecer. En los",
+   "unir": [
+    {
+     "pagina": 23,
+     "titulo_contiene": "infierno tan temido",
+     "empieza": "[ilegible]\n\n—Por qué, por qué, ¿por qué "
+    }
+   ],
+   "cambios": {
+    "autor": "María Ester Gilio",
+    "seccion": "Uruguay, hoy"
+   },
+   "motivo": "Pedido de Coli Quijano (9/11/2026), verificado contra el escaneo: «El infierno tan temido» (Colonia Etchepare), de María Ester Gilio, es un solo reportaje a dos páginas (el título cruza el pliego). Páginas releídas con Sonnet; «Miguelete» era el nombre de un internado, no el autor, y se sacó un comentario que la IA había metido en el texto."
   }
  ]
 }
