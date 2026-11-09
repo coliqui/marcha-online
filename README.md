@@ -115,6 +115,22 @@ Relectura de páginas de los 350 números con las reglas nuevas (tablas celda po
 
 Relecturas: 497 páginas con más texto (+80.000 palabras), 414 con tablas, incompletas de 159 a 68; Sonnet abrevió 113 de 347 páginas y quedó la lectura de Haiku; en 65 quedó la lectura anterior por tener bastante más texto. Números nuevos: US$ 0,077 por número, igual que la etapa 2. Gasto acumulado del proyecto: US$ 93,71. Faltan 1.027 números (≈ US$ 80).
 
+## Etapa 4 (9/11/2026): colección completa
+
+Los 1.027 números que faltaban (con las reglas de subtítulos y encuestas que salieron de la revisión) y la relectura con Haiku de las 5.887 páginas de los primeros 350 números que no se habían releído. **Leídos: los 1.676 números de Marcha** (42.302 páginas, 137.307 textos, 1.592 referencias entre números).
+
+| Paso | Páginas | Costo (lotes) |
+|---|---|---|
+| Números nuevos: Haiku | 25.985 | US$ 70,28 |
+| Números nuevos: dos mitades | 771 | US$ 4,40 |
+| Números nuevos: Sonnet (poco legibles) | 136 | US$ 3,33 |
+| Números nuevos: bloques en diagonal | 16 | US$ 0,14 |
+| Relectura de páginas viejas: Haiku | 5.888 | US$ 15,85 |
+| Relectura: dos mitades, Sonnet, bloques | 144 | US$ 1,30 |
+| **Total** | | **US$ 95,31** |
+
+Números nuevos: US$ 0,076 por número. Relectura: 667 páginas con más texto (+36.600 palabras), 91 conservaron la lectura anterior. En toda la colección: 815 páginas marcadas incompletas y 271 bloqueadas por derechos de autor (con el texto de Tesseract). Gasto total del proyecto: **US$ 189,02**.
+
 ## Decisiones de diseño
 
 - **Doble página por defecto** (Coli Quijano, 5/11/2026): el visor muestra cada número como en los rollos de microfilm, de a pliego (página izquierda y derecha enfrentadas), porque muchos artículos y títulos cruzan las dos páginas. La tapa y la contratapa se ven solas. Una casilla permite ver de a una página. Vale para el sitio de prueba, las próximas etapas y el sitio definitivo.
