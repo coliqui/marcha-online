@@ -218,6 +218,17 @@ let visor = null;
 // Una firma ("J.E.SUAREZ", "Peloduro", "Constantín") -> clave de la persona, usando la tabla de seudónimos.
 const claveFirma = f => tokens(f).filter(t => !/^\d+$/.test(t)).join(" ");  // "Camnitzer 1969" = "Camnitzer"
 const firmaValida = f => f && !/ilegible/i.test(f) && claveFirma(f);
+// una firma de varias personas («Hugo R. Alfaro y H. Alsina Thevenet», «…, H. Alsina, Thevenet») -> sus nombres
+function separarFirma(f) {
+  const partes = f.trim().split(/\s+y\s+|\s*;\s*|\s*\/\s*|\s+e\s+(?=[A-ZÁÉÍÓÚ])|\s+[a-z]\.\s+(?=[A-ZÁÉÍÓÚ])|\s+-\s+/);
+  const salida = [];
+  partes.forEach(p => p.split(",").map(x => x.trim()).filter(Boolean).forEach(t => {
+    const prev = salida[salida.length - 1];
+    if (prev && t.split(/\s+/).length === 1 && !t.includes(".") && prev.split(/\s+/).length >= 2 && ALIAS.has(claveFirma(prev + " " + t))) salida[salida.length - 1] = prev + " " + t;
+    else salida.push(t);
+  }));
+  return salida.filter(x => claveFirma(x).length >= 3);
+}
 function persona(firma) {
   const k = claveFirma(firma);
   const canon = ALIAS.get(k);
@@ -256,8 +267,11 @@ async function cargar() {
     N[d.id] = d;
     d.articulos.forEach((a, i) => {
       Object.assign(a, { nid: d.id, fecha: d.fecha, i });
-      if (firmaValida(a.autor)) { a.persona = persona(a.autor); a.persona.arts.push(a); }
-      a.tok = new Set(tokens(`${a.titulo} ${a.autor ?? ""} ${a.persona?.nombre ?? ""} ${a.seccion ?? ""} ${a.temas.join(" ")} ${a.texto}`));
+      a.personas = firmaValida(a.autor) ? separarFirma(a.autor).filter(firmaValida).map(persona) : [];
+      a.personas = [...new Set(a.personas)];
+      a.personas.forEach(p => p.arts.push(a));
+      a.persona = a.personas[0];
+      a.tok = new Set(tokens(`${a.titulo} ${a.autor ?? ""} ${a.personas.map(p => p.nombre).join(" ")} ${a.seccion ?? ""} ${a.temas.join(" ")} ${a.texto}`));
       ARTS.push(a);
     });
     d.paginas.forEach(p => p.ilustraciones.forEach(il => {
@@ -357,7 +371,7 @@ function resultado(a, terms) {
   return `<a class="res" href="#/numero/${a.nid}/${a.paginas[0]}/${encodeURIComponent(q)}/${a.i}">
     <span class="meta"><span>Nº ${esc(a.nid)}</span><span>${fecha(a.fecha)}</span><span>pág. ${pags.join(", ")}</span><span class="pill ${a.tipo === "ocr" ? "ocr" : ""}">${a.tipo === "ocr" ? "OCR sin revisar" : esc(a.tipo)}</span>${a.seccion ? `<span>${esc(a.seccion)}</span>` : ""}</span>
     <div class="t">${resaltar(a.titulo, terms)}</div>
-    ${a.autor ? `<div class="small">por ${resaltar(a.autor, terms)}${a.persona && a.persona.nombre !== a.autor ? ` (${esc(a.persona.nombre)})` : ""}</div>` : ""}
+    ${a.autor ? `<div class="small">por ${a.personas?.length ? a.personas.map(p => resaltar(p.nombre, terms)).join(" y ") : resaltar(a.autor, terms)}${a.personas?.length && a.personas.map(p => p.nombre).join(" y ") !== a.autor ? ` <span class="muted">(firma: ${esc(a.autor)})</span>` : ""}</div>` : ""}
     <div class="snip">${terms.length ? fragmento(a.texto, terms) : esc(a.texto.slice(0, 220)) + "…"}</div></a>`;
 }
 
@@ -538,7 +552,7 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
           <div class="small muted"><span class="pill ${a.tipo === "ocr" ? "ocr" : ""}">${a.tipo === "ocr" ? "OCR sin revisar" : esc(a.tipo)}</span> ${a.seccion ? esc(a.seccion) : ""} ${a.paginas.length > 1 ? `· págs. ${a.paginas.join(", ")}${a.union_por_pliego ? " (cruza el pliego)" : a.union_sin_marca ? " (unido automáticamente)" : ""}` : vistas.length > 1 ? `· pág. ${a.paginas[0]}` : ""}</div>
           <h3>${resaltar(a.titulo, terms)}</h3>
           ${a.bajada ? `<div class="bajada">${resaltar(a.bajada, terms)}</div>` : ""}
-          ${a.autor ? (pa => `<div class="by">por ${pa ? `<a href="#/autor/${encodeURIComponent(pa.clave)}">${esc(a.autor)}</a>` : esc(a.autor)}</div>`)(ARTS.find(x => x.nid === nid && x.i === a.i).persona) : ""}
+          ${a.autor ? (ps => `<div class="by">por ${ps.length ? ps.map(p => `<a href="#/autor/${encodeURIComponent(p.clave)}">${esc(p.nombre)}</a>`).join(" y ") : esc(a.autor)}${ps.length && ps.map(p => p.nombre).join(" y ") !== a.autor ? ` <span class="muted small">(firma: ${esc(a.autor)})</span>` : ""}</div>`)(ARTS.find(x => x.nid === nid && x.i === a.i)?.personas || []) : ""}
           <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${textoConTablas(a.texto, terms)}</div></details>
           ${(a.recuadros || []).map(r => `<aside class="recuadro"><span class="small muted">Recuadro${r.autor ? " · " + esc(r.autor) : ""}</span><div>${resaltar(r.texto, terms)}</div></aside>`).join("")}
           ${(a.destacados || []).length ? `<div class="destacados"><span class="small muted">Citas destacadas en la página</span>${a.destacados.map(r => `<blockquote>${resaltar(r.texto, terms)}${r.nota ? `<span class="small muted"> (${esc(r.nota)})</span>` : ""}</blockquote>`).join("")}</div>` : ""}
@@ -692,6 +706,7 @@ const GRUPOS = [
   ["auto", "Resueltos automáticamente", "Casos que se pudieron verificar con evidencia objetiva (Tesseract, ángulos medidos, palabras cortadas que empalman). Si alguno no te convence, «Reabrir» lo devuelve a la lista."],
   ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
   ["uniones_aplicadas", "Uniones automáticas aplicadas", "Pedazos sueltos unidos a su nota por palabra cortada o título repetido (6/11/2026). Si alguna está mal, anotala y se deshace de a una."],
+  ["autor_dudoso", "Posible mismo autor", "Firmas que podrían ser la misma persona (otra inicial con el mismo apellido, el apellido solo con varias personas posibles). No se unieron: anotar las que sí son la misma."],
   ["partida_fuerte", "Nota partida en varias: casos fuertes", "Mismo título (o título partido entre páginas) y mismo autor o mismos nombres en el mismo pliego: es muy probable que sea una sola nota. Marcar «Sí, aplicar» o anotar."],
   ["partida", "Nota partida en varias", "La lectura pudo partir una nota en varias dentro del mismo pliego (título que cruza las páginas, intertítulos, columnas sueltas). Marcar si es una sola nota."],
   ["union_segura", "Uniones propuestas: seguras", "Vista previa, todavía no aplicadas: el pedazo suelto (que empieza a mitad de frase) seguiría a esa nota. Marcar las que estén mal."],

@@ -80,6 +80,8 @@ def evaluar(c):
             c["desc"] += f" Juez: {v['misma_nota']} ({v['confianza']:.0%}): {v['razon'][:160]}"
     if g in ("partida", "partida_fuerte"):
         return None, 53 if c.get("partida_fuerte") else 18, c["mirar_partida"]
+    if g == "autor_dudoso":
+        return None, 15, c["mirar_autor"]
     if c.get("manual"):
         return None, c.get("prioridad", 60), c["mirar"]
     if g == "estructura" and c.get("carta_suelta"):
@@ -144,6 +146,18 @@ for nid, lista in (json.load(open(_part)) if os.path.exists(_part) else {}).item
                               f"(pág. {', '.join(map(str, b['paginas']))}). Señales: {'; '.join(x['senales'])}.",
                       "partida_fuerte": bool(fuerte),
                       "mirar_partida": f"¿«{a['titulo'][:45]}» y «{b['titulo'][:45]}» son una sola nota?"})
+
+# autores que podrían ser la misma persona (unificar_autores.py): para revisar, no se unieron
+casos = [c for c in casos if c.get("grupo") != "autor_dudoso"]
+_aut = os.path.join(lectura, "autores-dudosos.json")
+for d in (json.load(open(_aut)) if os.path.exists(_aut) else []):
+    ej = d.get("ejemplo") or {}
+    if not ej:
+        continue
+    fecha = json.load(open(os.path.join(sitio, "datos", f"{ej['id']}.json")))["fecha"] if os.path.exists(os.path.join(sitio, "datos", f"{ej['id']}.json")) else ""
+    casos.append({"grupo": "autor_dudoso", "id": ej["id"], "fecha": fecha, "n": ej["n"], "art": ej["art"], "zona": None,
+                  "desc": f"«{d['forma']}» ({d['tipo']}); posibles: {', '.join('«' + x + '»' for x in d['candidatos'][:5])}.",
+                  "mirar_autor": f"¿«{d['forma']}» es la misma persona que «{d['candidatos'][0]}»?"})
 
 # casos puestos a mano (lectura-ia/casos-manuales.json): van siempre a «Para Coli»
 _man = os.path.join(lectura, "casos-manuales.json")
