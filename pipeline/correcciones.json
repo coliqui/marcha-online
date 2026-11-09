@@ -31790,6 +31790,179 @@
     ]
    },
    "motivo": "Juez de uniones (Sonnet, 9/11/2026, confianza 0.80): la unión sin «pasa a» juntaba dos notas distintas. Los textos tienen títulos distintos y B lleva firma (A. F. S.) mientras A no. A termina con una frase que parece cerrar el tema, con un corte por lectura automá Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "299",
+   "pagina": 12,
+   "tipo": "crítica",
+   "titulo_contiene": "\"EL SIGNO DE LA CRUZ\"",
+   "empieza": "(The Sign of the Cross) Producción Param",
+   "partir": {
+    "desde": "(Viene de las páginas centrales)",
+    "a": {
+     "pagina": 8,
+     "tipo": "nota",
+     "titulo_contiene": "Capitulación Japonesa",
+     "empieza": "Es previsible para un futuro cercano, un"
+    },
+    "paginas": [
+     13
+    ],
+    "quitar_paginas": [
+     13
+    ]
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: «Los secretos…» es la continuación de la nota de las págs. 8-9, no de la crítica de «El signo de la cruz»."
+  },
+  {
+   "numero": "299",
+   "pagina": 8,
+   "tipo": "nota",
+   "titulo_contiene": "Capitulación Japonesa",
+   "empieza": "Es previsible para un futuro cercano, un",
+   "cambios": {
+    "titulo": "Los secretos de la capitulación japonesa"
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: «Los secretos…» es la continuación de la nota de las págs. 8-9, no de la crítica de «El signo de la cruz». (título completo)"
+  },
+  {
+   "numero": "1083",
+   "pagina": 11,
+   "tipo": "nota",
+   "titulo_contiene": "La cuarta caída de Velasco Ibarra",
+   "empieza": "Es un episodio más en esta América Latin",
+   "partir": {
+    "desde": "(Viene de la última Pág.)",
+    "a": {
+     "pagina": 32,
+     "tipo": "nota",
+     "titulo_contiene": "Las Puertas que se Cierran",
+     "empieza": "UNA COMISION de técnicos que visitó Euro"
+    },
+    "paginas": [
+     12
+    ],
+    "quitar_paginas": [
+     12
+    ]
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: la nota de Julio Castro termina antes; desde «(Viene de la última Pág.)» es la continuación de «Las puertas que se cierran» (Galeano), que empieza en la última página."
+  },
+  {
+   "numero": "1083",
+   "pagina": 17,
+   "tipo": "nota",
+   "titulo_contiene": "MEDITACION SOBRE La Bomba de 50 M.",
+   "empieza": "CHOCO y desalentó profundamente a todos ",
+   "partir": {
+    "desde": "(Viene de Pág. Centrales)",
+    "a": {
+     "pagina": 16,
+     "tipo": "nota",
+     "titulo_contiene": "Con el Difunto a Cuestas",
+     "empieza": "Pero si bien los dirigentes comunistas e"
+    },
+    "paginas": [
+     18
+    ],
+    "quitar_paginas": [
+     18
+    ]
+   },
+   "motivo": "Mismo caso que el anterior en este número (señalado por el juez): «Con el difunto a cuestas» (viene de las páginas centrales) estaba pegado a la nota de Russell."
+  },
+  {
+   "numero": "125",
+   "pagina": 7,
+   "tipo": "otro",
+   "titulo_contiene": "QUE PIENSAN LOS JOVENES",
+   "empieza": "\"MARCHA\" abre una encuesta bajo la rúbri",
+   "partir": {
+    "desde": "(Viene de pág. central)",
+    "a": {
+     "pagina": 10,
+     "tipo": "nota",
+     "titulo_contiene": "¿Atacará el Japón a la Unión Soviética? Rusia desea evitar una nueva ofensiva",
+     "empieza": "Los avances rusos más interesantes se de"
+    },
+    "paginas": [
+     8
+    ],
+    "quitar_paginas": [
+     8
+    ]
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: «¿Atacará el Japón…?» viene de las páginas centrales; no es parte de «Qué piensan los jóvenes»."
+  },
+  {
+   "numero": "1075",
+   "pagina": 12,
+   "tipo": "otro",
+   "titulo_contiene": "Historia del mañana",
+   "empieza": "MARCHA invita a todos sus lectores a par",
+   "partir": {
+    "desde": "(Viene de Pág. Centrales)",
+    "a": {
+     "pagina": 16,
+     "tipo": "nota",
+     "titulo_contiene": "BELGRADO: Una Fuerza de Choque Moral",
+     "empieza": "Veinticinco países, con 700 millones de "
+    },
+    "paginas": [
+     13
+    ],
+    "quitar_paginas": [
+     13
+    ]
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: «Belgrado…» viene de las páginas centrales; la encuesta queda como está (cortada en el escaneo)."
+  },
+  {
+   "numero": "1124",
+   "pagina": 17,
+   "tipo": "nota",
+   "titulo_contiene": "La bienal sudamericana de Kaiser argentina",
+   "empieza": "AS Industrias Kaiser Argentina iniciaron",
+   "separar_desde": {
+    "desde": "Ha muerto esta semana Homero Zirollo",
+    "titulo": "Zirollo",
+    "tipo": "nota",
+    "paginas": [
+     18
+    ]
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: lo que estaba pegado a «La bienal…» es otra nota (la necrológica de Homero Zirollo)."
+  },
+  {
+   "numero": "1141",
+   "pagina": 22,
+   "tipo": "nota",
+   "titulo_contiene": "A Ramón, para el lecho de muerte",
+   "empieza": "Es con tristeza que me he puesto a relee",
+   "unir": [
+    {
+     "pagina": 23,
+     "tipo": "nota",
+     "titulo_contiene": "Su muerte",
+     "empieza": "por ese sello o estigma del fragmentaris"
+    }
+   ],
+   "cambios": {
+    "titulo": "A Ramón, para su muerte",
+    "autor": "Ángel Rama"
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026): «A Ramón, para su muerte» es una sola nota de Ángel Rama a dos páginas."
+  },
+  {
+   "numero": "52",
+   "pagina": 6,
+   "tipo": "editorial",
+   "titulo_contiene": "Deberes de Esta Hora",
+   "empieza": "Todos los pueblos tienen o han tenido en",
+   "cambios": {
+    "autor": "Bernardo García"
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026): «Deberes de esta hora» es de Bernardo García (firma al pie), no de Grompone."
   }
  ]
 }
