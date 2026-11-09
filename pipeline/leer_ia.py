@@ -530,7 +530,7 @@ def adjuntar_destacados(articulos):
         if a:
             a.setdefault("destacados", []).append({"texto": d["texto"], "autor": d.get("autor"), "nota": None})
             sacar.append(d)
-    return [a for a in articulos if a not in sacar] + nuevas_separadas
+    return [a for a in articulos if a not in sacar]
 
 
 def aplicar_correcciones(nid, articulos):
