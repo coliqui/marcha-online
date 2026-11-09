@@ -553,6 +553,12 @@ def aplicar_correcciones(nid, articulos):
                     b["paginas"] = sorted(set(b["paginas"]) | set(c["partir"].get("paginas", [])))
                     a["paginas"] = sorted(set(a["paginas"]) - set(c["partir"].get("quitar_paginas", [])))
                     b["corregido_a_mano"] = True
+            for pieza in c.get("quitar", []):  # texto leído dos veces: la copia suelta se saca (el original queda)
+                b = next((x for x in articulos if x is not a and x not in sacar and es(x, pieza)), None)
+                if b is None:
+                    print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {pieza}")
+                else:
+                    sacar.append(b)
             for clave in ("unir", "destacados", "recuadros"):
                 for pieza in c.get(clave, []):
                     b = next((x for x in articulos if x is not a and x not in sacar and es(x, pieza)), None)

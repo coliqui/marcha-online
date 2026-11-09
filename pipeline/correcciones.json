@@ -2912,6 +2912,168 @@
    ],
    "automatica": true,
    "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
+  },
+  {
+   "numero": "1297",
+   "pagina": 7,
+   "tipo": "nota",
+   "titulo_contiene": "CALENDARIO AGRICOLA DE OTOÑO",
+   "empieza": "HACE dos años, por esta época, el Minist",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "nota",
+     "titulo_contiene": "CALENDARIO AGRÍCOLA DE OTOÑO",
+     "empieza": "La política triguera iniciada con bombos"
+    }
+   ],
+   "cambios": {
+    "autor": "Julio Castro"
+   },
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Calendario agrícola de otoño» es una sola nota de Julio Castro."
+  },
+  {
+   "numero": "1297",
+   "pagina": 7,
+   "tipo": "otro",
+   "titulo_contiene": "El “tresidós” colombiano",
+   "empieza": "13 junio 1953. — El general Gustavo Roja",
+   "unir": [
+    {
+     "pagina": 7,
+     "tipo": "nota",
+     "titulo_contiene": "Los viejos partidos colombianos",
+     "empieza": "Los viejos partidos colombianos han enco"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Los viejos partidos colombianos» es parte de «El tresidós colombiano»."
+  },
+  {
+   "numero": "1338",
+   "pagina": 26,
+   "tipo": "nota",
+   "titulo_contiene": "MÚSICA: OSSODRE",
+   "empieza": "OSSODRE (hoy 21 horas, SODRE) inicia una",
+   "quitar": [
+    {
+     "pagina": 26,
+     "tipo": "otro",
+     "titulo_contiene": "Música",
+     "empieza": "Fabiani, una obertura de Wagner y una ma"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4 («Sí, aplicar»): «Música» repetía parte de «MÚSICA: OSSODRE»."
+  },
+  {
+   "numero": "1437",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "¿El Plan Atcon también en la Argentina?",
+   "empieza": "podrían ser fruto de la desinformidad o ",
+   "destacados": [
+    {
+     "pagina": 18,
+     "tipo": "nota",
+     "titulo_contiene": "La visita clandestina de Mr. Atcon",
+     "empieza": "Dijimos en nuestra crónica del 3 de dici"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4 («Sí, aplicar»): «La visita clandestina de Mr. Atcon» repite parte de la nota."
+  },
+  {
+   "numero": "1597",
+   "pagina": 30,
+   "tipo": "otro",
+   "titulo_contiene": "Las preferencias del escritor uruguayo",
+   "empieza": "9. ¿Qué clase de literatura le interesa ",
+   "unir": [
+    {
+     "pagina": 31,
+     "tipo": "nota",
+     "titulo_contiene": "¿Propondría a algún escritor uruguayo para el Premio Nobel? ¿A quién?",
+     "empieza": "Achugar: No. Al premio Lenin tampoco.\n\nA"
+    },
+    {
+     "pagina": 31,
+     "tipo": "nota",
+     "titulo_contiene": "¿Qué escritor latinoamericano no le gusta?",
+     "empieza": "Achugar: La pregunta más divertida: Lást"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: la encuesta ocupa las dos páginas; «¿Propondría a algún escritor…?» y «¿Qué escritor…?» son preguntas de la encuesta, no notas aparte."
+  },
+  {
+   "numero": "1597",
+   "pagina": 31,
+   "tipo": "nota",
+   "titulo_contiene": "El universo de lo posible",
+   "empieza": "En el nº 46 (mayo de 1972) de la revista",
+   "cambios": {
+    "seccion": "Puntos cardinales"
+   },
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Puntos cardinales» es un recuadro con dos notas."
+  },
+  {
+   "numero": "1597",
+   "pagina": 31,
+   "tipo": "crítica",
+   "titulo_contiene": "Otra lectura de “Pedro Páramo”",
+   "empieza": "En la última entrega de la Revista de la",
+   "cambios": {
+    "seccion": "Puntos cardinales"
+   },
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Puntos cardinales» es un recuadro con dos notas."
+  },
+  {
+   "numero": "427",
+   "pagina": 12,
+   "tipo": "otro",
+   "titulo_contiene": "GUIA CINEMATOGRAFICA",
+   "empieza": "ABISMOS. — Donde Joan Fontaine envenena ",
+   "quitar": [
+    {
+     "pagina": 12,
+     "tipo": "otro",
+     "titulo_contiene": "Guía cinematográfica",
+     "empieza": "POR ELLOS... TODO. — Muiño colabora.\n\nPR"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4 («Sí, aplicar»): la segunda «Guía cinematográfica» repetía la primera."
+  },
+  {
+   "numero": "1671",
+   "pagina": 28,
+   "tipo": "cuento",
+   "titulo_contiene": "El guardaespaldas",
+   "empieza": "Sí con veinte plomos en el cuerpo, claro",
+   "unir": [
+    {
+     "pagina": 30,
+     "tipo": "cuento",
+     "titulo_contiene": "el guardaespaldas",
+     "empieza": "con odio y limpie, por fin, esa lágrima,"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «El guardaespaldas» sigue en la pág. 30."
+  },
+  {
+   "numero": "076",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "Esposa de la aventura",
+   "empieza": "(Continuación)\n\nPero aceptamos el resto ",
+   "unir": [
+    {
+     "pagina": 19,
+     "tipo": "nota",
+     "titulo_contiene": "Esposa de la aventura",
+     "empieza": "Nuestros varios contactos con los elefan"
+    }
+   ],
+   "cambios": {
+    "autor": "Osa Johnson"
+   },
+   "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Esposa de la aventura» ocupa las dos páginas y la autora es Osa Johnson."
   }
  ]
 }
