@@ -131,6 +131,10 @@ Los 1.027 números que faltaban (con las reglas de subtítulos y encuestas que s
 
 Números nuevos: US$ 0,076 por número. Relectura: 667 páginas con más texto (+36.600 palabras), 91 conservaron la lectura anterior. En toda la colección: 815 páginas marcadas incompletas y 271 bloqueadas por derechos de autor (con el texto de Tesseract). Gasto total del proyecto: **US$ 189,02**.
 
+## Carpetas de trabajo (en la Mac, no en GitHub)
+
+En `~/Desktop/MARCHA ONLINE`: `rollos/` (PDFs originales, no se tocan), `salida/` (OCR de Tesseract), `lectura-ia/` (lecturas con IA, versión final de cada página, notas y respaldos de lecturas anteriores en `_etapa2/` y `_ronda1/`, catálogo `marcha.sqlite` y el sitio de prueba en `lectura-ia/sitio/`, con las tapas en `sitio/tapas/`), el último respaldo zip y `archivo-viejo/` (pruebas de octubre, sitio del puerto 8766, respaldos anteriores: nada de eso lo usa ningún programa). Los comandos de la sección «Prueba de lectura con IA» son de esas pruebas y apuntan a carpetas que hoy están en `archivo-viejo/`.
+
 ## Decisiones de diseño
 
 - **Doble página por defecto** (Coli Quijano, 5/11/2026): el visor muestra cada número como en los rollos de microfilm, de a pliego (página izquierda y derecha enfrentadas), porque muchos artículos y títulos cruzan las dos páginas. La tapa y la contratapa se ven solas. Una casilla permite ver de a una página. Vale para el sitio de prueba, las próximas etapas y el sitio definitivo.
