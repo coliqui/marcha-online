@@ -549,7 +549,15 @@ def aplicar_correcciones(nid, articulos):
                     print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no pude partir {c['partir']}")
                 else:
                     tramo, a["texto"] = a["texto"][corte:], a["texto"][:corte].rstrip()
-                    b["texto"] = b["texto"].rstrip() + "\n\n" + tramo
+                    k = b["texto"].find(c["partir"]["despues_de"]) if c["partir"].get("despues_de") else -1
+                    if k >= 0:  # el tramo va en medio del otro artículo, tras ese texto
+                        k += len(c["partir"]["despues_de"])
+                        resto = b["texto"][k:]
+                        if resto.startswith(".") and tramo.lstrip()[:1].islower():
+                            resto = resto[1:]
+                        b["texto"] = b["texto"][:k] + " " + tramo.strip() + "\n\n" + resto.lstrip()
+                    else:
+                        b["texto"] = b["texto"].rstrip() + "\n\n" + tramo
                     b["paginas"] = sorted(set(b["paginas"]) | set(c["partir"].get("paginas", [])))
                     a["paginas"] = sorted(set(a["paginas"]) - set(c["partir"].get("quitar_paginas", [])))
                     b["corregido_a_mano"] = True

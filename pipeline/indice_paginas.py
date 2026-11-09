@@ -10,8 +10,8 @@ import csv, glob, json, os, sys
 carpeta = sys.argv[1]
 tamanos = json.load(open(f"{carpeta}/numero.json"))["tamano_ocr"]
 paginas = []
-for tsv in sorted(glob.glob(f"{carpeta}/p*.tsv")):
-    n = os.path.basename(tsv)[1:3]
+for tsv in sorted(glob.glob(f"{carpeta}/p*.tsv"), key=lambda f: int(os.path.basename(f)[1:-4])):
+    n = os.path.basename(tsv)[1:-4]  # "p07.tsv" -> "07"; "p112.tsv" -> "112" (números de más de 99 páginas)
     iw, ih = tamanos[int(n) - 1]
     palabras, lineas, actual = [], 0, None
     for r in csv.DictReader(open(tsv, encoding="utf-8"), delimiter="\t", quoting=csv.QUOTE_NONE):

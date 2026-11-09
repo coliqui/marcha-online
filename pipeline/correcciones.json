@@ -1146,23 +1146,6 @@
    "motivo": "Unión automática segura (proponer_uniones.py, 6/11/2026): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
   },
   {
-   "numero": "854",
-   "pagina": 12,
-   "tipo": "entrevista",
-   "titulo_contiene": "DOS HORAS DE CONVERSACION CON ANEURIN BEVAN",
-   "empieza": "Damos en traducción especial para Marcha",
-   "unir": [
-    {
-     "pagina": 15,
-     "tipo": "entrevista",
-     "titulo_contiene": "CON ANEURIN BEVAN ★ ★",
-     "empieza": "industriales, no pudo ser absorbida en I"
-    }
-   ],
-   "automatica": true,
-   "motivo": "Unión automática segura (proponer_uniones.py, 6/11/2026): el título repite el de la nota; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
-  },
-  {
    "numero": "874",
    "pagina": 12,
    "tipo": "nota",
@@ -1286,23 +1269,6 @@
    "motivo": "Indicado por Coli Quijano y verificado contra el escaneo (6/11/2026): «Voto original» es una sola carta, firmada por el Dr. Horacio Vigil; sigue en la columna 3 (VOTO POR / FUNDAMENTOS 1º-6º) y termina arriba de la columna 4 («No sé, señor Encargado…»). El título «Carta de Dr. Horacio Vigil» no existe en el original."
   },
   {
-   "numero": "064",
-   "pagina": 16,
-   "titulo_contiene": "penado modelo",
-   "unir": [
-    {
-     "pagina": 16,
-     "titulo_contiene": "una nota exclusiva",
-     "despues_de": "una serie de factores y complejos"
-    }
-   ],
-   "cambios": {
-    "autor": "Ex-Penado X",
-    "bajada": "Una nota exclusiva escrita para «Marcha» por un ex-penado"
-   },
-   "motivo": "Indicado por Coli Quijano (6/11/2026) y verificado contra el escaneo: «Una nota exclusiva escrita para Marcha por un ex-penado» es el recuadro-bajada de la nota que ocupa toda la página, y «que no me atrevo a adelantar…» (columna derecha) sigue a «…una serie de factores y complejos» (columna central, «El Crimen»); la nota la firma EX-PENADO X."
-  },
-  {
    "numero": "084",
    "pagina": 8,
    "titulo_contiene": "bulgaria, puente de adolfo",
@@ -1382,23 +1348,6 @@
    ],
    "automatica": true,
    "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): palabra cortada «Re-publica»; la nota termina a mitad de frase; en el mismo pliego. Para deshacerla, borrar esta entrada."
-  },
-  {
-   "numero": "1022",
-   "pagina": 7,
-   "tipo": "nota",
-   "titulo_contiene": "LA VISITA DEL MINISTRO LIPSCHITZ: Un rostro optimista de la ciudad-estado",
-   "empieza": "LOS MOTOCICLISTAS con sus sirenas, y las",
-   "unir": [
-    {
-     "pagina": 14,
-     "tipo": "columna",
-     "titulo_contiene": "Optimista...",
-     "empieza": "efectiva sola la guerra total, nosotros "
-    }
-   ],
-   "automatica": true,
-   "motivo": "Unión automática segura (proponer_uniones.py, 7/11/2026, etapa 3): dice «pasa a» esta página; el título repite el de la nota; la nota termina a mitad de frase. Para deshacerla, borrar esta entrada."
   },
   {
    "numero": "1029",
@@ -3074,6 +3023,37 @@
     "autor": "Osa Johnson"
    },
    "motivo": "Nota de Coli Quijano (6-7/11/2026), aplicada sobre la lectura de la etapa 4: «Esposa de la aventura» ocupa las dos páginas y la autora es Osa Johnson."
+  },
+  {
+   "numero": "064",
+   "pagina": 15,
+   "titulo_contiene": "una nota exclusiva",
+   "partir": {
+    "desde": "que no me atrevo a adelantar",
+    "a": {
+     "pagina": 16,
+     "titulo_contiene": "penado modelo"
+    },
+    "despues_de": "una serie de factores y complejos",
+    "quitar_paginas": [
+     16
+    ]
+   },
+   "cambios": {
+    "titulo": "¿En qué época hubiera querido vivir usted?",
+    "autor": null
+   },
+   "motivo": "Corrección de la de Coli Quijano (6/11/2026) tras la relectura de la pág. 15 (9/11/2026): la relectura unió por error «¿En qué época hubiera querido vivir usted?» (pág. 15) con el pedazo de la pág. 16; se separan y «que no me atrevo a adelantar…» vuelve a su lugar, tras «…una serie de factores y complejos»."
+  },
+  {
+   "numero": "064",
+   "pagina": 16,
+   "titulo_contiene": "penado modelo",
+   "cambios": {
+    "autor": "Ex-Penado X",
+    "bajada": "Una nota exclusiva escrita para «Marcha» por un ex-penado"
+   },
+   "motivo": "Indicado por Coli Quijano (6/11/2026): la nota la firma EX-PENADO X; «Una nota exclusiva…» es su recuadro-bajada."
   }
  ]
 }
