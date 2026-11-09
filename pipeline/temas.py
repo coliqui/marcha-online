@@ -106,12 +106,53 @@ def armar(lectura):
     return jerarquia, formas, nombre
 
 
+def secciones(lectura):
+    """Secciones fijas (secciones_alias.json): qué notas tiene cada una, por el campo «sección» o por el título."""
+    alias = json.load(open(os.path.join(AQUI, "secciones_alias.json")))
+    reglas = []  # (forma, es_prefijo, nombre)
+    for nombre, formas in alias.items():
+        if not nombre.startswith("_"):
+            reglas += [(clave(f.rstrip("*")), f.endswith("*"), nombre) for f in formas]
+    def de(t):
+        k = clave(t)
+        for f, pref, nombre in reglas:
+            if k == f or (pref and k.startswith(f)):
+                return nombre
+        return None
+    notas, autores, anios, forma = defaultdict(list), defaultdict(Counter), defaultdict(list), {}
+    for f in glob.glob(os.path.join(lectura, "*", "articulos.json")):
+        nid = os.path.basename(os.path.dirname(f))
+        fecha = json.load(open(os.path.join(os.path.dirname(f), "..", "..", "salida", nid, "numero.json"))).get("fecha", "") \
+            if os.path.exists(os.path.join(os.path.dirname(f), "..", "..", "salida", nid, "numero.json")) else ""
+        for i, a in enumerate(json.load(open(f))["articulos"]):
+            if a.get("tipo") == "aviso":
+                continue
+            s = de(a.get("seccion") or "") or de(a.get("titulo") or "")
+            if s:
+                notas[s].append([nid, i])
+                if a.get("autor"):
+                    autores[s][clave(a["autor"])] += 1
+                    forma.setdefault(clave(a["autor"]), Counter())[a["autor"].strip()] += 1
+                if fecha:
+                    anios[s].append(fecha[:4])
+    lista = [{"seccion": s, "notas": len(v), "numeros": len({x[0] for x in v}),
+              "desde": min(anios[s]) if anios[s] else None, "hasta": max(anios[s]) if anios[s] else None,
+              "autores": [[forma[a].most_common(1)[0][0], n] for a, n in autores[s].most_common(4)]} for s, v in notas.items()]
+    lista.sort(key=lambda x: -x["notas"])
+    return lista, dict(notas)
+
+
 if __name__ == "__main__":
     lectura = sys.argv[1]
     j, formas, nombre = armar(lectura)
     print(f"{j['total_temas_escritos']} formas escritas → {j['total_temas_unificados']} temas unificados; "
           f"{len(j['generales'])} generales con {sum(len(g['subtemas']) for g in j['generales'])} subtemas; "
           f"{len(j['otros'])} temas con 5+ notas sin agrupar")
+    lista, notas = secciones(lectura)
+    j["secciones"] = lista
+    json.dump(j, open(os.path.join(lectura, "temas.json"), "w"), ensure_ascii=False, indent=1)
+    json.dump(notas, open(os.path.join(lectura, "secciones-notas.json"), "w"))
+    print(f"{len(lista)} secciones fijas; {sum(x['notas'] for x in lista)} notas en ellas")
     if len(sys.argv) > 2:
-        for f in ("temas.json", "temas-mapa.json"):
+        for f in ("temas.json", "temas-mapa.json", "secciones-notas.json"):
             shutil.copy(os.path.join(lectura, f), os.path.join(sys.argv[2], "datos", f))

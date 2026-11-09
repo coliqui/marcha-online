@@ -78,6 +78,9 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .veredictos button { font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 4px 10px; margin-top: 6px; cursor: pointer }
 details.tema { border-bottom: 1px solid var(--rule); padding: 6px 0 }
 details.tema summary { cursor: pointer }
+.filtros label { display: inline-flex; gap: 4px; align-items: center; margin-right: 8px }
+table.secc td, table.secc th { border-bottom: 1px solid var(--rule); padding: 3px 8px; text-align: left }
+table.secc td.num { text-align: right }
 .recuadro { border: 1px solid var(--ink); padding: 8px 10px; margin: 8px 0; font-size: 14px }
 .destacados { margin: 8px 0 }
 .destacados blockquote { margin: 4px 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--mark-edge); font-style: italic; font-size: 14px }
@@ -383,11 +386,14 @@ function abrirLightbox(src, pie) {
   addEventListener("keydown", tecla);
 }
 
-function vistaBuscar(q = "", tipo = "") {
+function vistaBuscar(q = "", tipo = "", tema = "", seccion = "", anios = "") {
   const terms = consulta(q);
   const tipos = [...new Set(ARTS.map(a => a.tipo))].sort();
-  let lista = terms.length ? ARTS.filter(a => coincide(a, terms)) : [];
-  if (tipo) lista = (terms.length ? lista : ARTS).filter(a => a.tipo === tipo);
+  const [desde, hasta] = (anios || "").split("-").map(x => parseInt(x) || null);
+  const filtros = [tipo && (a => a.tipo === tipo), tema && TEMAS && notasDeTema(tema), seccion && notasDeSeccion(seccion),
+    desde && (a => +a.fecha.slice(0, 4) >= desde), hasta && (a => +a.fecha.slice(0, 4) <= hasta)].filter(Boolean);
+  let lista = terms.length ? ARTS.filter(a => coincide(a, terms)) : (filtros.length ? ARTS : []);
+  filtros.forEach(f => { lista = lista.filter(f); });
   // varias palabras: primero los textos con la frase tal cual; después, si no se pidió solo la frase, los que
   // tienen todas las palabras pero no juntas
   let sueltos = [];
@@ -404,9 +410,16 @@ function vistaBuscar(q = "", tipo = "") {
   app.innerHTML = `
     <form class="field" id="f"><input id="q" type="search" value="${esc(q)}" placeholder="Buscá una palabra, un tema, un autor o un dibujante…" aria-label="Buscar"><button>Buscar</button></form>
     <label class="small"><input type="checkbox" id="exacta" ${terms.exacta ? "checked" : ""}> Solo la frase exacta (también se puede escribir entre comillas)</label>
+    <div class="chips filtros small">
+      <label>Tema <input id="ftema" list="ltemas" value="${esc(tema)}" placeholder="cualquiera" size="18"></label>
+      <datalist id="ltemas">${(TEMAS?.generales || []).flatMap(g => [g.tema, ...g.subtemas.slice(0, 40).map(x => x.tema)]).map(t => `<option value="${esc(t)}">`).join("")}</datalist>
+      <label>Sección <select id="fsec"><option value="">cualquiera</option>${(TEMAS?.secciones || []).map(x => `<option ${x.seccion === seccion ? "selected" : ""}>${esc(x.seccion)}</option>`).join("")}</select></label>
+      <label>Años <input id="fdesde" type="number" min="1939" max="1974" value="${desde ?? ""}" placeholder="1939" style="width:5em">–<input id="fhasta" type="number" min="1939" max="1974" value="${hasta ?? ""}" placeholder="1974" style="width:5em"></label>
+      <button type="button" id="faplicar">Filtrar</button>${tema || seccion || anios ? ` <a href="#/buscar/${encodeURIComponent(q)}/${encodeURIComponent(tipo)}">quitar filtros</a>` : ""}
+    </div>
     <div class="chips"><span>Probá:</span>${EJEMPLOS.map(e => `<button type="button" data-q="${esc(e)}">${esc(e)}</button>`).join("")}
       <select id="tipo" aria-label="Tipo de texto"><option value="">Todos los tipos</option>${tipos.map(t => `<option ${t === tipo ? "selected" : ""} value="${esc(t)}">${t === "ocr" ? "OCR sin revisar" : esc(t)}</option>`).join("")}</select></div>
-    <div class="status">${terms.length || tipo ? `${lista.length} ${lista.length === 1 ? "texto" : "textos"}${ilus.length ? ` y ${ilus.length} ${ilus.length === 1 ? "dibujo" : "dibujos"}` : ""}${terms.length ? ` con ${terms.frase ? "la frase" : ""} “${esc(terms.join(" "))}”` : ""}${tipo ? ` de tipo ${esc(tipo)}` : ""}${sueltos.length ? `; ${sueltos.length} más con todas las palabras, no juntas` : ""}.` :
+    <div class="status">${terms.length || tipo ? `${lista.length} ${lista.length === 1 ? "texto" : "textos"}${ilus.length ? ` y ${ilus.length} ${ilus.length === 1 ? "dibujo" : "dibujos"}` : ""}${terms.length ? ` con ${terms.frase ? "la frase" : ""} “${esc(terms.join(" "))}”` : ""}${tipo ? ` de tipo ${esc(tipo)}` : ""}${tema ? `, tema «${esc(tema)}»` : ""}${seccion ? `, sección «${esc(seccion)}»` : ""}${anios ? `, años ${esc(anios)}` : ""}${sueltos.length ? `; ${sueltos.length} más con todas las palabras, no juntas` : ""}.` :
       `${ARTS.length} textos de ${Object.keys(N).length} números, ${PERSONAS.size} autores y dibujantes, ${ILUS.length} piezas en el archivo gráfico. Las búsquedas ignoran tildes y mayúsculas y encuentran palabras que empiezan como lo que escribiste.`}</div>
     ${personas.length ? `<div class="chips"><span>Personas:</span>${personas.map(p => `<a class="pill" href="#/autor/${encodeURIComponent(p.clave)}">${esc(p.nombre)} · ${p.arts.length + p.ilus.length}</a>`).join("")}</div>` : ""}
     ${ilus.length ? `<h3 class="sec">Archivo gráfico</h3><div class="gal">${ilus.slice(0, 24).map(tarjetaIlus).join("")}</div>` : ""}
@@ -418,8 +431,11 @@ function vistaBuscar(q = "", tipo = "") {
     const comillas = /["“”«»]/.test(v);
     if ($("#exacta").checked && !comillas && v.includes(" ")) v = `"${v}"`;
     if (!$("#exacta").checked && comillas) v = v.replace(/["“”«»]/g, "");
-    location.hash = `#/buscar/${encodeURIComponent(v)}/${encodeURIComponent($("#tipo").value)}`;
+    const an = ($("#fdesde").value || $("#fhasta").value) ? `${$("#fdesde").value}-${$("#fhasta").value}` : "";
+    location.hash = `#/buscar/${encodeURIComponent(v)}/${encodeURIComponent($("#tipo").value)}/${encodeURIComponent($("#ftema").value.trim())}/${encodeURIComponent($("#fsec").value)}/${an}`;
   };
+  $("#faplicar").onclick = () => $("#f").requestSubmit();
+  $("#fsec").onchange = () => $("#f").requestSubmit();
   $("#exacta").onchange = () => $("#f").requestSubmit();
   $("#tipo").onchange = () => $("#f").requestSubmit();
   app.querySelectorAll("[data-q]").forEach(b => b.onclick = () => location.hash = `#/buscar/${encodeURIComponent(b.dataset.q)}/`);
@@ -723,23 +739,43 @@ async function vistaColi() {
 }
 
 // ---- Temas: unificados (mayúsculas, tildes, plurales y sinónimos de temas_alias.json) y agrupados en generales
-let TEMAS = null, TEMAS_MAPA = {};
+let TEMAS = null, TEMAS_MAPA = {}, SECCIONES_NOTAS = {};
+// las notas de un tema general incluyen las de sus subtemas
+const notasDeTema = tema => { const g = TEMAS.generales.find(x => x.tema === tema); const inc = new Set([tema, ...(g ? g.subtemas.map(x => x.tema) : [])]);
+  return a => a.temas.some(t => inc.has(temaUnificado(t))); };
+const notasDeSeccion = sec => { const set = new Set((SECCIONES_NOTAS[sec] || []).map(([n, i]) => n + ":" + i)); return a => set.has(a.nid + ":" + a.i); };
 const temaUnificado = t => TEMAS_MAPA[t] ?? t;
 async function cargarTemas() {
   if (TEMAS) return;
   try {
-    [TEMAS, TEMAS_MAPA] = await Promise.all(["datos/temas.json", "datos/temas-mapa.json"].map(u => fetch(u).then(r => r.json())));
+    [TEMAS, TEMAS_MAPA, SECCIONES_NOTAS] = await Promise.all(["datos/temas.json", "datos/temas-mapa.json", "datos/secciones-notas.json"].map(u => fetch(u).then(r => r.ok ? r.json() : {})));
   } catch { TEMAS = { generales: [], otros: [] }; }
 }
 async function vistaTemas() {
   await cargarTemas();
   app.innerHTML = `<h2>Temas</h2>
     <p class="muted small">Propuesta de agrupación (para revisar): ${TEMAS.total_temas_escritos?.toLocaleString("es")} formas distintas que puso la IA, unificadas en ${TEMAS.total_temas_unificados?.toLocaleString("es")} temas; los ${TEMAS.generales.length} generales, con sus subtemas. Tocá un tema para ver sus notas.</p>
+    <h3 class="sec">Secciones del semanario</h3>
+    <div class="tabla"><table class="secc"><tr><th>Sección</th><th>Notas</th><th>Años</th><th>Firmas principales</th></tr>
+    ${(TEMAS.secciones || []).map(x => `<tr><td><a href="#/seccion/${encodeURIComponent(x.seccion)}"><b>${esc(x.seccion)}</b></a></td><td class="num">${x.notas.toLocaleString("es")}</td><td>${x.desde ?? ""}–${x.hasta ?? ""}</td><td class="small">${x.autores.map(([a]) => esc(a)).join(", ")}</td></tr>`).join("")}</table></div>
+    <h3 class="sec">Temas</h3>
     ${TEMAS.generales.map(g => `<details class="tema"><summary><a href="#/tema/${encodeURIComponent(g.tema)}"><b>${esc(g.tema)}</b></a> <span class="muted">${g.notas.toLocaleString("es")} notas · ${g.subtemas.length} subtemas</span></summary>
       <p class="small">${g.subtemas.slice(0, 80).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}${g.subtemas.length > 80 ? ` · <span class="muted">y ${g.subtemas.length - 80} más</span>` : ""}</p></details>`).join("")}
     <details class="tema"><summary><b>Sin agrupar</b> <span class="muted">${TEMAS.otros.length} temas con 5 notas o más</span></summary>
       <p class="small">${TEMAS.otros.slice(0, 200).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}</p></details>`;
 }
+async function vistaSeccion(sec) {
+  await cargarTemas();
+  const info = (TEMAS.secciones || []).find(x => x.seccion === sec);
+  const lista = ARTS.filter(notasDeSeccion(sec)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const porDecada = {};
+  lista.forEach(a => (porDecada[a.fecha.slice(0, 3) + "0"] ??= []).push(a));
+  app.innerHTML = `<p><a href="#/temas">← Temas y secciones</a></p><h2>${esc(sec)}</h2>
+    <p class="muted small">${lista.length.toLocaleString("es")} notas${info ? `, de ${info.desde} a ${info.hasta}; firmas principales: ${info.autores.map(([a, n]) => `${esc(a)} (${n})`).join(", ")}` : ""}. ${Object.entries(porDecada).map(([d, xs]) => `<a href="#s${d}">${d}: ${xs.length}</a>`).join(" · ")}
+    · <a href="#/buscar///${encodeURIComponent(sec)}/">buscar dentro de la sección</a></p>
+    ${Object.entries(porDecada).map(([d, xs]) => `<h3 class="sec" id="s${d}">Década de ${d}</h3>${xs.slice(0, 200).map(a => resultado(a, [])).join("")}${xs.length > 200 ? `<p class="muted small">y ${xs.length - 200} notas más</p>` : ""}`).join("")}`;
+}
+
 async function vistaTema(tema) {
   await cargarTemas();
   const g = TEMAS.generales.find(x => x.tema === tema);
@@ -748,7 +784,7 @@ async function vistaTema(tema) {
   const porDecada = {};
   lista.forEach(a => (porDecada[a.fecha.slice(0, 3) + "0"] ??= []).push(a));
   app.innerHTML = `<p><a href="#/temas">← Todos los temas</a></p><h2>${esc(tema)}</h2>
-    <p class="muted small">${lista.length.toLocaleString("es")} notas${g ? `, contando sus ${g.subtemas.length} subtemas` : ""}. ${Object.entries(porDecada).map(([d, xs]) => `<a href="#d${d}">${d}: ${xs.length}</a>`).join(" · ")}</p>
+    <p class="muted small">${lista.length.toLocaleString("es")} notas${g ? `, contando sus ${g.subtemas.length} subtemas` : ""}. <a href="#/buscar//${encodeURIComponent(tema)}//">buscar dentro del tema</a> · ${Object.entries(porDecada).map(([d, xs]) => `<a href="#d${d}">${d}: ${xs.length}</a>`).join(" · ")}</p>
     ${Object.entries(porDecada).map(([d, xs]) => `<h3 class="sec" id="d${d}">Década de ${d}</h3>${xs.slice(0, 150).map(a => resultado(a, [])).join("")}${xs.length > 150 ? `<p class="muted small">y ${xs.length - 150} notas más de esta década</p>` : ""}`).join("")}`;
 }
 
@@ -853,7 +889,7 @@ async function vistaNotas() {
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }
   const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
-  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", temas: "temas", tema: "temas", revisar: "revisar", coli: "coli", notas: "notas" }[vista ?? ""] ?? "buscar";
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", temas: "temas", tema: "temas", seccion: "temas", revisar: "revisar", coli: "coli", notas: "notas" }[vista ?? ""] ?? "buscar";
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
   if (vista === "numero") return conPalabras(r[0]).then(() => vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null, r[4] ?? ""));
   if (vista === "revisar") return vistaRevisar(r[0] ?? "");
@@ -866,7 +902,8 @@ function ruta() {
   if (vista === "grafico") return vistaGrafico(r[0] ?? "");
   if (vista === "temas") return vistaTemas();
   if (vista === "tema") return vistaTema(r[0] ?? "");
-  if (vista === "buscar") return vistaBuscar(r[0] ?? "", r[1] ?? "");
+  if (vista === "seccion") return vistaSeccion(r[0] ?? "");
+  if (vista === "buscar") return vistaBuscar(r[0] ?? "", r[1] ?? "", r[2] ?? "", r[3] ?? "", r[4] ?? "");
   vistaBuscar();
 }
 
