@@ -681,7 +681,10 @@ async function vistaColi() {
   const pendientes = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && !veredicto(c.clave) && !revisado(c.clave) && !conNota(c))
     .sort((a, b) => (b.prioridad ?? 0) - (a.prioridad ?? 0));
   const anotados = casosRevision().filter(c => (!c.auto || reabierto(c.clave)) && conNota(c));
-  const hoy = pendientes.slice(0, 30), hechos = casosRevision().filter(c => veredicto(c.clave));
+  // como mucho 10 de cada tipo, para que haya de todo entre los 30
+  const porTipo = {}, hoy = [];
+  for (const c of pendientes) { if (hoy.length >= 30) break; if ((porTipo[c.grupo] = (porTipo[c.grupo] || 0) + 1) <= 10) hoy.push(c); }
+  const hechos = casosRevision().filter(c => veredicto(c.clave));
   app.innerHTML = `<h2>Para Coli: lo importante</h2>
     <p class="muted small">Los ${hoy.length} casos que más afectan al lector, en orden. Para cada uno: abrí el link, mirá y respondé a la propuesta. «Sí, aplicar»: aplico lo que dice la pregunta. «No, dejar como está»: no se toca (podés escribir qué es lo correcto). «No sé»: queda como está, sin cambios. Lo demás está en <a href="#/revisar">Revisión</a> como lista opcional, sin apuro. ${hechos.length ? `Ya respondiste ${hechos.length} con botón.` : ""} ${anotados.length ? `${anotados.length} casos tienen una nota tuya y cuentan como respondidos (los veo en <a href="#/notas">Mis notas</a>).` : ""} También podés contestar con «Anotar» en vez de los botones.</p>
     ${hoy.length ? hoy.map((c, k) => `<div class="caso"><div style="flex:1"><b>${k + 1}.</b> <a href="${c.link}">Nº ${esc(c.id)} · ${fecha(c.fecha)} · pág. ${c.n}</a> <span class="small muted">· ${esc(GRUPOS.find(g => g[0] === c.grupo)?.[1] ?? c.grupo)}</span><br>
