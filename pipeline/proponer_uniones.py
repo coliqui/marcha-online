@@ -50,7 +50,7 @@ def proponer(d, ocr_vocab):
             corte = ult.rstrip("-")
             if not re.fullmatch(r"[a-zñ]{1,}", sin(corte)) or len(sin(corte)) != len(corte):
                 corte = ""  # "1.º", símbolos: no es una palabra cortada
-            if corte and primera and (sin(corte) + primera) in vocab and sin(corte) + primera not in VACIAS and \
+            if corte and primera and len(sin(corte) + primera) >= 7 and (sin(corte) + primera) in vocab and sin(corte) + primera not in VACIAS and \
                     (ult.endswith("-") or (sin(corte) not in vocab or primera not in vocab)):
                 señales.append(f"palabra cortada «{corte}-{primera}»"); puntos += 3
             pasa = re.findall(r"pasa a (?:la )?p[aá]g(?:ina|\.)?\s*(\d+)", sin(fin[-80:]))
@@ -68,6 +68,10 @@ def proponer(d, ocr_vocab):
                 continue  # una llamada de tapa sin "pasa a pág." no es el comienzo de la nota
             if primera and not palabra(primera) and not any(x.startswith("palabra") for x in señales):
                 puntos -= 2; señales.append("el pedazo empieza con media palabra que no completa el final de la nota")
+            # una nota que termina con una firma o un saludo ("Saluda a Ud. … FULANO", "Secretarios") ya terminó
+            if re.search(r"(?i)(saluda|atentamente|secretari[oa]s?|director|presidente)\W{0,3}[^\n]{0,40}$", fin[-80:]) or \
+                    re.search(r"\n\s*[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ.\- ]{4,40}\s*$", fin):
+                continue
             if not re.search(r"[.!?»”\")]\s*$", fin) or fin.endswith("-"):
                 señales.append("la nota termina a mitad de frase"); puntos += 1
             else:
@@ -82,7 +86,11 @@ def proponer(d, ocr_vocab):
             clase = "sin_candidata"
         else:
             p0 = candidatas[0][0]; p1 = candidatas[1][0] if len(candidatas) > 1 else 0
-            clave = any(x.startswith(("palabra", "el título")) for x in candidatas[0][2])  # "pasa a" solo no alcanza
+            sen = candidatas[0][2]
+            # "pasa a" solo no alcanza; una palabra cortada sola, solo si es en el mismo pliego (lejos puede coincidir
+            # por azar: "pa-" + "recían"); un título inventado por la IA ("[continuación…]") no cuenta
+            titulo_ok = any(x.startswith("el título") for x in sen) and "[" not in arts[i]["titulo"]
+            clave = titulo_ok or (any(x.startswith("palabra") for x in sen) and "en el mismo pliego" in sen)
             clase = "segura" if p0 >= 4 and p0 - p1 >= 2 and clave else "dudosa"
         salida.append({"pedazo": i, "pagina": n, "clase": clase,
                        "candidatas": [{"articulo": j, "puntos": p, "senales": s} for p, j, s in candidatas[:3]]})
