@@ -4,7 +4,9 @@ Colección digital del semanario **Marcha** (Montevideo, 1939–1974) y de **Cua
 
 ## Estado
 
-Etapa de prueba. El OCR se probó con 6 números de muestra (1939, 1943, 1952, 1960, 1967, 1973) y con el nº 1000 completo.
+**Colección de Marcha completa (9/11/2026): los 1.676 números (1939–1974), 42.302 páginas, 137.307 textos y 1.592 referencias entre números, leídos con IA, indexados y buscables en el sitio de prueba local.** Costo total de la lectura con IA (API de Anthropic, por lotes): **US$ 189**. Las etapas, costos y reglas están abajo. Falta: revisión de Coli Quijano (en curso), archivo gráfico, sitio definitivo para marcha.uy y Cuadernos de Marcha.
+
+Al comienzo (octubre de 2026), el OCR se probó con 6 números de muestra (1939, 1943, 1952, 1960, 1967, 1973) y con el nº 1000 completo.
 
 Resultado en el nº 1000 (palabras válidas reconocidas en todo el número):
 

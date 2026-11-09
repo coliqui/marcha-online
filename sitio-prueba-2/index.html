@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marcha · prueba del archivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap">
+<style>
+/* Masthead + tab bar; each view (search, viewer, issues, authors, illustrations) fills the main area. */
+:root {
+  --paper: #eeede8; --sheet: #f8f7f3; --ink: #17181a; --muted: #5d6066; --rule: #cfcdc5;
+  --mark: #ffd84a; --mark-edge: #c79a00; --accent: #1f3f8f; --ilus: #b3261e;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Literata", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #151618; --sheet: #1e2023; --ink: #ebeae5; --muted: #a3a6ad; --rule: #34373c;
+  --mark: #ffd84a; --mark-edge: #ffe58a; --accent: #9db5f5; --ilus: #ff8a80; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #151618; --sheet: #1e2023; --ink: #ebeae5; --muted: #a3a6ad; --rule: #34373c;
+  --mark: #ffd84a; --mark-edge: #ffe58a; --accent: #9db5f5; --ilus: #ff8a80; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5 }
+a { color: var(--accent) }
+.wrap { padding-inline: 16px; max-width: 1320px; margin: 0 auto }
+header { border-bottom: 3px solid var(--ink) }
+header .wrap { padding-block: 18px 0; display: grid; gap: 10px }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px }
+.mast { font-family: var(--display); font-weight: 900; font-stretch: 125%; font-size: clamp(40px, 7vw, 64px); letter-spacing: .02em; line-height: .9; margin: 0; color: inherit; text-decoration: none }
+.dateline { font: 600 13px var(--display); font-stretch: 75%; text-transform: uppercase; letter-spacing: .08em; color: var(--muted) }
+.tag { border: 1px solid var(--muted); padding: 1px 7px; border-radius: 2px; margin-left: 6px }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto }
+nav.tabs a { font: 700 13px var(--display); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-decoration: none; padding: 8px 12px; border-bottom: 3px solid transparent; margin-bottom: -3px; white-space: nowrap }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink) }
+main { padding-block: 18px 48px }
+h2 { font: 800 22px var(--display); font-stretch: 87%; margin: 0 0 10px }
+.muted { color: var(--muted) }
+.small { font-size: 13px }
+
+.field { display: flex; border: 2px solid var(--ink); background: var(--sheet); max-width: 760px }
+.field input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: 500 19px/1 var(--body); padding: 12px 14px }
+.field input:focus { outline: none }
+.field:focus-within { box-shadow: 0 0 0 3px var(--accent) }
+.field button { border: 0; background: var(--ink); color: var(--paper); font: 700 14px var(--display); text-transform: uppercase; letter-spacing: .08em; padding: 0 18px; cursor: pointer }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); margin-top: 10px }
+.chips button, .chips select { font: 600 13px var(--display); font-stretch: 87%; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 4px 10px; border-radius: 999px; cursor: pointer }
+.status { font-size: 13px; color: var(--muted); margin: 14px 0 6px }
+.res { display: block; padding: 12px 0; border-bottom: 1px solid var(--rule); color: inherit; text-decoration: none; max-width: 900px }
+.res:hover .t { text-decoration: underline }
+.res .meta { font: 700 12px var(--display); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px }
+.res .t { font: 800 18px var(--display); font-stretch: 87%; margin: 2px 0 }
+.res .snip { font-size: 14px; overflow-wrap: anywhere }
+mark { background: var(--mark); color: #17181a; padding: 0 2px }
+.pill { font: 600 11px var(--display); text-transform: uppercase; letter-spacing: .06em; border: 1px solid var(--rule); padding: 0 6px; border-radius: 999px }
+
+/* Viewer */
+.viewer { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: start }
+@media (max-width: 900px) { .viewer { grid-template-columns: minmax(0, 1fr) } }
+.vbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font: 600 13px var(--display); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px }
+.vbar button { font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 5px 12px; cursor: pointer }
+.vbar button:disabled { opacity: .35; cursor: default }
+.vbar label { text-transform: none; letter-spacing: 0; font-weight: 500; display: flex; gap: 4px; align-items: center }
+.sheet { position: relative; background: #fff; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(0,0,0,.45) }
+.sheet img { display: block; width: 100%; height: auto }
+.box { position: absolute; background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
+.ibox { position: absolute; outline: 2px dashed var(--ilus); background: transparent; pointer-events: none }
+.thumbs { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 }
+.thumbs a { flex: 0 0 auto; width: 48px; display: grid; gap: 2px; text-align: center; font: 600 11px var(--display); color: var(--muted); text-decoration: none }
+.thumbs img { width: 48px; height: 66px; object-fit: cover; object-position: top; border: 2px solid transparent; background: #fff }
+.thumbs a[aria-current="true"] img { border-color: var(--ink) }
+.thumbs .dot { height: 4px; border-radius: 2px; margin: 0 8px }
+.thumbs .dot.on { background: var(--mark-edge) }
+.side { display: grid; gap: 14px; min-width: 0 }
+.info { font-size: 13px; color: var(--muted); border-left: 3px solid var(--rule); padding-left: 10px }
+.art { background: var(--sheet); border: 1px solid var(--rule); padding: 14px 16px }
+.art h3 { font: 800 19px/1.15 var(--display); font-stretch: 87%; margin: 4px 0 }
+.art .by { font-size: 14px; margin-bottom: 6px }
+.art .txt { white-space: pre-wrap; font-size: 15px; max-height: 60vh; overflow: auto }
+.art details summary { cursor: pointer; font: 600 13px var(--display); color: var(--accent) }
+
+/* Grids */
+.year { font: 800 20px var(--display); margin: 22px 0 8px; border-bottom: 1px solid var(--rule) }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px }
+.cov { display: grid; gap: 3px; color: inherit; text-decoration: none; font: 600 12px var(--display) }
+.cov img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; object-position: top; background: #fff; border: 1px solid var(--rule) }
+.cov.ia img { outline: 3px solid var(--accent) }
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px }
+.ilu { display: grid; gap: 6px; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; color: inherit; text-decoration: none; font-size: 13px }
+.ilu img { width: 100%; height: 220px; object-fit: contain; background: #fff }
+.autores { columns: 3 260px; column-gap: 28px }
+.autores a { display: flex; justify-content: space-between; gap: 8px; break-inside: avoid; padding: 4px 0; border-bottom: 1px dotted var(--rule); color: inherit; text-decoration: none }
+.autores a:hover { color: var(--accent) }
+.lb { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: grid; place-items: center; padding: 16px; z-index: 10 }
+.lb img { max-width: 100%; max-height: 90vh; background: #fff }
+footer .wrap { padding-block: 0 32px; font-size: 13px; color: var(--muted) }
+footer p { max-width: 80ch }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><a class="mast" href="#/">MARCHA</a><span class="dateline">Semanario · Montevideo, 1939–1974 <span class="tag">Prueba del archivo</span></span></div>
+  <nav class="tabs" aria-label="Secciones">
+    <a href="#/" data-tab="buscar">Buscar</a>
+    <a href="#/numeros" data-tab="numeros">Números</a>
+    <a href="#/autores" data-tab="autores">Autores</a>
+    <a href="#/ilustraciones" data-tab="ilustraciones">Ilustraciones</a>
+  </nav>
+</div></header>
+<main><div class="wrap" id="app"><p class="muted">Cargando…</p></div></main>
+<footer><div class="wrap"><p>Prueba con 3 números leídos con IA (nº 30 de 1940, nº 748 de 1955 y nº 1477 de 1970). La galería de tapas muestra la colección entera. Texto de los artículos: lectura con Claude Haiku y, en las páginas difíciles, Claude Sonnet; puede tener errores. Las palabras marcadas sobre el escaneo salen del OCR de Tesseract.</p></div></footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const tokens = s => norm(s).split(/[^a-z0-9ñ]+/).filter(Boolean);
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","setiembre","octubre","noviembre","diciembre"];
+const fecha = f => { const [a, m, d] = f.split("-"); return `${+d} de ${MESES[m - 1]} de ${a}`; };
+const EJEMPLOS = ["Mussolini", "Clemenceau", "teatro", "Cortázar", "Vaz Ferreira", "cine", "Cuba"];
+
+let NUMEROS = [], N = {}, ARTS = [], AUTORES = new Map(), ILUS = [];
+
+// Unifica variantes de una firma ("Constantin" / "Constantín", mayúsculas, puntos).
+const claveAutor = a => tokens(a).join(" ");
+
+async function cargar() {
+  NUMEROS = await (await fetch("datos/numeros.json")).json();
+  for (const m of NUMEROS.filter(m => m.ia)) {
+    const d = await (await fetch(`datos/${m.id}.json`)).json();
+    d.paginas.forEach(p => p.nw = p.w.map(w => norm(w[0]).replace(/[^a-z0-9ñ]/g, "")));
+    N[d.id] = d;
+    d.articulos.forEach((a, i) => {
+      a.nid = d.id; a.fecha = d.fecha; a.i = i;
+      a.tok = new Set(tokens(`${a.titulo} ${a.autor ?? ""} ${a.seccion ?? ""} ${a.temas.join(" ")} ${a.texto}`));
+      ARTS.push(a);
+      if (a.autor) {
+        const k = claveAutor(a.autor);
+        if (!AUTORES.has(k)) AUTORES.set(k, { nombre: a.autor, arts: [] });
+        AUTORES.get(k).arts.push(a);
+      }
+    });
+    d.paginas.forEach(p => p.ilustraciones.forEach(il => ILUS.push({ ...il, nid: d.id, n: p.n, fecha: d.fecha })));
+  }
+}
+
+function coincide(a, terms) {
+  return terms.every(t => [...a.tok].some(w => w.startsWith(t)));
+}
+
+function resaltar(texto, terms) {
+  // marca las palabras que empiezan con algún término, comparando sin tildes
+  return esc(texto).replace(/[\p{L}\d]+/gu, w => terms.some(t => norm(w).startsWith(t)) ? `<mark>${w}</mark>` : w);
+}
+
+function resultado(a, terms) {
+  const pags = a.paginas.map(n => N[a.nid].paginas[n - 1].impresa ?? n);
+  return `<a class="res" href="#/numero/${a.nid}/${a.paginas[0]}/${encodeURIComponent(terms.join(" "))}/${a.i}">
+    <span class="meta"><span>Nº ${esc(a.nid)}</span><span>${fecha(a.fecha)}</span><span>pág. ${pags.join(", ")}</span><span class="pill">${esc(a.tipo)}</span>${a.seccion ? `<span>${esc(a.seccion)}</span>` : ""}</span>
+    <div class="t">${resaltar(a.titulo, terms)}</div>
+    ${a.autor ? `<div class="small">por ${resaltar(a.autor, terms)}</div>` : ""}
+    <div class="snip">${terms.length ? resaltarSnippet(a.texto, terms) : esc(a.texto.slice(0, 220)) + "…"}</div></a>`;
+}
+
+function resaltarSnippet(texto, terms) {
+  const n = norm(texto);
+  let pos = 0;
+  for (const t of terms) { const r = new RegExp(`(^|[^a-z0-9ñ])${t}`).exec(n); if (r) { pos = r.index; break; } }
+  const a = Math.max(0, pos - 90), b = Math.min(texto.length, pos + 200);
+  return (a ? "… " : "") + resaltar(texto.slice(a, b), terms) + (b < texto.length ? " …" : "");
+}
+
+function vistaBuscar(q = "", tipo = "") {
+  const terms = tokens(q);
+  const tipos = [...new Set(ARTS.map(a => a.tipo))].sort();
+  let lista = terms.length ? ARTS.filter(a => coincide(a, terms)) : [];
+  if (tipo) lista = (terms.length ? lista : ARTS).filter(a => a.tipo === tipo);
+  app.innerHTML = `
+    <form class="field" id="f"><input id="q" type="search" value="${esc(q)}" placeholder="Buscá una palabra, un tema o un autor…" aria-label="Buscar"><button>Buscar</button></form>
+    <div class="chips"><span>Probá:</span>${EJEMPLOS.map(e => `<button type="button" data-q="${esc(e)}">${esc(e)}</button>`).join("")}
+      <select id="tipo" aria-label="Tipo de texto"><option value="">Todos los tipos</option>${tipos.map(t => `<option ${t === tipo ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>
+    <div class="status">${terms.length || tipo ? `${lista.length} ${lista.length === 1 ? "artículo" : "artículos"}${terms.length ? ` con “${esc(q)}”` : ""}${tipo ? ` de tipo ${esc(tipo)}` : ""}.` :
+      `${ARTS.length} artículos de ${Object.keys(N).length} números, con ${AUTORES.size} firmas y ${ILUS.length} ilustraciones. Las búsquedas ignoran tildes y mayúsculas y encuentran palabras que empiezan como lo que escribiste.`}</div>
+    <div>${lista.slice(0, 200).map(a => resultado(a, terms)).join("")}</div>`;
+  $("#f").onsubmit = e => { e.preventDefault(); location.hash = `#/buscar/${encodeURIComponent($("#q").value.trim())}/${encodeURIComponent($("#tipo").value)}`; };
+  $("#tipo").onchange = () => $("#f").requestSubmit();
+  app.querySelectorAll("[data-q]").forEach(b => b.onclick = () => location.hash = `#/buscar/${encodeURIComponent(b.dataset.q)}/`);
+}
+
+function vistaNumero(nid, n, q = "", artSel = null) {
+  const d = N[nid];
+  if (!d) { app.innerHTML = `<p>Este número todavía no tiene lectura con IA en la prueba. <a href="#/numeros">Volver a los números</a></p>`; return; }
+  n = Math.max(1, Math.min(d.paginas.length, +n || 1));
+  const p = d.paginas[n - 1], terms = tokens(q);
+  const hits = new Set();
+  if (terms.length) p.nw.forEach((w, i) => { if (terms.some(t => w.startsWith(t))) hits.add(i); });
+  const conHits = new Set(terms.length ? d.paginas.filter(pp => pp.nw.some(w => terms.some(t => w.startsWith(t)))).map(pp => pp.n) : []);
+  const arts = d.articulos.map((a, i) => ({ ...a, i })).filter(a => a.paginas.includes(n));
+  const verIlus = localStorage.getItem("verIlus") !== "0";
+  const link = k => `#/numero/${nid}/${k}/${encodeURIComponent(q)}`;
+  app.innerHTML = `
+    <div class="vbar"><span>Nº ${esc(nid)} · ${fecha(d.fecha)}</span>
+      <span>${p.impresa ? `Página impresa ${p.impresa}` : "Página sin número impreso visible"} · imagen ${n} de ${d.paginas.length}</span>
+      <span><a href="${link(n - 1)}"><button ${n === 1 ? "disabled" : ""}>←</button></a> <a href="${link(n + 1)}"><button ${n === d.paginas.length ? "disabled" : ""}>→</button></a></span></div>
+    <div class="viewer">
+      <div><div class="sheet" id="sheet"><img src="${p.img}" alt="Marcha nº ${esc(nid)}, página ${n}"></div>
+        <div class="vbar" style="margin-top:8px"><label><input type="checkbox" id="vi" ${verIlus ? "checked" : ""}> Mostrar ilustraciones detectadas (${p.ilustraciones.length})</label>${hits.size ? `<span>${hits.size} palabras marcadas</span>` : ""}</div>
+        <nav class="thumbs" aria-label="Páginas">${d.paginas.map(pp => `<a href="${link(pp.n)}" ${pp.n === n ? 'aria-current="true"' : ""}><img src="${pp.img}" alt="" loading="lazy"><span class="dot ${conHits.has(pp.n) ? "on" : ""}"></span>${pp.n}</a>`).join("")}</nav></div>
+      <div class="side">
+        <div class="info">Leída con <b>${p.modelo === "sonnet" ? "Claude Sonnet" : p.modelo === "haiku" ? "Claude Haiku" : "Tesseract (sin IA)"}</b> · legibilidad ${esc(p.legibilidad)}${p.notas ? `<br>${esc(p.notas)}` : ""}</div>
+        ${arts.length ? arts.map(a => `<article class="art" id="a${a.i}">
+          <div class="small muted"><span class="pill">${esc(a.tipo)}</span> ${a.seccion ? esc(a.seccion) : ""} ${a.paginas.length > 1 ? `· sigue en págs. ${a.paginas.join(", ")}${a.union_sin_marca ? " (unido automáticamente)" : ""}` : ""}</div>
+          <h3>${resaltar(a.titulo, terms)}</h3>
+          ${a.autor ? `<div class="by">por <a href="#/autor/${encodeURIComponent(claveAutor(a.autor))}">${esc(a.autor)}</a></div>` : ""}
+          <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${resaltar(a.texto, terms)}</div></details>
+          <div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div></article>`).join("") : `<p class="muted">No hay artículos leídos en esta página.</p>`}
+      </div></div>`;
+  const sheet = $("#sheet");
+  let first = null;
+  for (const i of hits) {
+    const [, x, y, w, h] = p.w[i];
+    const b = document.createElement("div");
+    b.className = "box";
+    b.style.cssText = `left:${x / 10 - .3}%;top:${y / 10 - .25}%;width:${w / 10 + .6}%;height:${h / 10 + .5}%`;
+    sheet.appendChild(b); first ??= b;
+  }
+  if (verIlus) p.ilustraciones.forEach(il => {
+    const [x0, y0, x1, y1] = il.pagina_caja, b = document.createElement("div");
+    b.className = "ibox"; b.title = il.descripcion;
+    b.style.cssText = `left:${x0 / 10}%;top:${y0 / 10}%;width:${(x1 - x0) / 10}%;height:${(y1 - y0) / 10}%`;
+    sheet.appendChild(b);
+  });
+  $("#vi").onchange = e => { try { localStorage.setItem("verIlus", e.target.checked ? "1" : "0"); } catch {} vistaNumero(nid, n, q, artSel); };
+  if (artSel != null && document.getElementById("a" + artSel)) document.getElementById("a" + artSel).scrollIntoView({ block: "start" });
+  else if (first) { const go = () => first.scrollIntoView({ block: "center" }); const im = sheet.querySelector("img"); im.complete ? go() : im.addEventListener("load", go, { once: true }); }
+  else window.scrollTo(0, 0);
+}
+
+function vistaNumeros() {
+  const porAnio = {};
+  NUMEROS.forEach(m => (porAnio[m.fecha.slice(0, 4)] ??= []).push(m));
+  app.innerHTML = `<h2>Los ${NUMEROS.length} números</h2>
+    <p class="muted small">Las tapas de toda la colección. Los tres con borde azul ya tienen lectura con IA y se pueden recorrer en esta prueba.</p>
+    <div class="chips">${Object.keys(porAnio).map(a => `<button type="button" data-a="${a}">${a}</button>`).join("")}</div>
+    ${Object.entries(porAnio).map(([a, ms]) => `<div class="year" id="y${a}">${a} <span class="muted small">${ms.length} números</span></div>
+      <div class="grid">${ms.map(m => `<a class="cov ${m.ia ? "ia" : ""}" href="${m.ia ? `#/numero/${m.id}/1` : `#/tapa/${m.id}`}"><img src="tapas/${m.id}.jpg" alt="Tapa del nº ${esc(m.id)}" loading="lazy"><span>Nº ${esc(m.id)}</span><span class="muted">${fecha(m.fecha)}</span></a>`).join("")}</div>`).join("")}`;
+  app.querySelectorAll("[data-a]").forEach(b => b.onclick = () => document.getElementById("y" + b.dataset.a).scrollIntoView());
+}
+
+function vistaTapa(id) {
+  const m = NUMEROS.find(x => x.id === id);
+  app.innerHTML = `<p><a href="#/numeros">← Números</a></p><h2>Nº ${esc(id)} · ${fecha(m.fecha)}</h2>
+    <p class="muted">${m.paginas} páginas. En la prueba solo se muestra la tapa; el sitio final tendrá el número completo.</p>
+    <img src="tapas/${esc(id)}.jpg" alt="Tapa del nº ${esc(id)}" style="max-width:360px;width:100%;background:#fff">`;
+}
+
+function vistaAutores() {
+  const lista = [...AUTORES.values()].sort((a, b) => b.arts.length - a.arts.length || a.nombre.localeCompare(b.nombre));
+  app.innerHTML = `<h2>Autores</h2><p class="muted small">${lista.length} firmas en los números de la prueba. En el sitio final se unificarán seudónimos e iniciales con el nombre real.</p>
+    <div class="autores">${lista.map(a => `<a href="#/autor/${encodeURIComponent(claveAutor(a.nombre))}"><span>${esc(a.nombre)}</span><span class="muted">${a.arts.length}</span></a>`).join("")}</div>`;
+}
+
+function vistaAutor(k) {
+  const a = AUTORES.get(k);
+  if (!a) { app.innerHTML = `<p>No encontré ese autor. <a href="#/autores">Ver todos</a></p>`; return; }
+  const ilus = ILUS.filter(il => il.firma && claveAutor(il.firma) === k);
+  app.innerHTML = `<p><a href="#/autores">← Autores</a></p><h2>${esc(a.nombre)}</h2>
+    <p class="muted">${a.arts.length} ${a.arts.length === 1 ? "texto" : "textos"}${ilus.length ? ` y ${ilus.length} ilustraciones` : ""}</p>
+    ${a.arts.sort((x, y) => x.fecha.localeCompare(y.fecha)).map(x => resultado(x, [])).join("")}
+    ${ilus.length ? `<h2 style="margin-top:20px">Ilustraciones</h2><div class="gal">${ilus.map(tarjetaIlus).join("")}</div>` : ""}`;
+}
+
+function tarjetaIlus(il) {
+  return `<a class="ilu" href="#/numero/${il.nid}/${il.n}"><img src="${il.img}" alt="${esc(il.descripcion)}" loading="lazy">
+    <span><span class="pill">${esc(il.tipo)}</span> ${esc(il.descripcion)}</span>
+    <span class="muted">${il.firma ? `Firma: ${esc(il.firma)} · ` : ""}Nº ${esc(il.nid)}, ${fecha(il.fecha)}, pág. ${il.n}</span></a>`;
+}
+
+function vistaIlustraciones(tipo = "") {
+  const tipos = [...new Set(ILUS.map(i => i.tipo))].sort();
+  const lista = tipo ? ILUS.filter(i => i.tipo === tipo) : ILUS;
+  app.innerHTML = `<h2>Ilustraciones</h2>
+    <p class="muted small">Detectadas y recortadas automáticamente del escaneo original. Tocá una para ir a su página.</p>
+    <div class="chips"><button type="button" data-t="">Todas (${ILUS.length})</button>${tipos.map(t => `<button type="button" data-t="${esc(t)}">${esc(t)} (${ILUS.filter(i => i.tipo === t).length})</button>`).join("")}</div>
+    <div class="gal" style="margin-top:14px">${lista.map(tarjetaIlus).join("")}</div>`;
+  app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => location.hash = `#/ilustraciones/${encodeURIComponent(b.dataset.t)}`);
+}
+
+function ruta() {
+  const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", ilustraciones: "ilustraciones" }[vista ?? ""] ?? "buscar";
+  document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
+  if (vista === "numero") return vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null);
+  if (vista === "numeros") return vistaNumeros();
+  if (vista === "tapa") return vistaTapa(r[0]);
+  if (vista === "autores") return vistaAutores();
+  if (vista === "autor") return vistaAutor(r[0]);
+  if (vista === "ilustraciones") return vistaIlustraciones(r[0] ?? "");
+  if (vista === "buscar") return vistaBuscar(r[0] ?? "", r[1] ?? "");
+  vistaBuscar();
+}
+
+addEventListener("hashchange", () => { ruta(); if (!location.hash.startsWith("#/numero/")) scrollTo(0, 0); });
+cargar().then(ruta).catch(e => { app.innerHTML = `<p>No se pudieron cargar los datos de la prueba (${esc(e.message)}).</p>`; });
+</script>
+</body>
+</html>
