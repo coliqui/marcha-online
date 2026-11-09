@@ -72,7 +72,7 @@ def evaluar(c):
         if any("palabra cortada" in m for m in motivos):
             return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
         return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
-    if g == "partida":
+    if g in ("partida", "partida_fuerte"):
         return None, 40 if c.get("partida_fuerte") else 18, c["mirar_partida"]
     if c.get("manual"):
         return None, c.get("prioridad", 60), c["mirar"]
@@ -122,7 +122,7 @@ for f in sorted(glob.glob(os.path.join(sitio, "datos", "*.json"))):
                           "carta_suelta": True})
 
 # notas partidas en varias dentro del mismo pliego (detectar_partidas.py)
-casos = [c for c in casos if c.get("grupo") != "partida"]
+casos = [c for c in casos if c.get("grupo") not in ("partida", "partida_fuerte")]
 _part = os.path.join(lectura, "partidas.json")
 for nid, lista in (json.load(open(_part)) if os.path.exists(_part) else {}).items():
     arts = json.load(open(os.path.join(lectura, nid, "articulos.json")))["articulos"]
@@ -133,7 +133,7 @@ for nid, lista in (json.load(open(_part)) if os.path.exists(_part) else {}).item
         a, b = arts[x["primero"]], arts[x["segundo"]]
         fuerte = any(z.startswith("título partido") for z in x["senales"]) and (
             any(z.startswith("mismos nombres") for z in x["senales"]) or (a.get("autor") and a.get("autor") == b.get("autor")))
-        casos.append({"grupo": "partida", "id": nid, "fecha": fecha, "n": x["pagina"], "art": x["primero"], "zona": None,
+        casos.append({"grupo": "partida_fuerte" if fuerte else "partida", "id": nid, "fecha": fecha, "n": x["pagina"], "art": x["primero"], "zona": None,
                       "desc": f"«{a['titulo'][:50]}» (pág. {', '.join(map(str, a['paginas']))}) y «{b['titulo'][:50]}» "
                               f"(pág. {', '.join(map(str, b['paginas']))}). Señales: {'; '.join(x['senales'])}.",
                       "partida_fuerte": bool(fuerte),
