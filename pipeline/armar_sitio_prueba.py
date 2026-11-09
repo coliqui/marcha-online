@@ -259,6 +259,7 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
         caso("union_" + x["clase"], meta, x["pagina"], f"«{f['titulo'][:50]}» («{f['texto'].strip()[:35]}…») seguiría a "
              f"«{c['titulo'][:50]}» (pág. {', '.join(map(str, c['paginas']))}, termina «…{c['texto'].rstrip()[-35:]}»). "
              f"Señales: {'; '.join(c0['senales'])}.", articulo=x["pedazo"])
+        revisar[-1]["art2"] = c0["articulo"]
     # las posiciones de las palabras (para marcar lo buscado) van aparte: el sitio las carga al abrir el número
     json.dump({n: palabras[n]["w"] for n in palabras}, open(os.path.join(DATOS, f"{nid}-palabras.json"), "w"),
               ensure_ascii=False, separators=(",", ":"))

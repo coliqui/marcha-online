@@ -72,6 +72,12 @@ def evaluar(c):
         if any("palabra cortada" in m for m in motivos):
             return "La unión empalma una palabra cortada (por ejemplo «porcenta-» + «je»): es la continuación.", 0, ""
         return None, 25, "Se unió un pedazo suelto a esta nota porque repite su título. ¿Es la misma nota?"
+    if g in ("partida", "partida_fuerte", "union_dudosa"):
+        v = veredicto(c)
+        if v and v["misma_nota"] == "no" and v["confianza"] >= 0.8:
+            return f"El juez (Sonnet) dice que son notas distintas: {v['razon'][:160]}", 0, ""
+        if v:
+            c["desc"] += f" Juez: {v['misma_nota']} ({v['confianza']:.0%}): {v['razon'][:160]}"
     if g in ("partida", "partida_fuerte"):
         return None, 53 if c.get("partida_fuerte") else 18, c["mirar_partida"]
     if c.get("manual"):
@@ -133,7 +139,7 @@ for nid, lista in (json.load(open(_part)) if os.path.exists(_part) else {}).item
         a, b = arts[x["primero"]], arts[x["segundo"]]
         fuerte = any(z.startswith("título partido") for z in x["senales"]) and (
             any(z.startswith("mismos nombres") for z in x["senales"]) or (a.get("autor") and a.get("autor") == b.get("autor")))
-        casos.append({"grupo": "partida_fuerte" if fuerte else "partida", "id": nid, "fecha": fecha, "n": x["pagina"], "art": x["primero"], "zona": None,
+        casos.append({"grupo": "partida_fuerte" if fuerte else "partida", "id": nid, "fecha": fecha, "n": x["pagina"], "art": x["primero"], "art2": x["segundo"], "zona": None,
                       "desc": f"«{a['titulo'][:50]}» (pág. {', '.join(map(str, a['paginas']))}) y «{b['titulo'][:50]}» "
                               f"(pág. {', '.join(map(str, b['paginas']))}). Señales: {'; '.join(x['senales'])}.",
                       "partida_fuerte": bool(fuerte),
@@ -144,6 +150,24 @@ _man = os.path.join(lectura, "casos-manuales.json")
 casos = [c for c in casos if not c.get("manual")]
 for m in (json.load(open(_man)) if os.path.exists(_man) else []):
     casos.append({**m, "manual": True, "art": m.get("art"), "zona": None})
+
+# veredictos del juez de uniones (juez_uniones.py), identificados por título y comienzo de cada texto
+import unicodedata as _ud
+_sin = lambda t: " ".join(_ud.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower().split())
+_vf = os.path.join(lectura, "juez", "veredictos.json")
+VEREDICTO = {}
+for v in (json.load(open(_vf)) if os.path.exists(_vf) else []):
+    VEREDICTO[(v["nid"], frozenset((v["a"], v["b"])))] = v
+_cache_arts = {}
+def veredicto(c):
+    i, j = c.get("art"), c.get("art2")
+    if i is None or j is None:
+        return None
+    arts = _cache_arts.setdefault(c["id"], json.load(open(os.path.join(lectura, c["id"], "articulos.json")))["articulos"])
+    if max(i, j) >= len(arts):
+        return None
+    d = lambda x: _sin(x["titulo"])[:40] + "|" + _sin(x["texto"].strip())[:30]
+    return VEREDICTO.get((c["id"], frozenset((d(arts[i]), d(arts[j])))))
 
 auto = 0
 for c in casos:
