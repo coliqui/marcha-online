@@ -1,0 +1,134 @@
+{
+ "_explicacion": "Sinónimos y variantes de temas que se unifican (se edita a mano). Cada clave es el nombre con que queda el tema; la lista, las formas que se juntan con él. Mayúsculas, tildes y plurales se unen solos, sin hace falta ponerlos acá. «_generales» fija temas que van como generales aunque tengan pocas notas; «_no_generales» los que nunca van como generales. «_subtemas» pone un tema como subtema de otro (no va como general).",
+ "política uruguaya": [
+  "política nacional",
+  "política del uruguay",
+  "política interna",
+  "política interior",
+  "política uruguaya contemporánea",
+  "política doméstica"
+ ],
+ "política internacional": [
+  "relaciones internacionales",
+  "política exterior",
+  "política mundial",
+  "asuntos internacionales",
+  "actualidad internacional",
+  "internacional"
+ ],
+ "publicidad": [
+  "aviso",
+  "avisos",
+  "aviso publicitario",
+  "avisos publicitarios",
+  "anuncio",
+  "anuncios",
+  "publicidad comercial",
+  "comercio y publicidad"
+ ],
+ "cine": [
+  "cinematografía",
+  "películas",
+  "crítica de cine",
+  "crítica cinematográfica",
+  "cartelera de cine",
+  "estrenos de cine",
+  "cine extranjero"
+ ],
+ "teatro": [
+  "crítica teatral",
+  "crítica de teatro",
+  "cartelera teatral",
+  "artes escénicas"
+ ],
+ "libros": [
+  "crítica de libros",
+  "reseñas de libros",
+  "novedades editoriales",
+  "reseña bibliográfica",
+  "bibliografía",
+  "crítica literaria de libros"
+ ],
+ "literatura": [
+  "letras",
+  "crítica literaria"
+ ],
+ "música": [
+  "crítica musical",
+  "conciertos",
+  "música clásica"
+ ],
+ "economía": [
+  "economía política",
+  "asuntos económicos"
+ ],
+ "economía uruguaya": [
+  "economía nacional",
+  "economía del uruguay"
+ ],
+ "educación": [
+  "enseñanza"
+ ],
+ "segunda guerra mundial": [
+  "guerra mundial",
+  "segunda guerra",
+  "la guerra",
+  "guerra europea",
+  "conflicto bélico mundial"
+ ],
+ "estados unidos": [
+  "eeuu",
+  "ee. uu.",
+  "ee.uu.",
+  "norteamérica",
+  "política norteamericana"
+ ],
+ "unión soviética": [
+  "urss",
+  "u.r.s.s.",
+  "rusia soviética"
+ ],
+ "sindicalismo": [
+  "movimiento obrero",
+  "sindicatos",
+  "gremialismo",
+  "movimiento sindical"
+ ],
+ "artes plásticas": [
+  "pintura",
+  "artes visuales",
+  "exposiciones de arte",
+  "plástica"
+ ],
+ "_generales": [],
+ "_no_generales": [
+  "otro",
+  "otros",
+  "varios",
+  "general",
+  "actualidad",
+  "opinión",
+  "Uruguay"
+ ],
+ "prensa": [
+  "periodismo",
+  "medios de comunicación"
+ ],
+ "_subtemas": {
+  "humor gráfico": "humor",
+  "cartelera": "cine",
+  "exposiciones": "artes plásticas",
+  "arte": "artes plásticas",
+  "edición": "libros",
+  "discos": "música",
+  "jazz": "música",
+  "tango": "música",
+  "poesía": "literatura",
+  "literatura uruguaya": "literatura",
+  "economía uruguaya": "economía",
+  "política argentina": "política latinoamericana",
+  "Cuba": "política latinoamericana",
+  "elecciones": "política uruguaya",
+  "historia uruguaya": "historia"
+ }
+}

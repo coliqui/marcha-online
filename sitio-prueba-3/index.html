@@ -76,6 +76,8 @@ h3.sec { font: 800 15px var(--display); text-transform: uppercase; letter-spacin
 .box { background: rgba(255,216,74,.45); outline: 2px solid var(--mark-edge); mix-blend-mode: multiply }
 .art .bajada { font: 600 15px/1.3 var(--display); margin: 2px 0 6px; color: var(--muted) }
 .veredictos button { font: 700 13px var(--display); border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 4px 10px; margin-top: 6px; cursor: pointer }
+details.tema { border-bottom: 1px solid var(--rule); padding: 6px 0 }
+details.tema summary { cursor: pointer }
 .recuadro { border: 1px solid var(--ink); padding: 8px 10px; margin: 8px 0; font-size: 14px }
 .destacados { margin: 8px 0 }
 .destacados blockquote { margin: 4px 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--mark-edge); font-style: italic; font-size: 14px }
@@ -148,6 +150,7 @@ footer p { max-width: 80ch }
     <a href="#/numeros" data-tab="numeros">Números</a>
     <a href="#/autores" data-tab="autores">Autores y dibujantes</a>
     <a href="#/grafico" data-tab="grafico">Archivo gráfico</a>
+    <a href="#/temas" data-tab="temas">Temas</a>
     <a href="#/coli" data-tab="coli">Para Coli</a>
     <a href="#/revisar" data-tab="revisar">Revisión</a>
     <a href="#/notas" data-tab="notas">Mis notas</a>
@@ -225,6 +228,7 @@ async function cargar() {
   const [numeros, alias] = await Promise.all(["datos/numeros.json", "datos/alias.json"].map(u => fetch(u).then(r => r.json())));
   NUMEROS = numeros;
   REFS = await fetch("datos/referencias.json").then(r => r.ok ? r.json() : []).catch(() => []);
+  await cargarTemas();
   REVISAR = await fetch("datos/revisar.json").then(r => r.ok ? r.json() : Promise.reject()).catch(() => { REVISAR_FALLO = true; return []; });
   for (const [canon, variantes] of Object.entries(alias)) {
     if (canon.startsWith("_")) continue;
@@ -521,7 +525,7 @@ function vistaNumero(nid, n, q = "", artSel = null, zona = "") {
           <details ${artSel == a.i || arts.length === 1 || (terms.length && coincide(ARTS.find(x => x.nid === nid && x.i === a.i), terms)) ? "open" : ""}><summary>Leer el texto (${Math.round(a.texto.length / 6)} palabras)</summary><div class="txt">${textoConTablas(a.texto, terms)}</div></details>
           ${(a.recuadros || []).map(r => `<aside class="recuadro"><span class="small muted">Recuadro${r.autor ? " · " + esc(r.autor) : ""}</span><div>${resaltar(r.texto, terms)}</div></aside>`).join("")}
           ${(a.destacados || []).length ? `<div class="destacados"><span class="small muted">Citas destacadas en la página</span>${a.destacados.map(r => `<blockquote>${resaltar(r.texto, terms)}${r.nota ? `<span class="small muted"> (${esc(r.nota)})</span>` : ""}</blockquote>`).join("")}</div>` : ""}
-          ${a.temas.length ? `<div class="small muted">Temas: ${a.temas.map(esc).join(", ")}</div>` : ""}${citas(nid, a.i)}</article>`).join("") : `<p class="muted">No hay textos leídos en ${vistas.length > 1 ? "estas páginas" : "esta página"}.</p>`}
+          ${a.temas.length ? `<div class="small muted">Temas: ${[...new Set(a.temas.map(temaUnificado))].map(t => `<a href="#/tema/${encodeURIComponent(t)}">${esc(t)}</a>`).join(", ")}</div>` : ""}${citas(nid, a.i)}</article>`).join("") : `<p class="muted">No hay textos leídos en ${vistas.length > 1 ? "estas páginas" : "esta página"}.</p>`}
         ${numeros.includes(1) ? citadoEn(nid) : ""}
       </div></div>`;
 
@@ -718,6 +722,36 @@ async function vistaColi() {
   });
 }
 
+// ---- Temas: unificados (mayúsculas, tildes, plurales y sinónimos de temas_alias.json) y agrupados en generales
+let TEMAS = null, TEMAS_MAPA = {};
+const temaUnificado = t => TEMAS_MAPA[t] ?? t;
+async function cargarTemas() {
+  if (TEMAS) return;
+  try {
+    [TEMAS, TEMAS_MAPA] = await Promise.all(["datos/temas.json", "datos/temas-mapa.json"].map(u => fetch(u).then(r => r.json())));
+  } catch { TEMAS = { generales: [], otros: [] }; }
+}
+async function vistaTemas() {
+  await cargarTemas();
+  app.innerHTML = `<h2>Temas</h2>
+    <p class="muted small">Propuesta de agrupación (para revisar): ${TEMAS.total_temas_escritos?.toLocaleString("es")} formas distintas que puso la IA, unificadas en ${TEMAS.total_temas_unificados?.toLocaleString("es")} temas; los ${TEMAS.generales.length} generales, con sus subtemas. Tocá un tema para ver sus notas.</p>
+    ${TEMAS.generales.map(g => `<details class="tema"><summary><a href="#/tema/${encodeURIComponent(g.tema)}"><b>${esc(g.tema)}</b></a> <span class="muted">${g.notas.toLocaleString("es")} notas · ${g.subtemas.length} subtemas</span></summary>
+      <p class="small">${g.subtemas.slice(0, 80).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}${g.subtemas.length > 80 ? ` · <span class="muted">y ${g.subtemas.length - 80} más</span>` : ""}</p></details>`).join("")}
+    <details class="tema"><summary><b>Sin agrupar</b> <span class="muted">${TEMAS.otros.length} temas con 5 notas o más</span></summary>
+      <p class="small">${TEMAS.otros.slice(0, 200).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}</p></details>`;
+}
+async function vistaTema(tema) {
+  await cargarTemas();
+  const g = TEMAS.generales.find(x => x.tema === tema);
+  const incluidos = new Set([tema, ...(g ? g.subtemas.map(x => x.tema) : [])]);
+  const lista = ARTS.filter(a => a.temas.some(t => incluidos.has(temaUnificado(t)))).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const porDecada = {};
+  lista.forEach(a => (porDecada[a.fecha.slice(0, 3) + "0"] ??= []).push(a));
+  app.innerHTML = `<p><a href="#/temas">← Todos los temas</a></p><h2>${esc(tema)}</h2>
+    <p class="muted small">${lista.length.toLocaleString("es")} notas${g ? `, contando sus ${g.subtemas.length} subtemas` : ""}. ${Object.entries(porDecada).map(([d, xs]) => `<a href="#d${d}">${d}: ${xs.length}</a>`).join(" · ")}</p>
+    ${Object.entries(porDecada).map(([d, xs]) => `<h3 class="sec" id="d${d}">Década de ${d}</h3>${xs.slice(0, 150).map(a => resultado(a, [])).join("")}${xs.length > 150 ? `<p class="muted small">y ${xs.length - 150} notas más de esta década</p>` : ""}`).join("")}`;
+}
+
 function vistaRevisar(grupo = "") {
   if (REVISAR_FALLO) {
     app.innerHTML = `<h2>Revisión</h2><p>No se pudo cargar la lista de casos para revisar. Puede que el servidor del sitio no esté funcionando: abrí de nuevo el sitio con «Abrir sitio de prueba» (en la carpeta MARCHA ONLINE) y recargá la página.</p>`;
@@ -819,7 +853,7 @@ async function vistaNotas() {
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }
   const [, vista, ...r] = location.hash.split("/").map(decodeURIComponent);
-  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", revisar: "revisar", coli: "coli", notas: "notas" }[vista ?? ""] ?? "buscar";
+  const tab = { "": "buscar", buscar: "buscar", numero: "numeros", numeros: "numeros", tapa: "numeros", autores: "autores", autor: "autores", grafico: "grafico", temas: "temas", tema: "temas", revisar: "revisar", coli: "coli", notas: "notas" }[vista ?? ""] ?? "buscar";
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === tab ? "page" : "false"));
   if (vista === "numero") return conPalabras(r[0]).then(() => vistaNumero(r[0], r[1], r[2] ?? "", r[3] ?? null, r[4] ?? ""));
   if (vista === "revisar") return vistaRevisar(r[0] ?? "");
@@ -830,6 +864,8 @@ function ruta() {
   if (vista === "autores") return vistaAutores();
   if (vista === "autor") return vistaAutor(r[0]);
   if (vista === "grafico") return vistaGrafico(r[0] ?? "");
+  if (vista === "temas") return vistaTemas();
+  if (vista === "tema") return vistaTema(r[0] ?? "");
   if (vista === "buscar") return vistaBuscar(r[0] ?? "", r[1] ?? "");
   vistaBuscar();
 }
