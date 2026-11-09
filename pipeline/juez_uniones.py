@@ -77,14 +77,67 @@ def casos(L):
     return salida
 
 
+def _sin(t):
+    return " ".join(unicodedata.normalize("NFD", t or "").encode("ascii", "ignore").decode().lower().split())
+
+
+def identidad(x):
+    return _sin(x["titulo"])[:40] + "|" + _sin(x["texto"].strip())[:30]
+
+
+def uniones_sin_marca(L):
+    """Las uniones hechas sin «pasa a» (unir_continuaciones): se vuelven a separar en sus dos partes con la lectura
+    de cada página, para que el juez diga si de verdad son la misma nota. -> [(nid, i_art, parte_A, parte_B)]"""
+    rev = json.load(open(os.path.join(L, "sitio", "datos", "revisar.json")))
+    salida = []
+    for c in rev:
+        if c["grupo"] != "uniones_sin_marca" or c.get("art") is None:
+            continue
+        nid = c["id"]
+        arts = json.load(open(os.path.join(L, nid, "articulos.json")))["articulos"]
+        if c["art"] >= len(arts):
+            continue
+        a = arts[c["art"]]; texto = _sin(a["texto"])
+        if len(a["paginas"]) < 2:
+            continue
+        def pieza(n, primera):
+            f = os.path.join(L, nid, f"p{n:02d}.json")
+            if not os.path.exists(f):
+                return None
+            for x in json.load(open(f)).get("articulos", []):
+                ini = _sin(x["texto"].strip())[:60]
+                if len(ini) >= 20 and (texto.startswith(ini) if primera else (ini in texto and not texto.startswith(ini))):
+                    return {**x, "paginas": [n]}
+            return None
+        A, B = pieza(a["paginas"][0], True), pieza(a["paginas"][1], False)
+        if A and B:
+            salida.append((nid, c["art"], A, B))
+    return salida
+
+
 def enviar(L, tope):
     os.makedirs(os.path.join(L, "juez"), exist_ok=True)
     lotes = json.load(open(os.path.join(L, "juez", "lotes.json"))) if os.path.exists(os.path.join(L, "juez", "lotes.json")) else []
     hechos = {c for l in lotes for c in l["pedidos"]}
     gasto = json.load(open(os.path.join(L, "gasto.json")))
     comprometido = gasto["usd"] + sum(l["casos"] * COSTO_POR_CASO for l in lotes if l["estado"] != "recogido")
-    pendientes = [c for c in casos(L) if f"juez__{c[0]}__{c[1]}__{c[2]}__{c[3]}" not in hechos]
-    cli = cliente(); cache = {}
+    vf = os.path.join(L, "juez", "veredictos.json")
+    juzgados = {(v["nid"], frozenset((v["a"], v["b"]))) for v in (json.load(open(vf)) if os.path.exists(vf) else [])}
+    cache = {}
+    def arts_de(nid):
+        return cache.setdefault(nid, json.load(open(os.path.join(L, nid, "articulos.json")))["articulos"])
+    pendientes = [c for c in casos(L) if f"juez__{c[0]}__{c[1]}__{c[2]}__{c[3]}" not in hechos
+                  and max(c[2], c[3]) < len(arts_de(c[1]))
+                  and (c[1], frozenset((identidad(arts_de(c[1])[c[2]]), identidad(arts_de(c[1])[c[3]])))) not in juzgados]
+    # las uniones sin marca, al final (sus partes se guardan aparte para poder separarlas si el juez dice «no»)
+    partes = {}
+    for nid, i, A, B in uniones_sin_marca(L):
+        k = f"juez__sinmarca__{nid}__{i}__0"
+        if k not in hechos:
+            pendientes.append(("sinmarca", nid, i, 0)); partes[k] = {"A": A, "B": B}
+    json.dump(partes, open(os.path.join(L, "juez", "partes-sin-marca.json"), "w"), ensure_ascii=False)
+    print(len(pendientes), "casos por juzgar")
+    cli = cliente()
     for i in range(0, len(pendientes), POR_LOTE):
         parte = pendientes[i:i + POR_LOTE]
         if comprometido + len(parte) * COSTO_POR_CASO > tope:
@@ -95,9 +148,13 @@ def enviar(L, tope):
                 break
         pedidos = []
         for g, nid, a, b in parte:
-            arts = cache.setdefault(nid, json.load(open(os.path.join(L, nid, "articulos.json")))["articulos"])
-            pedidos.append(Request(custom_id=f"juez__{g}__{nid}__{a}__{b}", params=MessageCreateParamsNonStreaming(
-                model=MODELOS["sonnet"][0], max_tokens=1200, messages=[{"role": "user", "content": texto_pedido(arts[a], arts[b])}],
+            cid = f"juez__{g}__{nid}__{a}__{b}"
+            if g == "sinmarca":
+                A, B = partes[cid]["A"], partes[cid]["B"]
+            else:
+                A, B = arts_de(nid)[a], arts_de(nid)[b]
+            pedidos.append(Request(custom_id=cid, params=MessageCreateParamsNonStreaming(
+                model=MODELOS["sonnet"][0], max_tokens=1200, messages=[{"role": "user", "content": texto_pedido(A, B)}],
                 output_config={"format": {"type": "json_schema", "schema": ESQUEMA}})))
         try:
             lote = cli.messages.batches.create(requests=pedidos)

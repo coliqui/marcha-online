@@ -530,7 +530,7 @@ def adjuntar_destacados(articulos):
         if a:
             a.setdefault("destacados", []).append({"texto": d["texto"], "autor": d.get("autor"), "nota": None})
             sacar.append(d)
-    return [a for a in articulos if a not in sacar]
+    return [a for a in articulos if a not in sacar] + nuevas_separadas
 
 
 def aplicar_correcciones(nid, articulos):
@@ -550,13 +550,26 @@ def aplicar_correcciones(nid, articulos):
     es = lambda a, c: (a["paginas"][0] == c["pagina"] and (not c.get("tipo") or a.get("tipo") == c["tipo"])
                        and (not c.get("titulo_contiene") or parecido(c["titulo_contiene"]) in parecido(a["titulo"]))
                        and (not c.get("empieza") or " ".join(parecido(a["texto"]).split()).startswith(" ".join(parecido(c["empieza"]).split()))))
-    sacar = []
+    sacar, nuevas_separadas = [], []
     for c in json.load(open(CORRECCIONES))["correcciones"]:
         if c["numero"] != nid:
             continue
         for a in articulos:
             if a in sacar or not es(a, c):
                 continue
+            if c.get("separar_desde"):  # una unión equivocada: desde ese texto, es otra nota (se agrega aparte)
+                sep = c["separar_desde"]
+                corte = a["texto"].find(sep["desde"])
+                if corte <= 0:
+                    print(f"  corrección sin aplicar en nº {nid} pág. {c['pagina']}: no encontré {sep['desde']!r}")
+                else:
+                    nueva = {**{k: None for k in ("autor", "seccion", "viene_de_pagina", "continua_en_pagina")},
+                             "titulo": sep["titulo"], "tipo": sep.get("tipo", a.get("tipo")), "temas": sep.get("temas", []),
+                             "autor": sep.get("autor"), "texto": a["texto"][corte:].strip(), "paginas": sep["paginas"],
+                             "separada_por_juez": True}
+                    a["texto"] = a["texto"][:corte].rstrip()
+                    a["paginas"] = [n for n in a["paginas"] if n not in sep["paginas"]] or a["paginas"][:1]
+                    nuevas_separadas.append(nueva)
             if c.get("cortar_desde"):  # un tramo pegado por error (copiado de otra nota que ya lo tiene): se saca
                 corte = a["texto"].find(c["cortar_desde"])
                 if corte < 0:
@@ -635,7 +648,7 @@ def aplicar_correcciones(nid, articulos):
             else:
                 a["corregido_a_mano"] = True
             break
-    return [a for a in articulos if a not in sacar]
+    return [a for a in articulos if a not in sacar] + nuevas_separadas
 
 PROPIOS = {"cuento", "poema", "aviso", "humor", "pie de foto", "carta"}  # tipos que solo siguen en uno igual
 
