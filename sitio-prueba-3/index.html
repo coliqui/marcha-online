@@ -81,6 +81,7 @@ details.tema summary { cursor: pointer }
 .filtros label { display: inline-flex; gap: 4px; align-items: center; margin-right: 8px }
 table.secc td, table.secc th { border-bottom: 1px solid var(--rule); padding: 3px 8px; text-align: left }
 table.secc td.num { text-align: right }
+h4.letra { font: 800 15px var(--display); margin: 12px 0 4px; border-bottom: 1px solid var(--rule) }
 .recuadro { border: 1px solid var(--ink); padding: 8px 10px; margin: 8px 0; font-size: 14px }
 .destacados { margin: 8px 0 }
 .destacados blockquote { margin: 4px 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--mark-edge); font-style: italic; font-size: 14px }
@@ -623,13 +624,37 @@ function vistaTapa(id) {
   visor = gestos(OpenSeadragon({ element: $("#osd"), prefixUrl: OSD_IMG, tileSources: { type: "image", url: m.grande ? `tapas/grande/${m.id}.jpg` : `tapas/${m.id}.jpg`, buildPyramid: true }, showNavigator: true, navigatorPosition: "TOP_RIGHT", gestureSettingsMouse: GESTOS }));
 }
 
+// orden alfabético en español, sin importar tildes, mayúsculas ni comillas o signos al comienzo
+const alfa = (a, b) => a.replace(/^[^\p{L}\d]+/u, "").localeCompare(b.replace(/^[^\p{L}\d]+/u, ""), "es", { sensitivity: "base" });
+const inicial = t => { const c = t.replace(/^[^\p{L}\d]+/u, "")[0] || "#"; return /ñ/i.test(c) ? "Ñ" : (c.normalize("NFD")[0] || "#").toUpperCase(); };
+// clave de orden de una persona: el apellido (última palabra, sin «Dr.», «Prof.» ni iniciales); un seudónimo, tal cual
+// nombres de pila comunes: si la penúltima palabra es uno, el apellido es solo la última («Carlos María Gutiérrez»);
+// si no, son dos apellidos («Emir Rodríguez Monegal» va por Rodríguez)
+const PILA = new Set("maria jose luis carlos juan angel pedro alberto manuel jorge julio hugo mario raul oscar carmen ana elena rosa francisco antonio miguel enrique eduardo ernesto ricardo roberto alfredo arturo hector daniel fernando sergio pablo jesus ramon rafael marta teresa isabel".split(" "));
+const apellido = n => { const w = n.replace(/^(dr|dra|prof|ing|arq|sr|sra|don|doña|gral|cnel)\.?\s+/i, "").split(/\s+/).filter(x => x.replace(/\./g, "").length > 1);
+  if (w.length < 2) return w[0] || n;
+  const dos = w.length >= 3 && !PILA.has(norm(w[w.length - 2]));
+  const ap = dos ? w.slice(-2) : w.slice(-1);
+  return ap.join(" ") + " " + w.slice(0, w.length - ap.length).join(" "); };
+const porCantidad = () => { try { return localStorage.getItem("orden") === "cantidad"; } catch { return false; } };
+const botonOrden = () => `<a href="javascript:void(0)" id="cambiarOrden" class="small">${porCantidad() ? "ordenar alfabéticamente" : "ordenar por cantidad"}</a>`;
+const activarOrden = vista => { const b = document.getElementById("cambiarOrden"); if (b) b.onclick = () => { try { localStorage.setItem("orden", porCantidad() ? "alfa" : "cantidad"); } catch {} vista(); }; };
+function listaAlfabetica(items, nombre, render, pref) {
+  if (porCantidad()) return `<div class="autores">${items.map(render).join("")}</div>`;
+  const letras = [...new Set(items.map(x => inicial(nombre(x))))];
+  return `<p class="small">${letras.map(l => `<a href="javascript:void(0)" data-letra="${pref}${l}">${l}</a>`).join(" ")}</p>` +
+    letras.map(l => `<h4 id="${pref}${l}" class="letra">${l}</h4><div class="autores">${items.filter(x => inicial(nombre(x)) === l).map(render).join("")}</div>`).join("");
+}
 function vistaAutores() {
-  const lista = [...PERSONAS.values()].sort((a, b) => (b.arts.length + b.ilus.length) - (a.arts.length + a.ilus.length) || a.nombre.localeCompare(b.nombre));
-  const dibujantes = lista.filter(p => p.ilus.length);
+  const lista = [...PERSONAS.values()].sort((a, b) => alfa(apellido(a.nombre), apellido(b.nombre)));
+  let autores = lista.filter(p => p.arts.length), dibujantes = lista.filter(p => p.ilus.length);
+  if (porCantidad()) { autores = [...autores].sort((a, b) => b.arts.length - a.arts.length); dibujantes = [...dibujantes].sort((a, b) => b.ilus.length - a.ilus.length); }
   app.innerHTML = `<h2>Autores y dibujantes</h2>
-    <p class="muted small">${lista.length} personas en los números de la prueba. Las firmas se agrupan con una tabla de seudónimos y variantes (por ejemplo, "J. E. Suárez" y "Peloduro" son la misma persona), que se completa y revisa a mano.</p>
-    <h3 class="sec">Dibujantes</h3><div class="autores">${dibujantes.map(p => `<a href="#/autor/${encodeURIComponent(p.clave)}"><span>${esc(p.nombre)}</span><span class="muted">${p.ilus.length} ${p.ilus.length === 1 ? "dibujo" : "dibujos"}</span></a>`).join("")}</div>
-    <h3 class="sec">Firmas de textos</h3><div class="autores">${lista.filter(p => p.arts.length).map(p => `<a href="#/autor/${encodeURIComponent(p.clave)}"><span>${esc(p.nombre)}</span><span class="muted">${p.arts.length}</span></a>`).join("")}</div>`;
+    <p class="muted small">${lista.length.toLocaleString("es")} personas, ${porCantidad() ? "por cantidad de textos o dibujos" : "en orden alfabético por apellido (los seudónimos, por su palabra principal)"} · ${botonOrden()}. Las firmas se agrupan con una tabla de seudónimos y variantes (por ejemplo, "J. E. Suárez" y "Peloduro" son la misma persona), que se completa y revisa a mano. <a href="javascript:void(0)" data-letra="dib-">Ir a los dibujantes ↓</a></p>
+    <h3 class="sec">Autores (firmas de textos)</h3>${listaAlfabetica(autores, p => apellido(p.nombre), p => `<a href="#/autor/${encodeURIComponent(p.clave)}"><span>${esc(p.nombre)}</span><span class="muted">${p.arts.length}</span></a>`, "aut-")}
+    <h3 class="sec" id="dib-">Dibujantes</h3>${listaAlfabetica(dibujantes, p => apellido(p.nombre), p => `<a href="#/autor/${encodeURIComponent(p.clave)}"><span>${esc(p.nombre)}</span><span class="muted">${p.ilus.length} ${p.ilus.length === 1 ? "dibujo" : "dibujos"}</span></a>`, "dib-")}`;
+  app.querySelectorAll("[data-letra]").forEach(a => a.onclick = () => document.getElementById(a.dataset.letra)?.scrollIntoView());
+  activarOrden(vistaAutores);
 }
 
 function vistaAutor(k) {
@@ -749,20 +774,22 @@ async function cargarTemas() {
   if (TEMAS) return;
   try {
     [TEMAS, TEMAS_MAPA, SECCIONES_NOTAS] = await Promise.all(["datos/temas.json", "datos/temas-mapa.json", "datos/secciones-notas.json"].map(u => fetch(u).then(r => r.ok ? r.json() : {})));
-  } catch { TEMAS = { generales: [], otros: [] }; }
+  } catch { TEMAS = {}; }
+  TEMAS = { generales: [], otros: [], secciones: [], ...(TEMAS || {}) }; TEMAS_MAPA ||= {}; SECCIONES_NOTAS ||= {};
 }
 async function vistaTemas() {
   await cargarTemas();
   app.innerHTML = `<h2>Temas</h2>
-    <p class="muted small">Propuesta de agrupación (para revisar): ${TEMAS.total_temas_escritos?.toLocaleString("es")} formas distintas que puso la IA, unificadas en ${TEMAS.total_temas_unificados?.toLocaleString("es")} temas; los ${TEMAS.generales.length} generales, con sus subtemas. Tocá un tema para ver sus notas.</p>
+    <p class="muted small">Propuesta de agrupación (para revisar): ${TEMAS.total_temas_escritos?.toLocaleString("es")} formas distintas que puso la IA, unificadas en ${TEMAS.total_temas_unificados?.toLocaleString("es")} temas; los ${TEMAS.generales.length} generales, con sus subtemas. Tocá un tema para ver sus notas. · ${botonOrden()}</p>
     <h3 class="sec">Secciones del semanario</h3>
     <div class="tabla"><table class="secc"><tr><th>Sección</th><th>Notas</th><th>Años</th><th>Firmas principales</th></tr>
-    ${(TEMAS.secciones || []).map(x => `<tr><td><a href="#/seccion/${encodeURIComponent(x.seccion)}"><b>${esc(x.seccion)}</b></a></td><td class="num">${x.notas.toLocaleString("es")}</td><td>${x.desde ?? ""}–${x.hasta ?? ""}</td><td class="small">${x.autores.map(([a]) => esc(a)).join(", ")}</td></tr>`).join("")}</table></div>
+    ${[...(TEMAS.secciones || [])].sort((a, b) => porCantidad() ? b.notas - a.notas : alfa(a.seccion, b.seccion)).map(x => `<tr><td><a href="#/seccion/${encodeURIComponent(x.seccion)}"><b>${esc(x.seccion)}</b></a></td><td class="num">${x.notas.toLocaleString("es")}</td><td>${x.desde ?? ""}–${x.hasta ?? ""}</td><td class="small">${x.autores.map(([a]) => esc(a)).join(", ")}</td></tr>`).join("")}</table></div>
     <h3 class="sec">Temas</h3>
-    ${TEMAS.generales.map(g => `<details class="tema"><summary><a href="#/tema/${encodeURIComponent(g.tema)}"><b>${esc(g.tema)}</b></a> <span class="muted">${g.notas.toLocaleString("es")} notas · ${g.subtemas.length} subtemas</span></summary>
-      <p class="small">${g.subtemas.slice(0, 80).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}${g.subtemas.length > 80 ? ` · <span class="muted">y ${g.subtemas.length - 80} más</span>` : ""}</p></details>`).join("")}
+    ${[...TEMAS.generales].sort((a, b) => porCantidad() ? b.notas - a.notas : alfa(a.tema, b.tema)).map(g => `<details class="tema"><summary><a href="#/tema/${encodeURIComponent(g.tema)}"><b>${esc(g.tema)}</b></a> <span class="muted">${g.notas.toLocaleString("es")} notas · ${g.subtemas.length} subtemas</span></summary>
+      <p class="small">${[...g.subtemas].sort((a, b) => porCantidad() ? b.notas - a.notas : alfa(a.tema, b.tema)).slice(0, 80).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}${g.subtemas.length > 80 ? ` · <span class="muted">y ${g.subtemas.length - 80} más</span>` : ""}</p></details>`).join("")}
     <details class="tema"><summary><b>Sin agrupar</b> <span class="muted">${TEMAS.otros.length} temas con 5 notas o más</span></summary>
-      <p class="small">${TEMAS.otros.slice(0, 200).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}</p></details>`;
+      <p class="small">${[...TEMAS.otros].sort((a, b) => porCantidad() ? b.notas - a.notas : alfa(a.tema, b.tema)).slice(0, 200).map(x => `<a href="#/tema/${encodeURIComponent(x.tema)}">${esc(x.tema)}</a> <span class="muted">(${x.notas})</span>`).join(" · ")}</p></details>`;
+  activarOrden(vistaTemas);
 }
 async function vistaSeccion(sec) {
   await cargarTemas();
