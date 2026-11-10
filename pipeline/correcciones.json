@@ -27043,22 +27043,20 @@
    "tipo": "nota",
    "titulo_contiene": "La Defensa Natural la Resguarda Contra la Invasión",
    "empieza": "La simbólica del mito representa al sol ",
-   "automatica": true,
-   "separar_desde": {
+   "motivo": "Juez de uniones (Sonnet, 9/11/2026, confianza 0.96): la unión sin «pasa a» juntaba dos notas distintas. Los textos tratan temas distintos: A es un ensayo sobre la simbología de la rueda swástica y el sol (mito, nazismo), mientras que B es una nota sobre la defensa Para deshacerla, borrar esta entrada. Corregido por nota de Coli Quijano (9/11/2026): no hay título «La defensa…» en la pág. 3; ese texto sigue a la nota central «Cómo defenderá…».",
+   "partir": {
     "desde": "eran igualmente, cortos de vista.\n\nLa de",
-    "titulo": "La Defensa Natural la Resguarda Contra la Invasión",
-    "tipo": "nota",
-    "autor": "Cap. Bernard Acwosth",
-    "temas": [
-     "historia militar",
-     "Gibraltar",
-     "defensa"
-    ],
+    "a": {
+     "pagina": 3,
+     "titulo_contiene": "Cómo Defenderá Liddell"
+    },
     "paginas": [
      3
+    ],
+    "quitar_paginas": [
+     3
     ]
-   },
-   "motivo": "Juez de uniones (Sonnet, 9/11/2026, confianza 0.96): la unión sin «pasa a» juntaba dos notas distintas. Los textos tratan temas distintos: A es un ensayo sobre la simbología de la rueda swástica y el sol (mito, nazismo), mientras que B es una nota sobre la defensa Para deshacerla, borrar esta entrada."
+   }
   },
   {
    "numero": "1199",
@@ -31931,7 +31929,13 @@
      18
     ]
    },
-   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: lo que estaba pegado a «La bienal…» es otra nota (la necrológica de Homero Zirollo)."
+   "motivo": "Nota de Coli Quijano (9/11/2026), confirmando al juez de uniones: lo que estaba pegado a «La bienal…» es otra nota (la necrológica de Homero Zirollo). Nota de Coli (10/11/2026): la nota sigue en la columna de al lado («no lo-graron reunir…»); transcripta del escaneo a mano, sin IA.",
+   "reemplazos": [
+    [
+     "realizadas en el exterior\" no lo-",
+     "realizadas en el exterior\" no lograron reunir cuadros mejores que los que aquí se exhibían. La constancia se deja por honestidad; también explícitamente, se reconoce la categoría que esos artistas han adquirido. Advierte, asimismo, que los mejor representados son Manabu Mabe y Danilo Di Prete; ambos obtuvieron recompensas.\n\nNo toda la información que da el catálogo es valedera; en lo que se refiere a la constitución del Jurado de Premios, la falla se corrige con la precisión contenida en los carteles incluidos en la exposición. La intervención del Dr. Jorge Romero Brest fue decidida sobre la fecha de realización de la muestra y públicamente se establecen los nombres de los seis integrantes del mismo: uno por cada país. José Gómez Sicre por la OEA y Sir Herbert Read, por ser quien es.\n\n★ Errores de forma\n\nPero hay más errores; y no debieron ocurrir. Importa puntualizar lo que al Uruguay respecta, que es lo que conozco. No es exacto que haya colaborado, en nuestro país, para el mejor éxito de la exposición, el Consejo Nacional de las Artes, porque esa institución no existe. Cuando se quiere ser cortés, hay que cuidar las formas. Pero tampoco es cierto que el Jurado de Selección uruguayo lo integraron sólo, Germán Cabrera, Luis García Pardo, Alfredo Testoni y García Esteban. Ese jurado no llegó a un acuerdo total; de ello la institución organizadora tiene constancia oficial; formó parte de él, para definir desempates, el Secretario Ejecutivo de la Bienal, Pedro Pont Vergés. Fue la mayoría formada por Pont Vergés García Pardo y Cabrera que decidió la inclusión en el envío de los pintores Gamarra, Ramos y Jorge Páez; el primero de los nombrados obtuvo el tercer premio, máximo galardón logrado por el Uruguay; reconozcamos méritos.\n\nTambién importa, con carácter muy amplio, tener en cuenta a las condiciones físicas de los locales dónde ha de montarse la muestra. Repito que desconozco el de Córdoba; el bonaerense no resulta apropiado. Poco espacio para tanta pintura; luz poco cuidada, que provoca sombras parciales o deslumbra. Los envíos chileno y uruguayo, ubicados en el 8º piso del edificio, se aprietan en angostos cubículos donde cuadros que requieren observación lejana se enciman al espectador y pierden jerarquía. En el caso uruguayo, además, debe saberse que, por contingencias del transporte, se lesionaron levemente las pinturas de Hilda López; pero esos superficiales rayados a los negros intensos, amplios, impositivamente acercadas a la vista, alteran negativamente la presencia de la obra. Accidentes como ese pueden ocurrir siempre; pero no deben pasarse por alto. No resulta tan engorroso llamar al artista —que es vecino— para que vea y repare el daño o decida, si quiere, ser retirado.\n\n★ Acotación\n\nEn nota próxima, analizaré más cuidadosamente los envíos. Conviene adelantar una acotación a propósito de las recompensas. Que parecen viciadas de los mismos defectos que pesan para otras justas internacionales. Parece natural, casi obligatorio, que se contemple equilibradamente a los participantes; y hablo de países, no de artistas porque éstos son los que, al fin, resultan perdidosos. El Gran Premio a una pintora argentina; el primero, a un brasileño, el segundo a un chileno, el tercero a un uruguayo; cuarto y quinto a la Argentina, menciones para Chile y Uruguay; premio especial: Brasil. La resolución fue unánime y tendrá fundamentos. Pero no se es demasiado sutil si se advierte, por la simple enunciación ánimo de considerar a todos. No quiero presumir propósitos de puja nacionalista contemplada. Pero me pregunto, simplemente lo que sigue: si se hubiera designado a un jurado único, a un crítico europeo de prestigio internacional —Herbert Read, pongamos por caso— si, presumiendo, como es natural, que conoce poco de la actualidad plástica suramericana porque Suramérica poco hace para que la conozcan bien, se lo informa con amplitud sobre sus lineamientos básicos de acción y propósito y se lo pone frente a los cuadros seleccionados, ocultando los nombres y las procedencias, ¿hubiera sido éste el resultado?\n\nLa Argentina tiene un envío irregular, con grandes altibajos —Basaldúa, Seoane, Farina, Gambartés y Presas pudieron obviarse—; La Argentina no merecía el Gran Premio por ser la promotora del certamen; pero cuatro o cinco de los pintores argentinos debieron acaparar los mejores premios. Porque sin duda son los mejores del total exhibido. No se trata de países; se trata de pinturas y pintores. Y esta realidad que sí debe contemplarse ¿no puede imponerse de alguna manera? ¿Cómo Manabu Mabe, brasileño, va a ubicarse jerárquicamente por encima de Clorindo Testa, de Fernández Muro, de Macció o de Viola? ¿Importan más sus antecedentes en la Bienal de San Pablo que la pintura que allí se exhibe? Tampoco se entiende que, dentro del Uruguay, se haya desconocido a Pavlotzky; pero esto ya va a cuenta de la falibilidad del juicio. Tampoco se lo eligió para la selección que, enseguida, habrá de recorrer los Estados Unidos, Brasil, Chile y Uruguay. De la sección uruguaya irán Gamarra —tercer premio— Martín —mención—, Spósito —Premio Blanes— y Jorge Páez, no sé por qué."
+    ]
+   ]
   },
   {
    "numero": "1141",
@@ -31963,6 +31967,187 @@
     "autor": "Bernardo García"
    },
    "motivo": "Nota de Coli Quijano (9/11/2026): «Deberes de esta hora» es de Bernardo García (firma al pie), no de Grompone."
+  },
+  {
+   "numero": "059",
+   "pagina": 18,
+   "tipo": "nota",
+   "titulo_contiene": "Un subrealista en 1812",
+   "empieza": "Después de la campaña de Napoleón en Rus",
+   "quitar": [
+    {
+     "pagina": 19,
+     "tipo": "nota",
+     "titulo_contiene": "Un subrealista en 1812",
+     "empieza": "Después de la campaña de Napoleón en Rus"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): «Un subrealista…» está solo en la pág. 18; el de la 19 está repetido."
+  },
+  {
+   "numero": "074",
+   "pagina": 3,
+   "tipo": "nota",
+   "titulo_contiene": "“RIO DE LA PLATA” SU HISTORIA Y SU DESTI",
+   "empieza": "PARA conocer bien un río hay que ir hast",
+   "reemplazos": [
+    [
+     "UNICAMENTE pa-",
+     "UNICAMENTE para las sociedades primitivas pueden formar una especie de frontera natural\". \"Nunca se consideran los ríos como fronteras naturales, a no ser cuando sus dos orillas se hallan habitadas por pueblos distintos, pues entonces su curso representa un límite étnico\").\n\nDespués de observar detenidamente un mapa de América, leamos un pasaje del libro de Goblet \"El crepúsculo de los tratados\", que dice así: \"Hoy el Pilcomayo y el Río Paraguay son para Bolivia el único camino hacia el mar que necesita alcanzar cueste lo que costare por un río que no es aún internacional, pero que puede serlo. Es preciso construir la pipe-line sin la cual los petróleos bolivianos valen poco más que en el fondo de los pozos; la pipe-line que termine en los muelles del gran río de la Plata\"."
+    ]
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): el texto que faltaba está en las dos columnas chicas sobre «El río de la Plata»; transcripto a mano del escaneo."
+  },
+  {
+   "numero": "089",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "ESTRENOS DE LA SEMANA",
+   "empieza": "\"El halcón de los mares\" por lo que sign",
+   "quitar": [
+    {
+     "pagina": 17,
+     "tipo": "otro",
+     "titulo_contiene": "ESTRENOS DE LA SEMANA",
+     "empieza": "\"El halcón de los mares\" por lo que sign"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): no hay «Estrenos de la semana» en la pág. 17 (copia repetida)."
+  },
+  {
+   "numero": "095",
+   "pagina": 17,
+   "tipo": "crítica",
+   "titulo_contiene": "El Dr. se Casa",
+   "empieza": "(The doctor takes a wife).\n\nProducción: ",
+   "quitar": [
+    {
+     "pagina": 16,
+     "tipo": "otro",
+     "titulo_contiene": "El Dr. se Casa",
+     "empieza": "(The doctor takes a wife). Producción: C"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): «El Dr. se casa» existe solo en la pág. 17; el de la 16 es un título inventado/repetido."
+  },
+  {
+   "numero": "1012",
+   "pagina": 22,
+   "tipo": "crítica",
+   "titulo_contiene": "Artigas desde Cambridge",
+   "empieza": "★ Hace algunos años, causó cierto revuel",
+   "unir": [
+    {
+     "pagina": 23,
+     "tipo": "crítica",
+     "titulo_contiene": "Cambridge",
+     "empieza": "Montevideano por origen y campesino por "
+    }
+   ],
+   "cambios": {
+    "titulo": "Artigas desde Cambridge"
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026): es una nota sola con el título partido entre las págs. 22 y 23."
+  },
+  {
+   "numero": "1013",
+   "pagina": 12,
+   "tipo": "columna",
+   "titulo_contiene": "El Asidero de Francia",
+   "empieza": "Tambaleos del desarme\n\nEspaña, blanco pr",
+   "unir": [
+    {
+     "pagina": 12,
+     "tipo": "nota",
+     "titulo_contiene": "La propuesta de Jules Moch",
+     "empieza": "...de sorpresa, Jruschov di-\n\nde julio a",
+     "antes": "La propuesta de Jules Moch"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): «La propuesta de Jules Moch» es un subtítulo partido de la nota principal."
+  },
+  {
+   "numero": "1014",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "CESE DEL FUEGO EN ARGELIA",
+   "empieza": "LA SITUACION en torno a Argelia puede su",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Cese del Fuego en Argelia",
+     "empieza": "ciones, aun en ausencia de una promesa p"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): el pedazo de la pág. 4 es la continuación del de la pág. 5 (marca «Pasa a la pág. 4»)."
+  },
+  {
+   "numero": "1014",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "PARAISO VACUNO",
+   "empieza": "En un establecimiento rural de nuestro p",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "Paraíso vacuno",
+     "empieza": "que no faltarán los que, de inmediato, e"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): el pedazo de la pág. 4 es la continuación del de la pág. 5 (marca «Pasa a la pág. 4»)."
+  },
+  {
+   "numero": "1014",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "La Universidad y el País",
+   "empieza": "En última de este número, nuestro compañ",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Universidad y el País",
+     "empieza": "2º El Instituto Nacional de Estadística "
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): el pedazo de la pág. 4 es la continuación del de la pág. 5 (marca «Pasa a la pág. 4»)."
+  },
+  {
+   "numero": "1014",
+   "pagina": 5,
+   "tipo": "nota",
+   "titulo_contiene": "LA DECLARACION DE SECUNDARIA",
+   "empieza": "En el día de ayer se hizo pública una de",
+   "unir": [
+    {
+     "pagina": 4,
+     "tipo": "nota",
+     "titulo_contiene": "La Declaración de Secundaria",
+     "empieza": "que le han sido suministradas oficiosa y"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (9/11/2026): el pedazo de la pág. 4 es la continuación del de la pág. 5 (marca «Pasa a la pág. 4»)."
+  },
+  {
+   "numero": "1124",
+   "pagina": 10,
+   "tipo": "nota",
+   "titulo_contiene": "Al noveno mes de",
+   "empieza": "\"Con respecto a vuestra carta de 5/9 ppd",
+   "unir": [
+    {
+     "pagina": 11,
+     "tipo": "nota",
+     "titulo_contiene": "Una huelga difícil",
+     "empieza": "...romper el sindicato; y para ese fin i"
+    }
+   ],
+   "cambios": {
+    "titulo": "Al noveno mes de una huelga difícil"
+   },
+   "motivo": "Nota de Coli Quijano (9/11/2026): título partido: «Al noveno mes de» (pág. 10) + «Una huelga difícil» (pág. 11) es una sola nota."
   }
  ]
 }
