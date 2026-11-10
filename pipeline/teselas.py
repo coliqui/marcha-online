@@ -3,7 +3,7 @@
 Uso: python3 teselas.py CARPETA_DATOS [--procesos 6]
 
 Corta las páginas como el resto del archivo; si salida-recorte/<nº>/recorte.json ya tiene el doblez real de un
-pliego, usa ese corte. Escribe CARPETA_DATOS/teselas/<nº>/pNN.dzi y pNN_files/<nivel>/<col>_<fila>.jpg
+pliego, usa ese corte. Escribe CARPETA_DATOS/teselas.noindex/<nº>/pNN.dzi y pNN_files/<nivel>/<col>_<fila>.jpg
 (254 px con 1 de solapamiento, JPEG 80), y una marca «hecho» por número. El log dice tamaño y ritmo.
 """
 import glob, json, math, os, subprocess, sys, tempfile, time
@@ -34,7 +34,7 @@ def dzi(im, base):
 
 def numero(args):
     x, datos = args
-    destino = os.path.join(datos, "teselas", x["id"])
+    destino = os.path.join(datos, "teselas.noindex", x["id"])
     if os.path.exists(os.path.join(destino, "hecho")):
         return x["id"], None
     os.makedirs(destino, exist_ok=True)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         for nid, pags in pool.imap_unordered(numero, [(x, datos) for x in nums]):
             hechos += 1
             if pags is not None and hechos % 10 == 0:
-                gb = du(os.path.join(datos, "teselas"))
+                gb = du(os.path.join(datos, "teselas.noindex"))
                 print(f"{time.strftime('%H:%M')} {hechos}/{len(nums)} números; {gb:.1f} GB; "
                       f"{(time.time() - t0) / 60:.0f} min", flush=True)
-    print(f"listo: {du(os.path.join(datos, 'teselas')):.1f} GB", flush=True)
+    print(f"listo: {du(os.path.join(datos, 'teselas.noindex')):.1f} GB", flush=True)
