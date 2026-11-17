@@ -38,7 +38,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     return salida;
   }
-  const parrafos = t => esc(t || "").split(/\n\s*\n/).map(x => `<p>${x.replace(/\n/g, "<br>")}</p>`).join("");
+  // un párrafo de un solo renglón corto, sin punto final y que no es el último, se dibuja como intertítulo
+  const esIntertitulo = (x, k, n) => k < n - 1 && !x.includes("\n") && x.trim().length <= 70 && !/[.,;:—\-?!»")]$/.test(x.trim()) && /\p{Lu}/u.test(x.trim()[0] || "") && !/\s(a|al|de|del|el|en|la|las|lo|los|para|por|que|se|un|una|y|o|con|sin)$/i.test(x.trim());
+  const parrafosSimples = t => {
+    const ps = t.split(/\n\s*\n/).filter(x => x.trim());
+    return ps.map((x, k) => k > 0 && esIntertitulo(x, k, ps.length) ? `<h4 class="intertitulo">${esc(x.trim())}</h4>` : `<p>${esc(x).replace(/\n/g, "<br>")}</p>`).join("");
+  };
+  // el texto con tablas (renglones que empiezan con «|», como las transcribe la IA) dibujadas como tablas
+  function parrafos(texto) {
+    const lineas = (texto || "").split("\n"), partes = [];
+    let i = 0;
+    while (i < lineas.length) {
+      if (/^\s*\|/.test(lineas[i])) {
+        const filas = [];
+        while (i < lineas.length && /^\s*\|/.test(lineas[i])) filas.push(lineas[i++]);
+        const celdas = f => f.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+        const separador = f => /^[\s|:-]+$/.test(f) && f.includes("-");
+        const cuerpo = filas.filter(f => !separador(f)).map(celdas);
+        const conEnc = filas.length > 1 && separador(filas[1]);
+        const celda = (c, tag) => `<${tag}${tag === "td" && /^[\d.,%" ()$-]+$/.test(c) && /\d/.test(c) ? ' class="num"' : ""}>${esc(c)}</${tag}>`;
+        partes.push(`<div class="tabla"><table>${cuerpo.map((f, k) => `<tr>${f.map(c => celda(c, conEnc && k === 0 ? "th" : "td")).join("")}</tr>`).join("")}</table></div>`);
+      } else {
+        const bloque = [];
+        while (i < lineas.length && !/^\s*\|/.test(lineas[i])) bloque.push(lineas[i++]);
+        partes.push(parrafosSimples(bloque.join("\n")));
+      }
+    }
+    return partes.join("");
+  }
   const enlace = id => `${window.BASE}numero/${encodeURIComponent(id)}/`;
 
   function notas(nums) {
@@ -48,9 +75,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const item = a => `<details class="nota"><summary><b>${esc(a.titulo)}</b>
       <span class="meta">${[a.autor, a.seccion, a.tipo && a.tipo !== "nota" ? a.tipo : ""].filter(Boolean).map(esc).join(" · ")}${a.paginas.length > 1 ? ` · págs. ${a.paginas.join(", ")}` : ""}</span></summary>
       <div class="texto">${a.bajada ? `<p class="bajada">${esc(a.bajada)}</p>` : ""}${parrafos(a.texto)}
+      ${(a.recuadros || []).map(r => `<aside class="recuadro"><span class="meta">Recuadro${r.autor ? " · " + esc(r.autor) : ""}</span>${parrafos(r.texto)}</aside>`).join("")}
+      ${(a.destacados || []).length ? `<div class="destacados"><span class="meta">Citas destacadas en la página</span>${a.destacados.map(r => `<blockquote>${esc(r.texto)}</blockquote>`).join("")}</div>` : ""}
       ${a.citas ? `<p class="cita"><b>Cita:</b> ${a.citas.map(c => `<a href="${enlace(c.id)}">Nº ${esc(c.id)}${c.fecha ? ` (${fechaLarga(c.fecha)})` : ""}</a>`).join(" · ")}</p>` : ""}</div></details>`;
     document.getElementById("notas").innerHTML = (arts.length ? arts.map(item).join("") : `<p class="muted">Sin notas transcriptas en esta página.</p>`) +
-      (avisos.length ? `<details class="nota"><summary><b>Avisos (${avisos.length})</b></summary><div class="texto">${avisos.map(a => `<p><b>${esc(a.titulo)}</b><br>${esc(a.texto || "")}</p>`).join("")}</div></details>` : "");
+      (avisos.length ? `<details class="nota"><summary><b>Avisos (${avisos.length})</b></summary><div class="texto">${avisos.map(a => `<div class="aviso"><p><b>${esc(a.titulo)}</b></p>${parrafos(a.texto)}</div>`).join("")}</div></details>` : "");
   }
 
   function mostrar(n) {

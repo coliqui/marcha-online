@@ -128,7 +128,9 @@ def armar(datos):
                          if r["origen"] == m["id"] and r["articulo"] == i and r.get("resuelta")]
                 arts.append({k2: v for k2, v in {"titulo": a["titulo"], "autor": a.get("autor"), "seccion": a.get("seccion"),
                              "tipo": a.get("tipo"), "bajada": a.get("bajada"), "texto": a.get("texto"), "paginas": a["paginas"],
-                             "zonas": a.get("zonas"), "citas": citas or None}.items() if v})
+                             "zonas": a.get("zonas"), "citas": citas or None,
+                             "recuadros": [{"texto": r.get("texto"), "autor": r.get("autor")} for r in a.get("recuadros") or []] or None,
+                             "destacados": [{"texto": r.get("texto")} for r in a.get("destacados") or []] or None}.items() if v})
             citado = [{"id": r["origen"], "fecha": r.get("fecha_origen"), "pagina": r.get("pagina"), "titulo": r.get("titulo")}
                       for r in refs if r.get("destino") == m["id"] and r.get("resuelta")]
             escribir(f"datos/numeros/{m['id']}.json", json.dumps({"id": m["id"], "fecha": m["fecha"], "paginas": paginas,
