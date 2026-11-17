@@ -144,6 +144,12 @@ h4.letra { font: 800 15px var(--display); margin: 12px 0 4px; border-bottom: 1px
 .notaitem { padding: 10px 0; border-bottom: 1px solid var(--rule); max-width: 900px }
 footer .wrap { padding-block: 0 32px; font-size: 13px; color: var(--muted) }
 footer p { max-width: 80ch }
+.notaitem.pendiente { border-left: 4px solid #c0392b; padding-left: 8px }
+.notaitem.aplicada { border-left: 4px solid #2e7d32; padding-left: 8px; opacity: .75 }
+.marca-pend { color: #c0392b; font-weight: 700 }
+.marca-ok { color: #2e7d32; font-weight: 700 }
+.contador { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: #c0392b; color: #fff; font-size: 12px; text-align: center }
+.pend-resumen { margin: 4px 0 }
 </style>
 </head>
 <body>
@@ -703,6 +709,7 @@ async function conPalabras(nid) {
 }
 
 const GRUPOS = [
+  ["publico", "Avisos del público", "Errores avisados por lectores desde el sitio público («Avisanos de un error»). Separados de tus notas; nada se aplica sin tu OK. Todavía no llegan: el formulario se agrega cuando se publique el sitio."],
   ["auto", "Resueltos automáticamente", "Casos que se pudieron verificar con evidencia objetiva (Tesseract, ángulos medidos, palabras cortadas que empalman). Si alguno no te convence, «Reabrir» lo devuelve a la lista."],
   ["incompletas", "Páginas incompletas", "Ninguna lectura de la IA quedó completa. Comparar el texto con el escaneo."],
   ["uniones_aplicadas", "Uniones automáticas aplicadas", "Pedazos sueltos unidos a su nota por palabra cortada o título repetido (6/11/2026). Si alguna está mal, anotala y se deshace de a una."],
@@ -844,7 +851,7 @@ function vistaRevisar(grupo = "") {
   app.innerHTML = `<h2>Revisión</h2>
     <p class="muted small">Casos que el proceso marcó como dudosos. Cada uno lleva a la página y, cuando se sabe, al lugar exacto. Marcá los que ya revisaste (queda guardado en este navegador).</p>
     <p class="small"><a href="#/coli">→ Para Coli: lo importante</a> · Esta pestaña es la lista <b>opcional</b>, para mirar sin apuro. ${resueltos.length} casos se resolvieron solos con evidencia objetiva: <a href="#/revisar/auto">ver cuáles y por qué</a>.</p>
-    <div class="chips"><button type="button" data-g="" aria-pressed="${!grupo}">Todos</button>${GRUPOS.map(([g, t]) => { const cs = casos.filter(c => c.grupo === g); return cs.length ? `<button type="button" data-g="${g}" aria-pressed="${grupo === g}">${t} (${cs.filter(c => !revisado(c.clave)).length}/${cs.length})</button>` : ""; }).join("")}</div>
+    <div class="chips"><button type="button" data-g="" aria-pressed="${!grupo}">Todos</button>${GRUPOS.map(([g, t]) => { const cs = casos.filter(c => c.grupo === g); return cs.length || g === "publico" ? `<button type="button" data-g="${g}" aria-pressed="${grupo === g}">${t} (${cs.filter(c => !revisado(c.clave)).length}/${cs.length})</button>` : ""; }).join("")}</div>
     ${lista.map(([g, t, ayuda]) => { const cs = casos.filter(c => c.grupo === g); if (!cs.length) return "";
       // en la vista general se muestran solo los primeros de cada grupo, para que la página no se haga pesada
       const visibles = grupo && grupo !== "auto" ? cs : cs.slice(0, 30);
@@ -923,11 +930,21 @@ async function vistaNotas() {
   const sinEnviar = pendientes();
   notas = [...notas, ...sinEnviar.map(n => ({ ...n, sinEnviar: true }))].reverse();
   app.innerHTML = `<h2>Mis notas</h2>
+    <p class="pend-resumen"><b>${notas.filter(n => !n.aplicada).length} pendientes</b> · ${notas.filter(n => n.aplicada).length} ya aplicadas · <a href="javascript:void(0)" id="soloPend">${soloPend ? "ver todas" : "ver solo pendientes"}</a></p>
     <p class="muted small">${notas.length} notas. Se guardan en la Mac, en <code>lectura-ia/notas-revision.jsonl</code>, donde Claude las lee para mejorar el proceso.${sinEnviar.length ? ` ${sinEnviar.length} todavía están solo en este navegador.` : ""}</p>
-    ${notas.map(n => `<div class="notaitem"><div class="small muted">${n.fecha ? n.fecha.replace("T", " ") : "sin enviar"} · ${esc(n.categoria || "")}${n.regla_general ? " · <b>regla general</b>" : ""}${n.sinEnviar ? " · <b>sin enviar</b>" : ""}</div>
+    ${notas.filter(n => !soloPend || !n.aplicada).map(n => `<div class="notaitem${n.aplicada ? " aplicada" : " pendiente"}"><div class="small muted">${n.aplicada ? `<span class="marca-ok" title="${esc(n.aplicada.como || "")}">✓ aplicada${n.aplicada.aplicada ? " " + esc(n.aplicada.aplicada) : ""}</span>` : `<span class="marca-pend">● pendiente</span>`} · ${n.fecha ? n.fecha.replace("T", " ") : "sin enviar"} · ${esc(n.categoria || "")}${n.regla_general ? " · <b>regla general</b>" : ""}${n.sinEnviar ? " · <b>sin enviar</b>" : ""}</div>
       ${n.numero ? `<a href="${esc(n.enlace || `#/numero/${n.numero}/${n.pagina || 1}`)}">Nº ${esc(n.numero)}${n.pagina ? `, pág. ${n.pagina}` : ""}${n.titulo ? ` · ${esc(n.titulo)}` : ""}</a>` : `<b>${esc(n.titulo || "General")}</b>`}
       <div style="white-space:pre-wrap">${esc(n.texto)}</div></div>`).join("") || "<p>Todavía no hay notas.</p>"}`;
+  $("#soloPend").onclick = () => { soloPend = !soloPend; vistaNotas(); };
+  contarPendientes(notas);
 }
+let soloPend = false;
+// contador de notas pendientes en la pestaña «Mis notas»
+function contarPendientes(notas) {
+  const a = document.querySelector('nav.tabs a[data-tab="notas"]'), n = notas.filter(x => !x.aplicada).length;
+  if (a) a.innerHTML = `Mis notas${n ? ` <span class="contador" title="notas sin aplicar">${n}</span>` : ""}`;
+}
+fetch("notas").then(r => r.ok ? r.json() : []).then(ns => contarPendientes([...ns, ...pendientes()])).catch(() => {});
 
 function ruta() {
   if (visor) { visor.destroy(); visor = null; }

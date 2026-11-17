@@ -269,6 +269,25 @@ for art in sorted(glob.glob(os.path.join(ia, "*", "articulos.json"))):
     print(f"{nid}: {len(paginas)} páginas, {len(articulos)} artículos, ilustraciones {total_ilus} detectadas -> "
           f"{sum(len(p['ilustraciones']) for p in paginas)} en el archivo gráfico")
 
+# Avisos del público («Avisanos de un error» del sitio final): grupo propio en Revisión, separado de las notas de Coli.
+# Formato de ia/avisos-publico.jsonl, una línea por aviso:
+#   {"numero": "059", "pagina": 6, "titulo": "título de la nota (opcional)", "texto": "qué está mal",
+#    "categoria": "texto mal leído | autor | título | otro", "contacto": "opcional", "fecha": "2026-11-17T10:00:00"}
+# Nada se aplica solo: Coli lo revisa como cualquier otro caso.
+_avisos = os.path.join(ia, "avisos-publico.jsonl")
+if os.path.exists(_avisos):
+    for _l in open(_avisos, encoding="utf-8"):
+        if not _l.strip():
+            continue
+        _a = json.loads(_l)
+        _f = os.path.join(DATOS, f"{_a.get('numero')}.json")
+        if not os.path.exists(_f):
+            continue
+        _m = json.load(open(_f))
+        revisar.append({"grupo": "publico", "id": _m["id"], "fecha": _m["fecha"], "n": int(_a.get("pagina") or 1),
+                        "desc": f"Aviso del público ({_a.get('categoria') or 'sin categoría'}, {str(_a.get('fecha', ''))[:10]}): "
+                                f"{_a.get('texto', '')}" + (f" — sobre «{_a['titulo']}»" if _a.get("titulo") else ""),
+                        "art": None, "zona": None})
 json.dump(revisar, open(os.path.join(DATOS, "revisar.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 # referencias entre números (las detecta referencias.py)
 if os.path.exists(os.path.join(ia, "referencias.json")):

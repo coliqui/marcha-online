@@ -4,7 +4,7 @@ Uso: python3 servidor_sitio.py CARPETA_SITIO PUERTO ARCHIVO_NOTAS
 
 Sirve los archivos del sitio como http.server y acepta:
   POST /notas  -> agrega la nota (JSON) como una línea en ARCHIVO_NOTAS
-  GET  /notas  -> devuelve todas las notas guardadas
+  GET  /notas  -> devuelve todas las notas guardadas (con «aplicada» si figura en notas-aplicadas.json)
 Solo escucha en 127.0.0.1: las notas no salen de la Mac.
 """
 import json, os, sys
@@ -31,6 +31,12 @@ class Manejador(SimpleHTTPRequestHandler):
         notas = []
         if os.path.exists(NOTAS):
             notas = [json.loads(l) for l in open(NOTAS, encoding="utf-8") if l.strip()]
+        # cuáles ya están aplicadas (notas_aplicadas.py): se agregan al mostrarlas, sin tocar el archivo de notas
+        ap = os.path.join(os.path.dirname(NOTAS), "notas-aplicadas.json")
+        marcas = json.load(open(ap, encoding="utf-8")) if os.path.exists(ap) else {}
+        for n in notas:
+            if n.get("fecha") in marcas:
+                n["aplicada"] = marcas[n["fecha"]]
         self._json(200, notas)
 
     def do_POST(self):
