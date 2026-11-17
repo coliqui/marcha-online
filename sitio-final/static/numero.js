@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const d = await (await fetch(L.dataset.datos)).json();
   const total = d.paginas.length, SEP = 0.02;
   const sel = document.getElementById("selpag"), chk = document.getElementById("vdoble");
+  // referencias fijas: en pantalla completa el visor saca el resto de la página del documento y getElementById no los encuentra
+  const NOTAS = document.getElementById("notas"), NOTAS_TIT = document.getElementById("notas-tit");
   sel.innerHTML = d.paginas.map(p => `<option value="${p.n}">pág. ${p.impresa && p.impresa !== p.n ? `${p.n} (impresa ${p.impresa})` : p.n}</option>`).join("");
   const guardado = (() => { try { return localStorage.getItem("vista-doble"); } catch { return null; } })();
   chk.checked = guardado === null ? window.matchMedia("(min-width: 900px)").matches : guardado === "1";
@@ -71,21 +73,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   function notas(nums) {
     const arts = ordenLectura(d.articulos.filter(a => a.paginas.some(k => nums.includes(k)) && a.tipo !== "aviso"), nums);
     const avisos = d.articulos.filter(a => a.paginas.some(k => nums.includes(k)) && a.tipo === "aviso");
-    document.getElementById("notas-tit").textContent = nums.length > 1 ? `Notas de las págs. ${nums.join(" y ")}` : `Notas de la pág. ${nums[0]}`;
+    NOTAS_TIT.textContent = nums.length > 1 ? `Notas de las págs. ${nums.join(" y ")}` : `Notas de la pág. ${nums[0]}`;
     const item = a => `<details class="nota"><summary><b>${esc(a.titulo)}</b>
       <span class="meta">${[a.autor, a.seccion, a.tipo && a.tipo !== "nota" ? a.tipo : ""].filter(Boolean).map(esc).join(" · ")}${a.paginas.length > 1 ? ` · págs. ${a.paginas.join(", ")}` : ""}</span></summary>
       <div class="texto">${a.bajada ? `<p class="bajada">${esc(a.bajada)}</p>` : ""}${parrafos(a.texto)}
       ${(a.recuadros || []).map(r => `<aside class="recuadro"><span class="meta">Recuadro${r.autor ? " · " + esc(r.autor) : ""}</span>${parrafos(r.texto)}</aside>`).join("")}
       ${(a.destacados || []).length ? `<div class="destacados"><span class="meta">Citas destacadas en la página</span>${a.destacados.map(r => `<blockquote>${esc(r.texto)}</blockquote>`).join("")}</div>` : ""}
       ${a.citas ? `<p class="cita"><b>Cita:</b> ${a.citas.map(c => `<a href="${enlace(c.id)}">Nº ${esc(c.id)}${c.fecha ? ` (${fechaLarga(c.fecha)})` : ""}</a>`).join(" · ")}</p>` : ""}</div></details>`;
-    document.getElementById("notas").innerHTML = (arts.length ? arts.map(item).join("") : `<p class="muted">Sin notas transcriptas en esta página.</p>`) +
+    NOTAS.innerHTML = (arts.length ? arts.map(item).join("") : `<p class="muted">Sin notas transcriptas en esta página.</p>`) +
       (avisos.length ? `<details class="nota"><summary><b>Avisos (${avisos.length})</b></summary><div class="texto">${avisos.map(a => `<div class="aviso"><p><b>${esc(a.titulo)}</b></p>${parrafos(a.texto)}</div>`).join("")}</div></details>` : "");
   }
 
   // Trackpad como en el sitio de prueba: dos dedos desplazan la página, pellizcar hace zoom (llega como rueda con ctrlKey,
   // o como gesturestart/gesturechange en Safari). En pantallas táctiles queda el pellizco y el arrastre propios de OpenSeadragon.
   function gestos(v) {
-    v.addHandler("canvas-key", e => { if (/^[rRfF]$/.test(e.originalEvent.key)) { e.preventDefaultAction = true; e.preventDefault = true; } });
+    v.addHandler("canvas-key", e => {
+      const k = e.originalEvent.key;
+      if (/^[rRfF]$/.test(k)) { e.preventDefaultAction = true; e.preventDefault = true; }
+      if (k === "ArrowRight" || k === "ArrowLeft") { e.preventDefaultAction = true; e.preventDefault = true; }  // las flechas pasan de página
+    });
     v.addHandler("canvas-scroll", e => {
       const ev = e.originalEvent;
       e.preventDefaultAction = true; e.preventDefault = true; ev.preventDefault();
@@ -114,11 +120,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         gestureSettingsTouch: { pinchRotate: false }, gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true, scrollToZoom: false },
         zoomPerScroll: 1.4, animationTime: 0.6, springStiffness: 9 });
       gestos(visor); document.getElementById("visor").osd = visor;  // para depurar desde la consola
+      // al salir de pantalla completa: volver a mostrar la página donde quedó (notas, selector, encuadre)
+      visor.addHandler("full-screen", e => { if (!e.fullScreen) setTimeout(() => sincronizar(), 50); });
     } else {
       visor.world.removeAll();
-      fuentes.forEach(f => visor.addTiledImage(f));
+      let faltan = fuentes.length;  // cuando cargan todas las imágenes del pliego, se encuadra el pliego entero
+      fuentes.forEach(f => visor.addTiledImage({ ...f, success: () => { if (--faltan === 0) encuadrar(); } }));
     }
     notas(nums);
+  }
+  const encuadrar = () => { if (visor && visor.world.getItemCount()) visor.viewport.fitBounds(visor.world.getHomeBounds(), true); };
+  function sincronizar() {
+    sel.value = actual;
+    if (`#p${actual}` !== location.hash) history.replaceState(null, "", `#p${actual}`);
+    notas(vistas(actual));
+    encuadrar();
   }
   const ir = n => { n = Math.min(total, Math.max(1, n)); if (`#p${n}` !== location.hash) history.replaceState(null, "", `#p${n}`); mostrar(n); };
   sel.onchange = () => ir(+sel.value);
