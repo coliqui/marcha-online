@@ -89,7 +89,7 @@ select { font: inherit; font-size: .95rem; padding: 6px 8px; border: 1px solid v
 .cita, .citado { font-size: .9rem; margin: .4em 0; }
 @media (min-width: 900px) {
   .lector-cuerpo { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
-  .notas { max-height: 78vh; overflow-y: auto; padding-right: 6px; position: sticky; top: 64px; }
+  .notas { max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px); overflow-y: auto; overscroll-behavior: contain; padding-right: 6px; position: sticky; top: 64px; }
   .visor { height: 78vh; }
 }
 
@@ -143,3 +143,10 @@ select { font: inherit; font-size: .95rem; padding: 6px 8px; border: 1px solid v
 .resultados .extracto { margin: 6px 0 0; font-size: .95rem; }
 .resultados mark { background: #f3df9b; color: inherit; }
 .exacta { color: var(--acento); }
+/* temas */
+.temas details.tema { border-bottom: 1px solid var(--linea); padding: 8px 0; }
+.temas summary { cursor: pointer; }
+.subtemas, .secciones { list-style: none; padding: 0 0 0 14px; margin: 6px 0; columns: 1; }
+.subtemas li, .secciones li { padding: 3px 0; break-inside: avoid; }
+@media (min-width: 700px) { .subtemas, .secciones { columns: 2; column-gap: 28px; } }
+.resultados .resumen { margin: 6px 0 0; font-size: .95rem; color: var(--tinta); }

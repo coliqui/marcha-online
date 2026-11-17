@@ -32148,6 +32148,102 @@
     "titulo": "Al noveno mes de una huelga difícil"
    },
    "motivo": "Nota de Coli Quijano (9/11/2026): título partido: «Al noveno mes de» (pág. 10) + «Una huelga difícil» (pág. 11) es una sola nota."
+  },
+  {
+   "numero": "1400",
+   "pagina": 29,
+   "tipo": "nota",
+   "titulo_contiene": "Los magisterios recobrados",
+   "empieza": "Existe en la literatura un confinente in",
+   "unir": [
+    {
+     "pagina": 30,
+     "tipo": "nota",
+     "titulo_contiene": "Los magisterios...",
+     "empieza": "Sí hay retratos simbólicos, Bajo el mont"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (4/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: «Los magisterios recobrados» sigue en la pág. 30 («Los magisterios...»): una sola nota a dos páginas."
+  },
+  {
+   "numero": "1164",
+   "pagina": 16,
+   "tipo": "nota",
+   "titulo_contiene": "EL NUEVO Y EXPLOSIVO DOCUMENTO DE LOS CHINOS",
+   "empieza": "Precisamente por esta razón, los imperia",
+   "unir": [
+    {
+     "pagina": 17,
+     "tipo": "otro",
+     "titulo_contiene": "PROPOSICION ACERCA DE LA LINEA GENERAL DEL MOVIMIENTO COMUNI",
+     "empieza": "conversaciones entre el P.C.Ch. y el P.C"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (4/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: «El nuevo y explosivo documento de los chinos» sigue en la pág. 17, girada 90 grados («Proposición acerca de la línea general…»): una sola nota a dos páginas."
+  },
+  {
+   "numero": "064",
+   "pagina": 8,
+   "tipo": "nota",
+   "titulo_contiene": "NAPOLEON, HACE CIENT[...]",
+   "empieza": "Cinco veces en el lapso de cuatro siglos",
+   "cambios": {
+    "titulo": "Napoleón, hace ciento treinta y siete años"
+   },
+   "motivo": "Nota de Coli Quijano (6/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: el título es «Napoleón, hace ciento treinta y siete años» (se leía «NAPOLEON, HACE CIENT[...]»)."
+  },
+  {
+   "numero": "092",
+   "pagina": 3,
+   "tipo": "nota",
+   "titulo_contiene": "El Antitanquismo o la Fuerza de un Mito",
+   "empieza": "A tratar hoy del milagro de Madrid habla",
+   "destacados": [
+    {
+     "pagina": 3,
+     "titulo_contiene": "Coll Destructor de Tanques, Coll Héroe Ejemplar"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (7/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: veredicto «Sí, aplicar»: «Coll Destructor de Tanques, Coll Héroe Ejemplar» es una cita destacada de la nota, no un artículo aparte."
+  },
+  {
+   "numero": "1028",
+   "pagina": 22,
+   "tipo": "otro",
+   "titulo_contiene": "LIBROS NUEVOS",
+   "empieza": "SAMER MAKARIUS: BUENOS AIRES Y SU GENTE.",
+   "quitar": [
+    {
+     "pagina": 22,
+     "tipo": "crítica",
+     "titulo_contiene": "SHOLEM ASCH: JUNTO AL ABISMO",
+     "empieza": "SHOLEM ASCH: JUNTO AL ABISMO. Buenos Air"
+    },
+    {
+     "pagina": 22,
+     "tipo": "crítica",
+     "titulo_contiene": "JEAN DANIELOU: LOS MANUSCRITOS DEL MAR MUERTO Y LOS ORIGENES",
+     "empieza": "aportan acerca de la naciente religión c"
+    },
+    {
+     "pagina": 22,
+     "tipo": "crítica",
+     "titulo_contiene": "DALMIRO A. SAENZ: SETENTA VECES SIETE",
+     "empieza": "de un mundo de violencia, donde Sáenz co"
+    }
+   ],
+   "motivo": "Nota de Coli Quijano (7/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: veredictos «Sí, aplicar»: «Sholem Asch: Junto al abismo», «Jean Danielou: Los manuscritos del Mar Muerto…» y «Dalmiro A. Sáenz: Setenta veces siete» repiten partes de «Libros nuevos» (que tiene las reseñas enteras)."
+  },
+  {
+   "numero": "1299",
+   "pagina": 32,
+   "tipo": "humor",
+   "titulo_contiene": "Parece chiste",
+   "empieza": "Viñeta 1: ME IMAGINO QUE AHORA NADIE DIR",
+   "cambios": {
+    "autor": "Blankito"
+   },
+   "motivo": "Nota de Coli Quijano (4/11/2026), aplicada el 17/11/2026 al revisar las notas pendientes: son caricaturas de Blankito (la firma se leía «Blankit»)."
   }
  ]
 }

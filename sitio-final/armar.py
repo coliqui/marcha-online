@@ -232,16 +232,39 @@ def armar(datos):
                       + (f'<h2>Textos</h2><ul class="aut-textos">{textos}</ul>' if textos else "")
                       + (f'<h2>Dibujos</h2><ul class="aut-textos">{obras}</ul>' if obras else ""))
             escribir(f"autores/{x['slug']}/index.html", pagina(f"{AU.lindo(x['nombre'])} · Marcha", cuerpo, "autores/"))
-        cuerpo = """<h1>Buscar</h1>
+        # temas (con sus subtemas) y secciones fijas: una página que lleva a la búsqueda filtrada
+        from urllib.parse import urlencode
+        tj = json.load(open(os.path.join(datos, "lectura-ia", "temas.json"), encoding="utf-8"))
+        escribir("datos/temas.json", json.dumps({g["tema"]: [x["tema"] for x in g["subtemas"]] for g in tj["generales"]},
+                                                ensure_ascii=False, separators=(",", ":")))
+        q = lambda **k: u("buscar/") + "?" + urlencode(k)
+        n_ = lambda n: f"{n:,}".replace(",", ".")
+        bloques = "".join(
+            f'<details class="tema"><summary><a href="{q(tema=g["tema"])}">{esc(g["tema"][:1].upper() + g["tema"][1:])}</a> '
+            f'<span class="muted">{n_(g["notas"])}</span></summary><ul class="subtemas">'
+            + "".join(f'<li><a href="{q(tema=g["tema"], subtema=x["tema"])}">{esc(x["tema"])}</a> <span class="muted">{n_(x["notas"])}</span></li>'
+                      for x in g["subtemas"]) + "</ul></details>"
+            for g in sorted(tj["generales"], key=lambda g: g["tema"].lower()))
+        secs = "".join(f'<li><a href="{q(seccion=x["seccion"])}">{esc(x["seccion"])}</a> <span class="muted">{n_(x["notas"])} notas'
+                       f'{", " + x["desde"] + "–" + x["hasta"] if x.get("desde") else ""}</span></li>'
+                       for x in sorted(tj["secciones"], key=lambda x: x["seccion"].lower()))
+        cuerpo = f"""<h1>Temas y secciones</h1>
+<p class="muted">Los temas los asignó la lectura con IA y se agruparon en {len(tj["generales"])} temas generales; tocá uno para ver sus subtemas.
+Cada enlace abre la búsqueda con ese filtro.</p><div class="temas">{bloques}</div>
+<h2>Secciones fijas del semanario</h2><ul class="secciones">{secs}</ul>"""
+        escribir("temas/index.html", pagina("Temas y secciones · Marcha", cuerpo, "buscar/"))
+        cuerpo = f"""<h1>Buscar</h1>
 <form id="busca" class="busca" role="search"><input type="search" id="q" name="q" placeholder="Buscar en el texto de las notas…" aria-label="Buscar" autocomplete="off">
 <button class="btn" type="submit">Buscar</button></form>
-<p class="muted ayuda">Primero aparecen las notas con la frase exacta y después las que tienen todas las palabras.</p>
+<p class="muted ayuda">Primero aparecen las notas con la frase exacta y después las que tienen todas las palabras. Entre comillas, solo la frase.</p>
 <details id="avanzada" class="avanzada"><summary class="btn">Búsqueda avanzada</summary><div class="av-campos">
 <label>Tema <select id="f-tema"><option value="">Todos</option></select></label>
-<label>Sección <input id="f-seccion" list="l-seccion" placeholder="Todas" autocomplete="off"><datalist id="l-seccion"></datalist></label>
+<label>Subtema <select id="f-subtema" disabled><option value="">Todos los del tema</option></select></label>
+<label>Sección <select id="f-seccion"><option value="">Todas</option></select></label>
 <label>Autor <input id="f-autor" list="l-autor" placeholder="Apellido, Nombre" autocomplete="off"><datalist id="l-autor"></datalist></label>
 <span class="anios"><label>Desde <select id="f-desde"></select></label><label>Hasta <select id="f-hasta"></select></label></span>
 <p><button class="btn" type="submit" form="busca">Aplicar</button> <button class="btn" type="button" id="limpiar">Limpiar filtros</button></p></div></details>
+<p class="ayuda"><a href="{u("temas/")}">Ver todos los temas, subtemas y secciones →</a></p>
 <p id="estado" class="muted" aria-live="polite"></p><ol id="resultados" class="resultados"></ol>
 <p><button type="button" class="btn" id="mas" hidden>Más resultados</button></p>"""
         escribir("buscar/index.html", pagina("Buscar · Marcha", cuerpo, "buscar/", scripts=("buscar.js",)))

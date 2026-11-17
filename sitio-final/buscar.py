@@ -7,6 +7,9 @@ resultado (nº, fecha, página, enlace al visor). Las páginas sin transcripció
 sin lectura) entran con el texto de Tesseract de la página, para que se encuentren, sin mostrarse enteras.
 """
 import html, json, os, shutil, sqlite3, subprocess, sys, tempfile, time
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pipeline"))
+from temas import clave  # noqa: E402
+AQUI = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import autores as AU  # noqa: E402
@@ -22,15 +25,37 @@ def fecha_larga(f):
 
 
 def temas_generales(lectura):
-    """forma escrita del tema -> tema general (o el tema unificado si no tiene general)."""
+    """forma escrita del tema -> (tema general, subtema o None). Los temas sin tema general no entran en los filtros."""
     mapa = json.load(open(os.path.join(lectura, "temas-mapa.json")))
     j = json.load(open(os.path.join(lectura, "temas.json")))
     padre = {}
     for g in j["generales"]:
-        padre[g["tema"]] = g["tema"]
-        for s in g["subtemas"]:
-            padre[s["tema"]] = g["tema"]
+        padre[g["tema"]] = (g["tema"], None)
+        for st in g["subtemas"]:
+            padre[st["tema"]] = (g["tema"], st["tema"])
     return {forma: padre.get(u) for forma, u in mapa.items()}
+
+
+def secciones_fijas():
+    """Regla de secciones_alias.json (la misma del sitio de prueba): texto -> nombre de la sección fija, o None."""
+    alias = json.load(open(os.path.join(AQUI, "..", "pipeline", "secciones_alias.json"), encoding="utf-8"))
+    reglas = [(clave(f.rstrip("*")), f.endswith("*"), n) for n, fs in alias.items() if not n.startswith("_") for f in fs]
+
+    def de(t):
+        k = clave(t)
+        for f, pref, n in reglas:
+            if k and (k == f or (pref and k.startswith(f))):
+                return n
+        return None
+    return de
+
+
+def comienzo(texto, largo=220):
+    """Las primeras ~220 letras de la nota, cortadas en una palabra entera."""
+    t = " ".join((texto or "").split())
+    if len(t) <= largo:
+        return t
+    return t[:largo].rsplit(" ", 1)[0].rstrip(",;:") + "…"
 
 
 def indexar(datos, salida, desde=None, hasta=None, base="/"):
@@ -38,6 +63,7 @@ def indexar(datos, salida, desde=None, hasta=None, base="/"):
     lectura = os.path.join(datos, "lectura-ia")
     db = sqlite3.connect(os.path.join(lectura, "marcha.sqlite"))
     general = temas_generales(lectura)
+    seccion_de = secciones_fijas()
     por_articulo = {}
     AU.armar(os.path.join(lectura, "marcha.sqlite"), por_articulo=por_articulo)  # los mismos nombres que la página Autores
     filtro = ""
@@ -47,7 +73,7 @@ def indexar(datos, salida, desde=None, hasta=None, base="/"):
     tmp = tempfile.mkdtemp(prefix="pagefind-docs-", dir=os.path.dirname(salida.rstrip("/")))
     e = lambda t: html.escape(str(t or ""), quote=True)
 
-    def doc(nombre, enlace, titulo, cuerpo, meta, filtros):
+    def doc(nombre, enlace, titulo, cuerpo, meta, filtros, orden=""):
         nonlocal cuenta
         ms = "".join(f'<span data-pagefind-meta="{k}">{e(v)}</span>' for k, v in meta.items() if v)
         fs = "".join(f'<span data-pagefind-filter="{k}">{e(v)}</span>' for k, vs in filtros.items() for v in vs)
@@ -55,8 +81,11 @@ def indexar(datos, salida, desde=None, hasta=None, base="/"):
         os.makedirs(d, exist_ok=True)
         open(os.path.join(d, nombre + ".html"), "w", encoding="utf-8").write(
             f'<!doctype html><html lang="es"><head><meta charset="utf-8"><title>{e(titulo)}</title></head><body>'
-            f'<main data-pagefind-body><h1 data-pagefind-meta="title">{e(titulo)}</h1>{ms}<div hidden>{fs}</div>'
-            f'<span hidden data-pagefind-meta="enlace">{e(enlace)}</span><p>{e(cuerpo)}</p></main></body></html>')
+            # los metadatos y filtros van fuera del cuerpo indexado: así no aparecen mezclados en el fragmento del resultado
+            f'<div hidden>{ms}{fs}<span data-pagefind-meta="enlace">{e(enlace)}</span>'
+            f'<span data-pagefind-sort="fecha">{e(orden)}</span></div>'
+            f'<main data-pagefind-body><h1 data-pagefind-meta="title" data-pagefind-weight="5">{e(titulo)}</h1>'
+            f'<p>{e(cuerpo)}</p></main></body></html>')
         cuenta += 1
 
     try:
@@ -69,19 +98,26 @@ def indexar(datos, salida, desde=None, hasta=None, base="/"):
             filtros = {"año": [fecha[:4]]}
             if por_articulo.get(aid):
                 filtros["autor"] = por_articulo[aid]
-            ts = sorted({general.get(t) for t in json.loads(temas or "[]")} - {None})
+            pares = [general.get(t) for t in json.loads(temas or "[]")]
+            ts = sorted({p[0] for p in pares if p})
+            subs = sorted({p[1] for p in pares if p and p[1]})
             if ts:
                 filtros["tema"] = ts
-            if seccion:
-                filtros["sección"] = [seccion]
-            doc(f"a{aid}", f"{base}numero/{nid}/#p{pag}-a{aid}", titulo or "(sin título)", f"{firma or ''}. {texto}",
-                {"autor": firma or "", "fecha": fecha_larga(fecha), "numero": nid, "pagina": pag, "tipo": tipo or ""}, filtros)
+            if subs:
+                filtros["subtema"] = subs
+            sec = seccion_de(seccion or "") or seccion_de(titulo or "")
+            if sec:
+                filtros["sección"] = [sec]
+            autores = por_articulo.get(aid, [])
+            doc(f"a{aid}", f"{base}numero/{nid}/#p{pag}-a{aid}", titulo or "(sin título)", texto,
+                {"autor": ", ".join(autores) or firma or "", "fecha": fecha_larga(fecha), "numero": nid, "pagina": pag,
+                 "tipo": tipo or "", "seccion": sec or "", "inicio": comienzo(texto)}, filtros, f"{fecha}-{pag:03d}")
         # páginas sin lectura de la IA: el texto de Tesseract, por página
         sql = f"""select p.numero_id, p.n, p.texto_ocr, n.fecha from paginas p join numeros n on n.id = p.numero_id
                   where (p.bloqueada = 1 or p.lectura = 'tesseract') and length(coalesce(p.texto_ocr, '')) > 80 {filtro}"""
         for nid, n, texto, fecha in db.execute(sql):
             doc(f"o{nid}-{n}", f"{base}numero/{nid}/#p{n}", f"Página {n} (texto sin corregir)", texto,
-                {"fecha": fecha_larga(fecha), "numero": nid, "pagina": n, "tipo": "ocr"}, {"año": [fecha[:4]]})
+                {"fecha": fecha_larga(fecha), "numero": nid, "pagina": n, "tipo": "ocr", "inicio": comienzo(texto)}, {"año": [fecha[:4]]}, f"{fecha}-{n:03d}")
         t1 = time.time()
         nueva = salida.rstrip("/") + ".nuevo"
         shutil.rmtree(nueva, ignore_errors=True)

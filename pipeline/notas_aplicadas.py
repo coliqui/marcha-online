@@ -53,8 +53,9 @@ def main():
             if hits:
                 marcas[n["fecha"]] = {"aplicada": hits[0][2], "como": hits[0][3][:200], "verificada": "auto"}
     json.dump(marcas, open(ruta, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    total = sum(1 for l in open(os.path.join(L, "notas-revision.jsonl"), encoding="utf-8") if l.strip())
-    print(f"{len(marcas)} de {total} notas marcadas como aplicadas; pendientes {total - len(marcas)}")
+    notas = [json.loads(l) for l in open(os.path.join(L, "notas-revision.jsonl"), encoding="utf-8") if l.strip()]
+    pend = sum(1 for n in notas if n.get("fecha") not in marcas)  # varias notas pueden compartir la misma fecha
+    print(f"{len(notas) - pend} de {len(notas)} notas marcadas (aplicadas o «no aplica»); pendientes {pend}")
 
 
 if __name__ == "__main__":
