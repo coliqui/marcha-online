@@ -82,6 +82,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       (avisos.length ? `<details class="nota"><summary><b>Avisos (${avisos.length})</b></summary><div class="texto">${avisos.map(a => `<div class="aviso"><p><b>${esc(a.titulo)}</b></p>${parrafos(a.texto)}</div>`).join("")}</div></details>` : "");
   }
 
+  // Trackpad como en el sitio de prueba: dos dedos desplazan la página, pellizcar hace zoom (llega como rueda con ctrlKey,
+  // o como gesturestart/gesturechange en Safari). En pantallas táctiles queda el pellizco y el arrastre propios de OpenSeadragon.
+  function gestos(v) {
+    v.addHandler("canvas-key", e => { if (/^[rRfF]$/.test(e.originalEvent.key)) { e.preventDefaultAction = true; e.preventDefault = true; } });
+    v.addHandler("canvas-scroll", e => {
+      const ev = e.originalEvent;
+      e.preventDefaultAction = true; e.preventDefault = true; ev.preventDefault();
+      const fino = Math.abs(ev.deltaX) + Math.abs(ev.deltaY) < 40;  // trackpad: pasos chicos, al instante; ratón: animado
+      if (ev.ctrlKey || ev.metaKey) v.viewport.zoomBy(Math.exp(-ev.deltaY * 0.025), v.viewport.pointFromPixel(e.position, true), fino);
+      else v.viewport.panBy(v.viewport.deltaPointsFromPixels(new OpenSeadragon.Point(ev.deltaX * 2, ev.deltaY * 2)), fino);
+      v.viewport.applyConstraints();
+    });
+    if (window.matchMedia("(pointer: fine)").matches) {
+      const el = v.element; let escala = 1;
+      const punto = ev => { const r = el.getBoundingClientRect(); return v.viewport.pointFromPixel(new OpenSeadragon.Point(ev.clientX - r.left, ev.clientY - r.top), true); };
+      el.addEventListener("gesturestart", ev => { ev.preventDefault(); escala = 1; });
+      el.addEventListener("gesturechange", ev => { ev.preventDefault(); v.viewport.zoomBy(ev.scale / escala, punto(ev), true); escala = ev.scale; v.viewport.applyConstraints(); });
+      el.addEventListener("gestureend", ev => ev.preventDefault());
+    }
+    return v;
+  }
+
   function mostrar(n) {
     const nums = vistas(n);
     sel.value = n; actual = n;
@@ -89,7 +111,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!visor) {
       visor = OpenSeadragon({ element: document.getElementById("visor"), prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/",
         tileSources: fuentes, showNavigator: false, visibilityRatio: 0.5, minZoomImageRatio: 0.8, maxZoomPixelRatio: 2.5,
-        gestureSettingsTouch: { pinchRotate: false }, zoomPerScroll: 1.4, animationTime: 0.6, springStiffness: 9 });
+        gestureSettingsTouch: { pinchRotate: false }, gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true, scrollToZoom: false },
+        zoomPerScroll: 1.4, animationTime: 0.6, springStiffness: 9 });
+      gestos(visor); document.getElementById("visor").osd = visor;  // para depurar desde la consola
     } else {
       visor.world.removeAll();
       fuentes.forEach(f => visor.addTiledImage(f));
