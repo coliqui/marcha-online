@@ -14,6 +14,9 @@ import html, json, os, re, shutil, sys, tempfile
 from concurrent.futures import ProcessPoolExecutor
 from PIL import Image
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import autores as AU  # noqa: E402
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
 MESES = "enero febrero marzo abril mayo junio julio agosto setiembre octubre noviembre diciembre".split()
 BASE = "/"
@@ -189,7 +192,43 @@ def armar(datos):
         escribir("index.html", pagina("Marcha · archivo del semanario (1939–1974)", cuerpo, "", scripts=("portada.js",)))
 
         prueba = '<p>Mientras tanto, en la Mac, se puede usar la versión de prueba: <a href="http://localhost:8767/">localhost:8767</a>.</p>'
-        escribir("autores/index.html", pagina("Autores · Marcha", f"<h1>Autores y dibujantes</h1><p>En construcción: la lista de quienes escribieron y dibujaron en Marcha, por apellido o por cantidad de textos.</p>{prueba}", "autores/"))
+        # autores y dibujantes: una lista (datos/autores.json, la dibuja autores.js) y una página por persona
+        gente, colectivas, descartes, _ = AU.armar(os.path.join(datos, "lectura-ia", "marcha.sqlite"))
+        lista = [[x["mostrar"], x["slug"], len(x["textos"]), len(x["obras"]), x["clave"]] + ([1] if c else [])
+                 for c, xs in ((0, gente), (1, colectivas)) for x in xs]
+        escribir("datos/autores.json", json.dumps(lista, ensure_ascii=False, separators=(",", ":")))
+        letras = "".join(f'<button type="button" data-l="{l}">{l}</button>' for l in "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ")
+        cuerpo = f"""<h1>Autores y dibujantes</h1>
+<p class="muted">{f"{len(gente):,}".replace(",", ".")} personas y seudónimos que firmaron textos o dibujos en Marcha, por apellido. Las firmas de una misma persona
+(iniciales, seudónimos, errores de lectura) se agrupan con una tabla que se sigue revisando; las siglas que no se sabe de quién son no se listan.</p>
+<div class="aut-barra"><input type="search" id="aut-filtro" placeholder="Filtrar por nombre…" aria-label="Filtrar autores por nombre" autocomplete="off">
+<div class="aut-orden" role="group" aria-label="Orden"><button type="button" class="btn" data-orden="alfa" aria-pressed="true">A–Z</button><button type="button" class="btn" data-orden="cant" aria-pressed="false">Por cantidad</button></div>
+<label class="doble"><input type="checkbox" id="aut-colectivas"> incluir firmas colectivas ({f"{len(colectivas):,}".replace(",", ".")})</label></div>
+<nav class="az" aria-label="Índice alfabético">{letras}</nav>
+<p id="aut-info" class="muted"></p><ul id="aut-lista" class="aut-lista"><li class="muted">Cargando…</li></ul>
+<p><button type="button" class="btn" id="aut-mas" hidden>Mostrar más</button></p>"""
+        escribir("autores/index.html", pagina("Autores y dibujantes · Marcha", cuerpo, "autores/", scripts=("autores.js",)))
+        fechas_n = {m["id"]: m["fecha"] for m in nums}
+        for x in gente + colectivas:
+            def item(nid, pag, tit, extra):
+                f = fechas_n.get(nid, "")
+                return (f'<li><a href="{u("numero/" + nid + "/")}#p{pag}">{esc(tit) or "(sin título)"}</a>'
+                        f'<span class="muted">Nº {esc(nid)}{" · " + fecha_larga(f) if f else ""} · pág. {pag}{" · " + esc(extra) if extra else ""}</span></li>')
+            textos = "".join(item(nid, pag, tit, sec) for _, nid, pag, tit, sec in x["textos"])
+            obras = "".join(item(nid, n, desc[:120] or tipo, tipo if desc else "") for _, nid, n, tipo, desc in x["obras"])
+            nt, no = len(x["textos"]), len(x["obras"])
+            cuenta = " y ".join(t for t in (f"{nt} {'texto' if nt == 1 else 'textos'}" if nt else "", f"{no} {'dibujo' if no == 1 else 'dibujos'}" if no else "") if t)
+            vistas, formas = {AU.plano(x["nombre"])}, []
+            for f in sorted(x["firmas"], key=lambda f: (f.isupper(), f)):
+                if AU.plano(AU.TITULOS.sub("", f)) not in vistas:
+                    vistas.add(AU.plano(AU.TITULOS.sub("", f))); formas.append(f)
+            otras = f" · también firma como {', '.join(esc(f) for f in formas[:12])}" if formas else ""
+            periodo = f" · {x['desde']}{'–' + x['hasta'] if x['hasta'] != x['desde'] else ''}" if x["desde"] else ""
+            cuerpo = (f'<p><a href="{u("autores/")}">← Autores y dibujantes</a></p><h1>{esc(AU.lindo(x["nombre"]))}</h1>'
+                      f'<p class="muted">{cuenta}{periodo}{otras}</p>'
+                      + (f'<h2>Textos</h2><ul class="aut-textos">{textos}</ul>' if textos else "")
+                      + (f'<h2>Dibujos</h2><ul class="aut-textos">{obras}</ul>' if obras else ""))
+            escribir(f"autores/{x['slug']}/index.html", pagina(f"{AU.lindo(x['nombre'])} · Marcha", cuerpo, "autores/"))
         escribir("buscar/index.html", pagina("Buscar · Marcha", f"<h1>Buscar</h1><p>En construcción: búsqueda en el texto de todas las notas, con búsqueda avanzada por tema, sección, autor y años.</p>{prueba}", "buscar/"))
         escribir("acerca/index.html", pagina("Acerca del proyecto · Marcha", """<h1>Acerca del proyecto</h1>
 <p><b>Borrador.</b> Marcha fue un semanario uruguayo fundado y dirigido por Carlos Quijano, publicado en Montevideo desde el 23 de junio de 1939 hasta su clausura en 1974.</p>

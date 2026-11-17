@@ -113,3 +113,15 @@ select { font: inherit; font-size: .95rem; padding: 6px 8px; border: 1px solid v
 .nota .intertitulo { font-size: 1rem; font-weight: 700; margin: 1.2em 0 .4em; }
 .nota .bajada { font-size: 1.02rem; color: var(--gris); }
 .lector-cuerpo > * { min-width: 0; }
+/* autores */
+.aut-barra { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 12px 0; }
+.aut-barra input[type=search] { flex: 1 1 220px; font: inherit; padding: 8px 10px; border: 1px solid var(--tinta); border-radius: 3px; background: #fffdf8; min-width: 0; }
+.aut-orden { display: flex; gap: 0; }
+.aut-orden .btn[aria-pressed="true"], .az button[aria-pressed="true"] { background: var(--tinta); color: var(--papel); }
+.az { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+.az button { font: inherit; font-size: .95rem; min-width: 34px; min-height: 34px; border: 1px solid var(--linea); background: #fffdf8; color: var(--tinta); border-radius: 3px; cursor: pointer; }
+.aut-lista, .aut-textos { list-style: none; padding: 0; margin: 0; }
+.aut-lista li, .aut-textos li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 7px 0; border-bottom: 1px solid var(--linea); }
+.aut-lista li .muted, .aut-textos li .muted { font-size: .88rem; }
+.aut-textos li { flex-direction: column; }
+@media (min-width: 900px) { .aut-lista { columns: 2; column-gap: 32px; } .aut-lista li { break-inside: avoid; } }
