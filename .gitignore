@@ -13,3 +13,6 @@ prueba-ia*/
 .marcha-clave*
 *.key
 .env
+
+# índice de búsqueda generado (va en sitio-final-cache)
+sitio-final/pagefind/

@@ -104,6 +104,9 @@ def armar(datos):
         os.symlink(teselas, os.path.join(tmp, "teselas"))
         os.symlink(cache, os.path.join(tmp, "img"))
         os.makedirs(os.path.join(tmp, "datos", "numeros"))
+        pf = os.path.join(cache, "pagefind")
+        if os.path.exists(pf):
+            os.symlink(os.path.realpath(pf), os.path.join(tmp, "pagefind"))
 
         def escribir(ruta, contenido):
             f = os.path.join(tmp, ruta)
@@ -229,7 +232,19 @@ def armar(datos):
                       + (f'<h2>Textos</h2><ul class="aut-textos">{textos}</ul>' if textos else "")
                       + (f'<h2>Dibujos</h2><ul class="aut-textos">{obras}</ul>' if obras else ""))
             escribir(f"autores/{x['slug']}/index.html", pagina(f"{AU.lindo(x['nombre'])} · Marcha", cuerpo, "autores/"))
-        escribir("buscar/index.html", pagina("Buscar · Marcha", f"<h1>Buscar</h1><p>En construcción: búsqueda en el texto de todas las notas, con búsqueda avanzada por tema, sección, autor y años.</p>{prueba}", "buscar/"))
+        cuerpo = """<h1>Buscar</h1>
+<form id="busca" class="busca" role="search"><input type="search" id="q" name="q" placeholder="Buscar en el texto de las notas…" aria-label="Buscar" autocomplete="off">
+<button class="btn" type="submit">Buscar</button></form>
+<p class="muted ayuda">Primero aparecen las notas con la frase exacta y después las que tienen todas las palabras.</p>
+<details id="avanzada" class="avanzada"><summary class="btn">Búsqueda avanzada</summary><div class="av-campos">
+<label>Tema <select id="f-tema"><option value="">Todos</option></select></label>
+<label>Sección <input id="f-seccion" list="l-seccion" placeholder="Todas" autocomplete="off"><datalist id="l-seccion"></datalist></label>
+<label>Autor <input id="f-autor" list="l-autor" placeholder="Apellido, Nombre" autocomplete="off"><datalist id="l-autor"></datalist></label>
+<span class="anios"><label>Desde <select id="f-desde"></select></label><label>Hasta <select id="f-hasta"></select></label></span>
+<p><button class="btn" type="submit" form="busca">Aplicar</button> <button class="btn" type="button" id="limpiar">Limpiar filtros</button></p></div></details>
+<p id="estado" class="muted" aria-live="polite"></p><ol id="resultados" class="resultados"></ol>
+<p><button type="button" class="btn" id="mas" hidden>Más resultados</button></p>"""
+        escribir("buscar/index.html", pagina("Buscar · Marcha", cuerpo, "buscar/", scripts=("buscar.js",)))
         escribir("acerca/index.html", pagina("Acerca del proyecto · Marcha", """<h1>Acerca del proyecto</h1>
 <p><b>Borrador.</b> Marcha fue un semanario uruguayo fundado y dirigido por Carlos Quijano, publicado en Montevideo desde el 23 de junio de 1939 hasta su clausura en 1974.</p>
 <p>Este archivo reúne la colección completa a partir del escaneo de los microfilms. Cada página se puede ver con zoom, y el texto de las notas fue transcripto con reconocimiento de texto e inteligencia artificial, por lo que puede contener errores.</p>

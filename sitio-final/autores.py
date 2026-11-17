@@ -79,7 +79,8 @@ def apellido_nombre(n):
     return clave, f"{ap}, {pila}"
 
 
-def armar(catalogo, destino_dudosos=None):
+def armar(catalogo, destino_dudosos=None, por_articulo=None):
+    """por_articulo (dict opcional): se llena con id de nota -> [«Apellido, Nombre», ...] (para los filtros del buscador)."""
     db = sqlite3.connect(catalogo)
     canon = {}  # forma escrita (plana) -> nombre canónico
     revisados = set()
@@ -91,6 +92,11 @@ def armar(catalogo, destino_dudosos=None):
         canon.setdefault(plano(nombre), nombre)
         if rev:
             revisados.add(nombre)
+    # uniones hechas con Sonnet para el sitio (autores_sonnet.py), deshacibles: [forma, nombre]
+    ruta_alias = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pipeline", "autores_alias.json")
+    if os.path.exists(ruta_alias):
+        for forma, dst in json.load(open(ruta_alias)).get("_sonnet_sitio", []):
+            canon[plano(forma)] = canon.get(plano(dst), dst)
     personas = defaultdict(lambda: {"textos": [], "obras": [], "firmas": set()})
     descartes = defaultdict(int)
     def limpiar(f):
@@ -112,10 +118,12 @@ def armar(catalogo, destino_dudosos=None):
                     (select min(p.n) from articulo_paginas p where p.articulo_id = r.id)
              from articulos r join numeros n on n.id = r.numero_id left join autores a on a.id = r.autor_id
              where coalesce(r.firma, a.nombre) is not null and r.tipo != 'aviso'"""
-    for _, nid, titulo, firma, seccion, tipo, fecha, pag in db.execute(sql):
+    crudo = defaultdict(list)
+    for aid, nid, titulo, firma, seccion, tipo, fecha, pag in db.execute(sql):
         for parte in separar(firma) or [firma]:
             nombre = a_persona(parte)
             if nombre:
+                crudo[aid].append(nombre)
                 p = personas[nombre]
                 p["textos"].append((fecha, nid, pag or 1, titulo, seccion or ""))
                 p["firmas"].add(parte.strip())
@@ -136,6 +144,7 @@ def armar(catalogo, destino_dudosos=None):
             dst["textos"] += src["textos"]; dst["obras"] += src["obras"]; dst["firmas"] |= src["firmas"] | {nombre}
         else:
             juntas[k] = nombre
+    destino_de = {}
     gente, instituciones, dudosos, slugs = [], [], [], set()
     for nombre, p in personas.items():
         if es_sigla(nombre) and nombre not in revisados:
@@ -157,8 +166,14 @@ def armar(catalogo, destino_dudosos=None):
             instituciones.append(x)
         else:
             gente.append(x)
+            destino_de[nombre] = mostrar
             if len(p["textos"]) + len(p["obras"]) <= 2 and not (nombre in revisados):
                 pass
+    if por_articulo is not None:
+        for aid, ns in crudo.items():
+            fin = sorted({destino_de.get(juntas.get(plano(n), n)) for n in ns} - {None})
+            if fin:
+                por_articulo[aid] = fin
     gente.sort(key=lambda x: x["clave"])
     instituciones.sort(key=lambda x: x["clave"])
     # dudosos para un lote opcional: siglas frecuentes sin dueño y apellidos que se repiten con otra inicial
