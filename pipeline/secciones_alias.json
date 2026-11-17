@@ -1,40 +1,330 @@
 {
- "_explicacion": "Secciones fijas del semanario (se edita a mano). Cada clave es el nombre con que se muestra la sección; la lista, las formas en que aparece como «sección» o como título de la nota (sin importar mayúsculas, tildes ni signos). Una forma que termina en «*» vale para todo lo que empiece así («los 7 dias*» junta «Los 7 días y las 7 noches»).",
- "La mar en coche": ["la mar en coche"],
- "Los 7 días": ["los 7 dias*", "los siete dias*"],
- "Cartas de los lectores": ["cartas de los lectores*", "las cartas de los lectores*", "cartas de lectores", "carta de lectores"],
- "Cosas vistas y oídas": ["cosas vistas y oidas"],
- "Los 4 puntos cardinales": ["los 4 puntos cardinales", "los cuatro puntos cardinales"],
- "Revista de estrenos": ["revista de estrenos"],
- "Guía cinematográfica": ["guia cinematografica"],
- "Cines de estreno": ["cines de estreno*"],
- "Los films": ["los films", "critica los films"],
- "Escenario giratorio": ["escenario giratorio"],
- "La semana internacional": ["la semana internacional"],
- "Temas nacionales": ["temas nacionales"],
- "Incidentes y perspectivas": ["incidentes y perspectivas"],
- "Política y economía": ["politica y economia"],
- "A 35 grados latitud sur": ["35 grados latitud sur", "a 35 grados latitud sur"],
- "Rosa de los vientos": ["rosa de los vientos"],
- "Los trabajos y los días": ["los trabajos y los dias"],
- "Crónica de libros": ["cronica de libros"],
- "Literarias": ["literarias"],
- "Letras nacionales": ["letras nacionales"],
- "Asteriscos": ["asteriscos"],
- "El salón de los pesos perdidos": ["el salon de los pesos perdidos"],
- "En resumidas cuentas": ["en resumidas cuentas"],
- "168 horas": ["168 horas"],
- "Parece chiste": ["parece chiste"],
- "No es chiste": ["no es chiste"],
- "Los movimientos en el tablero": ["los movimientos en el tablero"],
- "Protagonistas": ["protagonistas"],
- "Menciones": ["menciones"],
- "Montevideo en las carteleras": ["montevideo en las carteleras*"],
- "Funciones especiales": ["funciones especiales"],
- "Palabras cruzadas": ["palabras cruzadas", "crucigrama"],
- "Nuestros problemas agrarios": ["nuestros problemas agrarios"],
- "Editorial": ["editorial"],
- "Actos y conferencias": ["actos y conferencias"],
- "Correo": ["correo"],
- "Remitido": ["remitido*"]
+ "_explicacion": "Secciones fijas del semanario (se edita a mano). Cada clave es el nombre con que se muestra la sección; la lista, las formas en que aparece como «sección» o como título de la nota (sin importar mayúsculas, tildes ni signos). Una forma que termina en «*» vale para todo lo que empiece así («los 7 dias*» junta «Los 7 días y las 7 noches»). 17/11/2026: se sumaron las secciones con nombre propio del grupo B1 de lectura-ia/secciones-propuesta.md (aprobadas por Coli); los rubros genéricos (Cine, Teatro, Música…) quedan como temas.",
+ "La mar en coche": [
+  "la mar en coche"
+ ],
+ "Los 7 días": [
+  "los 7 dias*",
+  "los siete dias*"
+ ],
+ "Cartas de los lectores": [
+  "cartas de los lectores*",
+  "las cartas de los lectores*",
+  "cartas de lectores",
+  "carta de lectores",
+  "senor director"
+ ],
+ "Cosas vistas y oídas": [
+  "cosas vistas y oidas"
+ ],
+ "Los 4 puntos cardinales": [
+  "los 4 puntos cardinales",
+  "los cuatro puntos cardinales",
+  "los 4 puntos cardinales de nuestros corresponsales y servicios exclusivos",
+  "puntos cardinales"
+ ],
+ "Revista de estrenos": [
+  "revista de estrenos"
+ ],
+ "Guía cinematográfica": [
+  "guia cinematografica"
+ ],
+ "Cines de estreno": [
+  "cines de estreno*"
+ ],
+ "Los films": [
+  "los films",
+  "critica los films",
+  "critica los films noticias",
+  "los films revista de estrenos"
+ ],
+ "Escenario giratorio": [
+  "escenario giratorio"
+ ],
+ "La semana internacional": [
+  "la semana internacional"
+ ],
+ "Temas nacionales": [
+  "temas nacionales"
+ ],
+ "Incidentes y perspectivas": [
+  "incidentes y perspectivas"
+ ],
+ "Política y economía": [
+  "politica y economia"
+ ],
+ "A 35 grados latitud sur": [
+  "35 grados latitud sur",
+  "a 35 grados latitud sur"
+ ],
+ "Rosa de los vientos": [
+  "rosa de los vientos"
+ ],
+ "Los trabajos y los días": [
+  "los trabajos y los dias"
+ ],
+ "Crónica de libros": [
+  "cronica de libros"
+ ],
+ "Literarias": [
+  "literarias"
+ ],
+ "Letras nacionales": [
+  "letras nacionales"
+ ],
+ "Asteriscos": [
+  "asteriscos"
+ ],
+ "El salón de los pesos perdidos": [
+  "el salon de los pesos perdidos"
+ ],
+ "En resumidas cuentas": [
+  "en resumidas cuentas"
+ ],
+ "168 horas": [
+  "168 horas"
+ ],
+ "Parece chiste": [
+  "parece chiste"
+ ],
+ "No es chiste": [
+  "no es chiste"
+ ],
+ "Los movimientos en el tablero": [
+  "los movimientos en el tablero"
+ ],
+ "Protagonistas": [
+  "protagonistas"
+ ],
+ "Menciones": [
+  "menciones"
+ ],
+ "Montevideo en las carteleras": [
+  "montevideo en las carteleras*"
+ ],
+ "Funciones especiales": [
+  "funciones especiales"
+ ],
+ "Palabras cruzadas": [
+  "palabras cruzadas",
+  "crucigrama"
+ ],
+ "Nuestros problemas agrarios": [
+  "nuestros problemas agrarios"
+ ],
+ "Editorial": [
+  "editorial",
+  "editoriales"
+ ],
+ "Actos y conferencias": [
+  "actos y conferencias"
+ ],
+ "Correo": [
+  "correo"
+ ],
+ "Remitido": [
+  "remitido*"
+ ],
+ "Montevideo en las librerías": [
+  "montevideo en las librerias"
+ ],
+ "La ventana abierta": [
+  "la ventana abierta"
+ ],
+ "La otra cara": [
+  "la otra cara"
+ ],
+ "La actividad plástica": [
+  "la actividad plastica"
+ ],
+ "Mónica": [
+  "monica"
+ ],
+ "El agujero en la pared": [
+  "el agujero en la pared"
+ ],
+ "El deporte al día": [
+  "el deporte al dia"
+ ],
+ "Mejor es meneallo": [
+  "mejor es meneallo"
+ ],
+ "Ciudades y casas": [
+  "ciudades y casas"
+ ],
+ "Estrenos": [
+  "los estrenos",
+  "estrenos"
+ ],
+ "Grafología": [
+  "grafologia"
+ ],
+ "Danza": [
+  "danza"
+ ],
+ "Guía teatral": [
+  "guia teatral"
+ ],
+ "Crónicas de El Hachero": [
+  "cronicas de el hachero"
+ ],
+ "Libros y autores": [
+  "libros y autores"
+ ],
+ "Argentina": [
+  "argentina"
+ ],
+ "Ballet": [
+  "ballet"
+ ],
+ "Toda la semana en un día": [
+  "toda la semana en un dia"
+ ],
+ "En este país": [
+  "en este pais"
+ ],
+ "Don Verídico": [
+  "don veridico"
+ ],
+ "Crítica": [
+  "critica"
+ ],
+ "Música y teatro": [
+  "musica y teatro"
+ ],
+ "Los ojos de la tijera": [
+  "los ojos de la tijera"
+ ],
+ "Reportajes a la realidad": [
+  "reportajes a la realidad"
+ ],
+ "Libreta de apuntes": [
+  "libreta de apuntes"
+ ],
+ "Documentos": [
+  "documentos"
+ ],
+ "Cine en el mundo": [
+  "cine en el mundo"
+ ],
+ "Notas breves": [
+  "notas breves"
+ ],
+ "Una pregunta por semana": [
+  "una pregunta por semana"
+ ],
+ "Libros de la semana": [
+  "libros de la semana"
+ ],
+ "América Latina": [
+  "america latina"
+ ],
+ "Jazz": [
+  "jazz"
+ ],
+ "Por encima de los lentes": [
+  "por encima de los lentes"
+ ],
+ "Macanas ajenas y propias": [
+  "macanas ajenas y propias"
+ ],
+ "Cartelera": [
+  "cartelera"
+ ],
+ "Suplemento literario": [
+  "suplemento literario"
+ ],
+ "Guía": [
+  "guia"
+ ],
+ "Revista de revistas": [
+  "revista de revistas"
+ ],
+ "Crítica de cine": [
+  "critica de cine"
+ ],
+ "Conciertos": [
+  "conciertos"
+ ],
+ "Guía de lecturas": [
+  "guia de lecturas"
+ ],
+ "Página femenina": [
+  "pagina femenina"
+ ],
+ "Gaceta": [
+  "gaceta"
+ ],
+ "Segunda sección": [
+  "segunda seccion"
+ ],
+ "Encuesta": [
+  "encuesta"
+ ],
+ "Nuevos libros": [
+  "nuevos libros"
+ ],
+ "Temas sociales": [
+  "temas sociales"
+ ],
+ "Carta de Buenos Aires": [
+  "carta de buenos aires"
+ ],
+ "La tierra de nadie": [
+  "la tierra de nadie"
+ ],
+ "Guía de espectáculos": [
+  "guia de espectaculos"
+ ],
+ "Página de correspondencias exclusivas para MARCHA": [
+  "pagina de correspondencias exclusivas para marcha"
+ ],
+ "Balconeos de Marius": [
+  "balconeos de marius"
+ ],
+ "Acaba de aparecer": [
+  "acaba de aparecer"
+ ],
+ "Testimonios": [
+  "testimonios"
+ ],
+ "La mujer vista con criterio de mujer": [
+  "la mujer vista con criterio de mujer"
+ ],
+ "La vida literaria": [
+  "la vida literaria"
+ ],
+ "La pantalla": [
+  "la pantalla"
+ ],
+ "Arte ingenioso": [
+  "arte ingenioso"
+ ],
+ "Folklore": [
+  "folklore"
+ ],
+ "Películas del festival": [
+  "peliculas del festival"
+ ],
+ "Pintura y plástica": [
+  "pintura y plastica"
+ ],
+ "De aquí y de allá": [
+  "de aqui y de alla"
+ ],
+ "La semana": [
+  "la semana"
+ ],
+ "El comentario internacional": [
+  "el comentario internacional"
+ ],
+ "Consejos útiles": [
+  "consejos utiles"
+ ],
+ "El mundo tal cual es": [
+  "el mundo tal cual es"
+ ],
+ "De mujer a mujer": [
+  "de mujer a mujer"
+ ]
 }
