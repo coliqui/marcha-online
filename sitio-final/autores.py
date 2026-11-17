@@ -95,8 +95,12 @@ def armar(catalogo, destino_dudosos=None, por_articulo=None):
     # uniones hechas con Sonnet para el sitio (autores_sonnet.py), deshacibles: [forma, nombre]
     ruta_alias = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pipeline", "autores_alias.json")
     if os.path.exists(ruta_alias):
-        for forma, dst in json.load(open(ruta_alias)).get("_sonnet_sitio", []):
-            canon[plano(forma)] = canon.get(plano(dst), dst)
+        pares = {plano(f): d for f, d in json.load(open(ruta_alias)).get("_sonnet_sitio", [])}
+        for f in pares:
+            d, vistos = pares[f], {f}
+            while plano(d) in pares and plano(d) not in vistos:  # cadenas A -> B -> C
+                vistos.add(plano(d)); d = pares[plano(d)]
+            canon[f] = canon.get(plano(d), d)
     personas = defaultdict(lambda: {"textos": [], "obras": [], "firmas": set()})
     descartes = defaultdict(int)
     def limpiar(f):

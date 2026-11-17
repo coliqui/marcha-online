@@ -182,13 +182,16 @@ def main():
             if not j:
                 continue
             nombres = [n for n, _ in c["cands"]]
-            if j["decision"] == "misma" and j["confianza"] >= 0.9 and j.get("con_quien") in nombres:
+            sigla = AU.es_sigla(c["forma"])
+            if j["decision"] == "misma" and j["confianza"] >= 0.9 and j.get("con_quien") in nombres and not sigla \
+                    and [j["con_quien"], c["forma"]] not in hechas:  # no unir en los dos sentidos
                 dst = j["con_quien"]
                 alias.setdefault(dst, [])
                 if c["forma"] not in alias[dst]:
                     alias[dst].append(c["forma"]); hechas.append([c["forma"], dst]); unidos += 1
             elif j["decision"] != "distinta":
-                revisar.append({"forma": c["forma"], "candidatos": nombres, "sonnet": j})
+                revisar.append({"forma": c["forma"], "candidatos": nombres, "sonnet": j,
+                                "motivo": "sigla: la atribución es una inferencia, la confirma una persona" if sigla and j["decision"] == "misma" else "dudoso"})
         json.dump(alias, open(p, "w"), ensure_ascii=False, indent=1)
         json.dump(revisar, open(os.path.join(datos, "lectura-ia", "revisar-autores-sitio.json"), "w"), ensure_ascii=False, indent=1)
         print(f"unidos {unidos} (deshacibles: _sonnet_sitio); a Revisión {len(revisar)}")
