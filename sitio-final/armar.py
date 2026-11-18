@@ -20,6 +20,9 @@ import autores as AU  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 MESES = "enero febrero marzo abril mayo junio julio agosto setiembre octubre noviembre diciembre".split()
 BASE = "/"
+SITIO = "https://marcha.uy/"  # dirección pública, para «Cómo citar» (las citas apuntan al sitio publicado)
+AVISOS_DESTINO = "avisos@marcha.uy"  # adonde van los avisos de error (etapa 4: un servicio de formularios lo manda como mail)
+AVISOS_URL = None  # etapa 4: dirección del servicio que recibe el formulario; mientras sea None, el formulario está «en prueba»
 OSD = '<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js" defer></script>'
 
 
@@ -44,7 +47,7 @@ def pagina(titulo, cuerpo, actual="", extra_head="", scripts=()):
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(titulo)}</title><meta name="description" content="Archivo digital del semanario Marcha (Montevideo, 1939–1974).">
 <link rel="stylesheet" href="{u("static/estilo.css")}">{extra_head}
-<script>window.BASE={json.dumps(BASE)};</script>{js}</head>
+<script>window.BASE={json.dumps(BASE)};window.SITIO={json.dumps(SITIO)};window.AVISOS={{destino:{json.dumps(AVISOS_DESTINO)},url:{json.dumps(AVISOS_URL)}}};</script>{js}</head>
 <body><header class="cab"><div class="cab-in"><a class="marca" href="{u()}">MARCHA<span>archivo 1939–1974</span></a>
 <button class="menu-btn" aria-label="Menú" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
 <nav id="menu" class="menu">{nav}</nav></div></header>
@@ -53,10 +56,22 @@ def pagina(titulo, cuerpo, actual="", extra_head="", scripts=()):
 <p class="hoy" data-hoy></p>
 <p>Marcha © sus autores y herederos. Se permite citar mencionando la fuente.</p>
 <p>El texto de las notas fue transcripto automáticamente (reconocimiento de texto e inteligencia artificial) a partir del escaneo de los microfilms y puede contener errores. Ante cualquier duda, vale la imagen de la página.</p>
-<p class="pie-links"><span title="Próximamente">Cómo citar</span> · <span title="Próximamente">Avisanos de un error</span> · <span title="Próximamente">Apoyá el archivo</span></p>
+<p class="pie-links"><a href="{u("acerca/#como-citar")}">Cómo citar</a> · <a href="{u("acerca/#errores")}">Avisanos de un error</a> · <a href="{u("acerca/#apoya")}">Apoyá el archivo</a></p>
+<div class="apoya-lugar" id="apoya-pie"><b>Apoyá el archivo.</b> Muy pronto vas a poder colaborar para mantener este archivo abierto y gratuito.</div>
 </div></footer>
 <a href="#" class="arriba" aria-label="Volver arriba" hidden>↑</a>
 </body></html>"""
+
+
+def cita_autor(firma):
+    """«Emir Rodríguez Monegal y Ángel Rama» -> «Rodríguez Monegal, Emir y Rama, Ángel» (para «Cómo citar»)."""
+    if not firma:
+        return None
+    partes = [p.strip() for x in AU.separar(firma) or [firma] for p in re.split(r"\s+[—–]\s+", x) if p.strip()]
+    nombres = [AU.apellido_nombre(AU.lindo(AU.TITULOS.sub("", p)))[1] for p in partes]
+    if len(nombres) > 3:  # firmas colectivas largas: el primero «y otros»
+        return nombres[0] + " y otros"
+    return " y ".join(nombres) or None
 
 
 def miniaturas(args):
@@ -134,12 +149,12 @@ def armar(datos):
                          if r["origen"] == m["id"] and r["articulo"] == i and r.get("resuelta")]
                 arts.append({k2: v for k2, v in {"titulo": a["titulo"], "autor": a.get("autor"), "seccion": a.get("seccion"),
                              "tipo": a.get("tipo"), "bajada": a.get("bajada"), "texto": a.get("texto"), "paginas": a["paginas"],
-                             "zonas": a.get("zonas"), "citas": citas or None,
+                             "zonas": a.get("zonas"), "citas": citas or None, "cita_autor": cita_autor(a.get("autor")),
                              "recuadros": [{"texto": r.get("texto"), "autor": r.get("autor")} for r in a.get("recuadros") or []] or None,
                              "destacados": [{"texto": r.get("texto")} for r in a.get("destacados") or []] or None}.items() if v})
             citado = [{"id": r["origen"], "fecha": r.get("fecha_origen"), "pagina": r.get("pagina"), "titulo": r.get("titulo")}
                       for r in refs if r.get("destino") == m["id"] and r.get("resuelta")]
-            escribir(f"datos/numeros/{m['id']}.json", json.dumps({"id": m["id"], "fecha": m["fecha"], "paginas": paginas,
+            escribir(f"datos/numeros/{m['id']}.json", json.dumps({"id": m["id"], "numero": m.get("numero") or m["id"], "fecha": m["fecha"], "paginas": paginas,
                      "articulos": arts, "citado_en": citado}, ensure_ascii=False, separators=(",", ":")))
             ant, sig = (nums[k - 1] if k else None), (nums[k + 1] if k + 1 < len(nums) else None)
             anio = m["fecha"][:4]
@@ -150,10 +165,10 @@ def armar(datos):
 <h1>Marcha nº {esc(m["id"])}</h1><p class="sub">{fecha_larga(m["fecha"])} · {len(paginas)} páginas</p>
 <div class="flechas">{flechas}</div></div>
 <div id="lector" data-id="{esc(m["id"])}" data-teselas="{u("teselas/" + m["id"] + "/")}" data-datos="{u("datos/numeros/" + m["id"] + ".json")}">
-<div class="recorrer"><button class="btn" data-pag="-1" aria-label="Página anterior">‹</button>
+<div class="recorrer"><button class="btn icono" data-pag="-1" aria-label="Página anterior" title="Página anterior (←)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5 8 12l7.5 7.5"/></svg></button>
 <label>Recorrer: <select id="selpag" aria-label="Ir a la página"></select></label>
-<button class="btn" data-pag="1" aria-label="Página siguiente">›</button>
-<label class="doble"><input type="checkbox" id="vdoble"> doble página</label></div>
+<button class="btn icono" data-pag="1" aria-label="Página siguiente" title="Página siguiente (→)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5 16 12l-7.5 7.5"/></svg></button>
+<label class="doble" title="Ver de a dos páginas, como el diario abierto"><input type="checkbox" id="vdoble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="8.5" height="15" rx="1"/><rect x="13" y="4.5" width="8.5" height="15" rx="1"/></svg> doble página</label></div>
 <div class="lector-cuerpo"><div id="visor" class="visor" role="img" aria-label="Páginas del nº {esc(m["id"])}"></div>
 <aside class="notas"><h2 id="notas-tit">Notas de esta página</h2><div id="notas"><p class="muted">Cargando…</p></div>
 <div id="citado"></div></aside></div></div>"""
