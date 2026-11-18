@@ -174,3 +174,9 @@ select { font: inherit; font-size: .95rem; padding: 6px 8px; border: 1px solid v
 .doble { min-height: 44px; cursor: pointer; }
 .doble svg { width: 22px; height: 22px; stroke-width: 1.8; }
 @media (max-width: 420px) { .visor-botones { gap: 4px; margin: 6px; } .vb { width: 42px; height: 42px; } }
+/* acerca */
+.indice-acerca { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 18px; font-size: .95rem; }
+.texto-acerca { max-width: 46em; margin-bottom: 2.2em; scroll-margin-top: 70px; }
+.texto-acerca h3 { font-size: 1.08rem; margin: 1.4em 0 .4em; scroll-margin-top: 70px; }
+.texto-acerca li { margin: .3em 0; }
+.verificar { background: #fff3cd; padding: 0 3px; border-radius: 2px; font-size: .9em; }

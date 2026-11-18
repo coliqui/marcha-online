@@ -63,6 +63,30 @@ def pagina(titulo, cuerpo, actual="", extra_head="", scripts=()):
 </body></html>"""
 
 
+def markdown(texto):
+    """Markdown mínimo de los textos de Acerca: títulos (## y ###, con {#ancla} opcional), párrafos, listas con «-» o «1.»,
+    **negrita**, *itálica* y [enlaces](destino). Los enlaces internos (sin http) se resuelven con BASE."""
+    def linea(t):
+        t = esc(t)
+        t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", lambda m: f'<a href="{m.group(2) if m.group(2).startswith(("http", "#", "mailto")) else u(m.group(2))}">{m.group(1)}</a>', t)
+        t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+        t = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<i>\1</i>", t)
+        return re.sub(r"\[(verificar[^\]]*|Pendiente[^\]]*|Texto a cargo[^\]]*)\]", r'<span class="verificar">[\1]</span>', t)
+    salida = []
+    for bloque in re.split(r"\n\s*\n", texto.strip()):
+        lineas = bloque.strip().split("\n")
+        m = re.match(r"^(#{2,3})\s+(.*?)(?:\s*\{#([\w-]+)\})?$", lineas[0])
+        if m and len(lineas) == 1:
+            nivel = len(m.group(1))
+            salida.append(f'<h{nivel}{f" id={chr(34)}{m.group(3)}{chr(34)}" if m.group(3) else ""}>{linea(m.group(2))}</h{nivel}>')
+        elif all(re.match(r"^(-|\d+\.)\s", l) for l in lineas):
+            tag = "ol" if lineas[0][0].isdigit() else "ul"
+            salida.append(f"<{tag}>" + "".join(f"<li>{linea(re.sub(r'^(-|\d+\.)\s+', '', l))}</li>" for l in lineas) + f"</{tag}>")
+        else:
+            salida.append(f"<p>{linea(' '.join(lineas))}</p>")
+    return "\n".join(salida)
+
+
 def cita_autor(firma):
     """«Emir Rodríguez Monegal y Ángel Rama» -> «Rodríguez Monegal, Emir y Rama, Ángel» (para «Cómo citar»)."""
     if not firma:
@@ -283,10 +307,14 @@ Cada enlace abre la búsqueda con ese filtro.</p><div class="temas">{bloques}</d
 <p id="estado" class="muted" aria-live="polite"></p><ol id="resultados" class="resultados"></ol>
 <p><button type="button" class="btn" id="mas" hidden>Más resultados</button></p>"""
         escribir("buscar/index.html", pagina("Buscar · Marcha", cuerpo, "buscar/", scripts=("buscar.js",)))
-        escribir("acerca/index.html", pagina("Acerca del proyecto · Marcha", """<h1>Acerca del proyecto</h1>
-<p><b>Borrador.</b> Marcha fue un semanario uruguayo fundado y dirigido por Carlos Quijano, publicado en Montevideo desde el 23 de junio de 1939 hasta su clausura en 1974.</p>
-<p>Este archivo reúne la colección completa a partir del escaneo de los microfilms. Cada página se puede ver con zoom, y el texto de las notas fue transcripto con reconocimiento de texto e inteligencia artificial, por lo que puede contener errores.</p>
-<p>Próximamente: qué fue Marcha, Carlos Quijano, cómo se hizo este archivo, bibliografía, cómo citar y cómo ayudar.</p>""", "acerca/"))
+        # Acerca del proyecto: los textos de sitio-final/textos/*.md (borradores que revisa Coli)
+        orden = [("que-fue-marcha", "Qué fue Marcha"), ("carlos-quijano", "Carlos Quijano"), ("sobre-este-archivo", "Sobre este archivo"),
+                 ("como-llegamos-hasta-aca", "Cómo llegamos hasta acá"), ("bibliografia", "Bibliografía y enlaces")]
+        secciones = "".join(f'<section id="{k}" class="texto-acerca">{markdown(open(os.path.join(AQUI, "textos", k + ".md"), encoding="utf-8").read())}</section>'
+                            for k, _ in orden if os.path.exists(os.path.join(AQUI, "textos", k + ".md")))
+        indice = " · ".join(f'<a href="#{k}">{t}</a>' for k, t in orden)
+        escribir("acerca/index.html", pagina("Acerca del proyecto · Marcha", f"""<h1>Acerca del proyecto</h1>
+<nav class="indice-acerca" aria-label="En esta página">{indice}</nav>{secciones}""", "acerca/"))
 
         viejo = destino + ".viejo"
         if os.path.exists(viejo):
